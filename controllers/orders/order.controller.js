@@ -30,3 +30,17 @@ export const submitOrder = async (req, res) => {
         });
     }
 };
+
+export const getOrders = async (req, res) => {
+    try {
+        const orders = Order.find()
+        if (!orders) {
+            res.status(400).json({ success: false, message: 'no orders found' })
+            console.log('no orders fount')
+        }
+        console.log(orders)
+        res.status(400).json({ success: true, orders })
+    } catch (error) {
+        console.log('error in server', error)
+    }
+}
