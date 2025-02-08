@@ -2,23 +2,58 @@ import express from 'express';
 import colors from 'colors';
 import connectDB from './utils/database/db.js';
 import dotenv from 'dotenv';
+import passport from 'passport';
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import flash from 'express-flash';
+import initializePassport from './config/passportConfig.js';
+
 dotenv.config();
 
+// Initialize DB Connection
 connectDB();
 
 const app = express();
 
-// Middlewares
-app.use(express.json()); // Handles JSON requests
-app.use(express.urlencoded({ extended: true })); // Handles form data
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
+app.use(session({
+    secret: 'da43gy-ca92-42f1-9041',
+    saveUninitialized: false,
+    resave: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URL,
+        ttl: 24 * 60 * 60,
+        autoRemove: 'native'
+    }),
+    cookie: {
+        secure: false,
+        httpOnly: true
+    }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
+
+// Initialize Passport
+initializePassport(passport);
+
+// Routes
 import indexRoute from './routes/index.js';
 import orderRouter from './routes/order.js';
+import loginRoute from './routes/login.js';
+import dashboardRoute from './routes/dashboard.js'
+
 app.use('/', indexRoute);
 app.use('/order', orderRouter);
-
+app.use('/login', loginRoute);
+app.use('/logout', loginRoute);
+app.use('/dashboard', dashboardRoute)
 // Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
