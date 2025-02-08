@@ -31,15 +31,17 @@ export const submitOrder = async (req, res) => {
     }
 };
 
-export const getOrders = async (req, res) => {
+export const getOrders = async (req, res, next) => {
     try {
-        const orders = Order.find()
+        const orders = await Order.find()
         if (!orders) {
-            res.status(400).json({ success: false, message: 'no orders found' })
+            // res.status(400).json({ success: false, message: 'no orders found' })
             console.log('no orders fount')
         }
         console.log(orders)
-        res.status(400).json({ success: true, orders })
+        // res.status(200).json({ success: true, orders })
+
+        next();
     } catch (error) {
         console.log('error in server', error)
     }

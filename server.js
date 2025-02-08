@@ -54,6 +54,7 @@ app.use('/order', orderRouter);
 app.use('/login', loginRoute);
 app.use('/logout', loginRoute);
 app.use('/dashboard', dashboardRoute)
+app.use('/', orderRouter)
 // Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
