@@ -31,18 +31,12 @@ export const submitOrder = async (req, res) => {
     }
 };
 
-export const getOrders = async (req, res, next) => {
+export const getOrders = async () => {
     try {
-        const orders = await Order.find()
-        if (!orders) {
-            // res.status(400).json({ success: false, message: 'no orders found' })
-            console.log('no orders fount')
-        }
-        console.log(orders)
-        // res.status(200).json({ success: true, orders })
-
-        next();
+        const orders = await Order.find();
+        return orders || [];
     } catch (error) {
-        console.log('error in server', error)
+        console.error('Error in fetching orders:', error);
+        return [];
     }
-}
+};

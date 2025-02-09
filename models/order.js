@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema({
     flyerId: { type: String, required: true, unique: true },
     status: {
         type: String,
-        enum: ['dispatched', 'received'],
+        enum: ['dispatched', 'returned', 'completed'],
         default: 'dispatched'
     }
 });
