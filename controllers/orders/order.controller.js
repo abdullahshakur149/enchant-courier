@@ -66,19 +66,16 @@ export const updateOrder = async (req, res) => {
     try {
         const existingOrder = await Order.findById(orderId);
         if (!existingOrder) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
-        // Check the conditions for moving the order
         if (courierStatus === 'delivered' && status === 'payment_recieved') {
-            // Move order to CompletedOrder
             const completedOrder = new CompletedOrder({ orderId });
             await completedOrder.save();
 
-            // Delete from Order collection
             await Order.findByIdAndDelete(orderId);
 
-            return res.status(200).json({ message: 'Order moved to completed orders' });
+            return res.status(200).json({ success: true, message: 'Order moved to completed orders' });
         }
 
         else if (courierStatus === 'returned' && status === 'return_recieved') {
@@ -87,10 +84,10 @@ export const updateOrder = async (req, res) => {
 
             await Order.findByIdAndDelete(orderId);
 
-            return res.status(200).json({ message: 'Order moved to returned orders' });
+            return res.status(200).json({ success: true, message: 'Order moved to returned orders' });
         }
 
-        return res.status(400).json({ message: 'Invalid status update' });
+        return res.status(400).json({ success: false, message: 'Invalid status update' });
 
     } catch (error) {
         console.error('Error updating order:', error);

@@ -143,9 +143,13 @@
 
             axios.put('/order/update-order', formData)
                 .then(response => {
-                    console.log("Order updated:", response);
-                    alert("Order updated successfully!");
-                    location.reload();
+                    if (response.data.success === true) {
+                        alert(response.data.message);
+                        location.reload();
+                    } else {
+                        alert(response.data.message)
+                    }
+
                 })
                 .catch(error => {
                     console.error("Error updating order:", error);
