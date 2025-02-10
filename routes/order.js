@@ -9,8 +9,8 @@ router.post('/submit-order', submitOrder);
 
 router.get('/orders', checkAuthenticated, async (req, res) => {
     try {
-        const orders = await getOrders();
-        res.render('dashboard/orders', { orders });
+        const { orders, information } = await getOrders();
+        res.render('dashboard/orders', { orders, information });
     } catch (error) {
         console.error("Error fetching orders:", error);
         res.status(500).send("Server error");

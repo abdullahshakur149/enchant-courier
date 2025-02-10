@@ -1,4 +1,5 @@
 import Order from '../../models/order.js';
+import fs from 'fs/promises';
 
 export const submitOrder = async (req, res) => {
     try {
@@ -34,9 +35,26 @@ export const submitOrder = async (req, res) => {
 export const getOrders = async () => {
     try {
         const orders = await Order.find();
-        return orders || [];
+        let information = [];
+
+        try {
+            const data = await fs.readFile('courier.json', 'utf8');
+            information = JSON.parse(data);
+        } catch (fileError) {
+            console.error("Error reading courier.json:", fileError);
+        }
+
+        const mergedOrders = orders.map(order => {
+            const courierInfo = information.orders.find(courier => courier.tracking_id === order.trackingNumber);
+            return {
+                ...order.toObject(),
+                courierStatus: courierInfo ? courierInfo.status.label : 'Unknown'
+            };
+        });
+
+        return { orders: mergedOrders, information };
     } catch (error) {
         console.error('Error in fetching orders:', error);
-        return [];
+        return { orders: [], information: [] };
     }
 };

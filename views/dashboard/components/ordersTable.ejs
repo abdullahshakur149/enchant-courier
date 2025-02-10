@@ -48,8 +48,8 @@
                                 </span>
                         </td>
                         <td>
+                            <%= order.courierStatus || 'N/A' %>
                         </td>
-
                         <td>
                             <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
                             <button class="btn btn-success btn-edit btn-sm"><i class="bi bi-pen"></i></button>
@@ -59,64 +59,3 @@
                         <% } %>
     </tbody>
 </table>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".btn-edit").forEach(button => {
-            button.addEventListener("click", function () {
-                let row = this.closest("tr");
-                let statusColumn = row.querySelector(".status-column");
-                let currentStatus = statusColumn.querySelector(".status-text").innerText.trim();
-
-                // Save original status
-                let originalHTML = statusColumn.innerHTML;
-
-                // Replace status text with a dropdown
-                let select = document.createElement("select");
-                select.classList.add("form-control", "form-control-sm");
-                select.innerHTML = `
-                    <option value="completed" ${currentStatus === 'completed' ? 'selected' : ''}>Completed</option>
-                    <option value="dispatched" ${currentStatus === 'dispatched' ? 'selected' : ''}>Dispatched</option>
-                    <option value="payed" ${currentStatus === 'payed' ? 'selected' : ''}>Payed</option>
-                    <option value="returned" ${currentStatus === 'returned' ? 'selected' : ''}>Returned</option>
-                `;
-
-                // Add Save and Cancel buttons
-                let saveButton = document.createElement("button");
-                saveButton.innerHTML = "✔";
-                saveButton.classList.add("btn", "btn-success", "btn-sm", "ms-2");
-
-                let cancelButton = document.createElement("button");
-                cancelButton.innerHTML = "✖";
-                cancelButton.classList.add("btn", "btn-danger", "btn-sm", "ms-1");
-
-                // Append elements
-                statusColumn.innerHTML = "";
-                statusColumn.appendChild(select);
-                statusColumn.appendChild(saveButton);
-                statusColumn.appendChild(cancelButton);
-
-                // Cancel button restores original content
-                cancelButton.addEventListener("click", function () {
-                    statusColumn.innerHTML = originalHTML;
-                });
-
-                // Save button logic (optional - update UI)
-                saveButton.addEventListener("click", function () {
-                    let newStatus = select.value;
-                    let statusClasses = {
-                        'completed': 'bg-success',
-                        'dispatched': 'bg-success',
-                        'payed': 'bg-success',
-                        'returned': 'bg-warning text-dark'
-                    };
-                    let badgeClass = statusClasses[newStatus] || 'bg-secondary';
-
-                    statusColumn.innerHTML = `
-                        <span class="badge ${badgeClass} status-text">${newStatus}</span>
-                    `;
-                });
-            });
-        });
-    });
-</script>
