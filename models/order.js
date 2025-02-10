@@ -1,17 +1,26 @@
 import mongoose from 'mongoose';
 
+// Order Schema
 const orderSchema = new mongoose.Schema({
     trackingNumber: { type: String, required: true, unique: true },
     flyerId: { type: String, required: true, unique: true },
     status: {
         type: String,
-        enum: ['dispatched', 'returned_recieved', 'completed_payed'],
+        enum: ['dispatched', 'return_recieved', 'payment_recieved'],
         default: 'dispatched'
     }
-});
+}, { timestamps: true });
 
-// Create model from schema
+const completedOrdersSchema = new mongoose.Schema({
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }
+}, { timestamps: true });
+
+const returnedOrdersSchema = new mongoose.Schema({
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }
+}, { timestamps: true });
+
 const Order = mongoose.model('Order', orderSchema);
+const CompletedOrder = mongoose.model('CompletedOrder', completedOrdersSchema);
+const ReturnedOrder = mongoose.model('ReturnedOrder', returnedOrdersSchema);
 
-// Export model
-export default Order;
+export { Order, CompletedOrder, ReturnedOrder }; 

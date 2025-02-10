@@ -1,11 +1,12 @@
 import express from 'express';
-import { submitOrder, getOrders } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, updateOrder } from "../controllers/orders/order.controller.js";
 import { checkAuthenticated } from '../config/webAuth.js';
 
 
 const router = express.Router();
 
 router.post('/submit-order', submitOrder);
+router.put('/update-order', updateOrder)
 
 router.get('/orders', checkAuthenticated, async (req, res) => {
     try {

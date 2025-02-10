@@ -3,34 +3,25 @@
     {
       "tracking_id": "AB78C6FFK",
       "flyer_id": "PRISBS1787",
-      "status": {
-        "code": "recieved_by_courier",
-        "label": "Recieved by courier"
-      },
+      "status": "received",
       "timestamp": "2024-02-08T10:30:00Z"
     },
     {
       "tracking_id": "27150548411428",
       "flyer_id": "1000721051",
-      "status": {
-        "code": "dispatched_to_customer",
-        "label": "Dispatched to customer"
-      },
+      "status": "dispatched",
       "timestamp": "2024-02-08T11:00:00Z"
     },
     {
       "tracking_id": "572718598765",
       "flyer_id": "400815021",
-      "status": {
-        "code": "returned_by_customer",
-        "label": "Returned by customer"
-      },
+      "status": "returned",
       "timestamp": "2024-02-08T11:30:00Z"
     },
     {
       "tracking_id": "7787553981",
       "flyer_id": "870018491",
-      "status": { "code": "delivered_payed", "label": "Delivered & Payed" },
+      "status": "delivered",
       "timestamp": "2024-02-08T12:00:00Z"
     }
   ]
