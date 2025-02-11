@@ -12,11 +12,19 @@ const orderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const completedOrdersSchema = new mongoose.Schema({
-    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }
+    trackingNumber: { type: String, required: true, unique: true },
+    flyerId: { type: String, required: true, unique: true },
+    status: {
+        type: String,
+    }
 }, { timestamps: true });
 
 const returnedOrdersSchema = new mongoose.Schema({
-    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true }
+    trackingNumber: { type: String, required: true, unique: true },
+    flyerId: { type: String, required: true, unique: true },
+    status: {
+        type: String,
+    }
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);

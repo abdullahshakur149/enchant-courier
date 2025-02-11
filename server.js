@@ -22,7 +22,7 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
 app.use(session({
-    secret: 'da43gy-ca92-42f1-9041',
+    secret: SECRET_KEY,
     saveUninitialized: false,
     resave: false,
     store: MongoStore.create({

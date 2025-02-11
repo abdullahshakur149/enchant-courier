@@ -70,7 +70,11 @@ export const updateOrder = async (req, res) => {
         }
 
         if (courierStatus === 'delivered' && status === 'payment_recieved') {
-            const completedOrder = new CompletedOrder({ orderId });
+            const completedOrder = new CompletedOrder({
+                trackingNumber: trackingNumber,
+                flyerId: flyerId,
+                status: status
+            });
             await completedOrder.save();
 
             await Order.findByIdAndDelete(orderId);
@@ -79,7 +83,11 @@ export const updateOrder = async (req, res) => {
         }
 
         else if (courierStatus === 'returned' && status === 'return_recieved') {
-            const returnedOrder = new ReturnedOrder({ orderId });
+            const returnedOrder = new ReturnedOrder({
+                trackingNumber: trackingNumber,
+                flyerId: flyerId,
+                status: status
+            });
             await returnedOrder.save();
 
             await Order.findByIdAndDelete(orderId);
