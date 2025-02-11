@@ -7,8 +7,8 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import flash from 'express-flash';
 import initializePassport from './config/passportConfig.js';
-
 dotenv.config();
+
 
 // Initialize DB Connection
 connectDB();
@@ -22,7 +22,7 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
 app.use(session({
-    secret: SECRET_KEY,
+    secret: process.env.SECRET_KEY,
     saveUninitialized: false,
     resave: false,
     store: MongoStore.create({

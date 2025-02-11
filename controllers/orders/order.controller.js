@@ -105,8 +105,16 @@ export const updateOrder = async (req, res) => {
 
 export const getCompletedOrders = async (req, res) => {
     try {
-        const completedOrders = await CompletedOrder.find().populate('orderId')
+        const completedOrders = await CompletedOrder.find()
         return completedOrders;
+    } catch (error) {
+    }
+}
+
+export const getReturnedOrders = async (req, res) => {
+    try {
+        const returnedOrders = await ReturnedOrder.find()
+        return returnedOrders;
     } catch (error) {
     }
 }
