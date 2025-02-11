@@ -94,3 +94,11 @@ export const updateOrder = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const getCompletedOrders = async (req, res) => {
+    try {
+        const completedOrders = await CompletedOrder.find().populate('orderId')
+        return completedOrders;
+    } catch (error) {
+    }
+}
