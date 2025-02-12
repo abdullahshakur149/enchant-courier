@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    <title>IMOlympiad | Admin</title>
+    <title>Enchant | Admin</title>
     <meta content="" name="description">
     <meta content="" name="keywords">
 
@@ -53,6 +53,15 @@
         <%- include('./components/sidebar.ejs') %>
 
             <main id="main" class="main">
+
+                <div
+                    class="welcome-message d-flex justify-content-center alert alert-light d-flex align-items-center shadow-sm">
+                    <i class="bi bi-person-circle me-2 fs-5 text-primary"></i>
+                    <span class="fw-semibold text-center">Welcome back, <strong>
+                            <%= user.username %>
+                        </strong>!</span>
+                </div>
+
 
                 <div class="pagetitle">
                     <h1>Dashboard</h1>

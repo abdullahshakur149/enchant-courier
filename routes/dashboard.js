@@ -7,8 +7,9 @@ router.use(checkAuthenticated);
 
 
 router.get('/', async (req, res, next) => {
+    // console.log("Logged-in User:", req.user); 
     try {
-        res.render('dashboard/dashboard');
+        res.render('dashboard/dashboard', { user: req.user });
     } catch (err) {
         res.status(500).send('Internal Server Error');
     }
