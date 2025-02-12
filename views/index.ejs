@@ -61,7 +61,6 @@
             const form = document.querySelector('#registrationForm');
             const formData = new FormData(form);
 
-            // Convert FormData to JSON format
             const jsonData = {};
             formData.forEach((value, key) => {
                 jsonData[key] = value;

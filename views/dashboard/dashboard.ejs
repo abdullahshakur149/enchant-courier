@@ -75,35 +75,95 @@
 
                 <section class="section dashboard">
                     <div class="row">
-
                         <!-- Left side columns -->
                         <div class="col-lg-8">
                             <div class="row">
-
-                                <!-- Registration Card -->
+                                <!-- Total Orders Card -->
                                 <div class="col-xxl-4 col-md-6">
                                     <div class="card info-card sales-card">
                                         <div class="card-body">
                                             <h5 class="card-title">Total Orders <span>|</span></h5>
-
                                             <div class="d-flex align-items-center">
                                                 <div
                                                     class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                                                     <i class="bi bi-box"></i>
                                                 </div>
                                                 <div class="ps-3">
-                                                    <h6><!-- Dynamic Registration Count --></h6>
+                                                    <h6>
+                                                        <%= stats.dispatchedCount + stats.returnedCount +
+                                                            stats.completedCount %>
+                                                    </h6>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- End Registration Card -->
+                                </div><!-- End Total Orders Card -->
+
+                                <!-- Dispatched Orders Card -->
+                                <div class="col-xxl-4 col-md-6">
+                                    <div class="card info-card sales-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Dispatched Orders</h5>
+                                            <div class="d-flex align-items-center">
+                                                <div
+                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                    <i class="bi bi-truck"></i>
+                                                </div>
+                                                <div class="ps-3">
+                                                    <h6>
+                                                        <%= stats.dispatchedCount %>
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- End Dispatched Orders Card -->
+
+                                <!-- Returned Orders Card -->
+                                <div class="col-xxl-4 col-md-6">
+                                    <div class="card info-card sales-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Returned Orders</h5>
+                                            <div class="d-flex align-items-center">
+                                                <div
+                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                                </div>
+                                                <div class="ps-3">
+                                                    <h6>
+                                                        <%= stats.returnedCount %>
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- End Returned Orders Card -->
+
+                                <!-- Completed Orders Card -->
+                                <div class="col-xxl-4 col-md-6">
+                                    <div class="card info-card sales-card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Completed Orders</h5>
+                                            <div class="d-flex align-items-center">
+                                                <div
+                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </div>
+                                                <div class="ps-3">
+                                                    <h6>
+                                                        <%= stats.completedCount %>
+                                                    </h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div><!-- End Completed Orders Card -->
 
                             </div>
                         </div>
-
                     </div>
                 </section>
+
 
             </main><!-- End #main -->
 

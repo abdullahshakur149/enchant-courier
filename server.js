@@ -50,6 +50,7 @@ import loginRoute from './routes/login.js';
 import dashboardRoute from './routes/dashboard.js'
 
 app.use('/', indexRoute);
+app.use('/return-order', indexRoute);
 app.use('/order', orderRouter);
 app.use('/login', loginRoute);
 app.use('/logout', loginRoute);

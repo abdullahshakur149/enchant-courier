@@ -119,3 +119,65 @@ export const getReturnedOrders = async (req, res) => {
     } catch (error) {
     }
 }
+
+export const checkReturnedOrder = async (req, res) => {
+    try {
+        const { trackingNumber, flyNumber } = req.body;
+        const order = await Order.findOne({ trackingNumber });
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order does not exist" });
+        }
+
+        const returnedOrder = new ReturnedOrder({
+            trackingNumber: order.trackingNumber,
+            flyerId: order.flyerId,
+            status: "return_received",
+            createdAt: order.createdAt,
+            updatedAt: new Date()
+        });
+
+        await returnedOrder.save();
+
+        await Order.deleteOne({ _id: order._id });
+
+        res.json({ success: true, message: "Order moved to returned orders successfully", order: returnedOrder });
+
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const getMonthlyOrderStats = async () => {
+    try {
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+        const dispatchedResult = await Order.aggregate([
+            { $match: { status: "dispatched", createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+            { $count: "count" }
+        ]);
+        const dispatchedCount = dispatchedResult.length > 0 ? dispatchedResult[0].count : 0;
+
+        const returnedResult = await ReturnedOrder.aggregate([
+            { $match: { status: "return_recieved", createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+            { $count: "count" }
+        ]);
+        const returnedCount = returnedResult.length > 0 ? returnedResult[0].count : 0;
+
+        const completedResult = await CompletedOrder.aggregate([
+            { $match: { status: "payment_recieved", createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
+            { $count: "count" }
+        ]);
+        const completedCount = completedResult.length > 0 ? completedResult[0].count : 0;
+
+        return { dispatchedCount, returnedCount, completedCount };
+    } catch (error) {
+        console.error("Error fetching order stats:", error);
+        return { dispatchedCount: 0, returnedCount: 0, completedCount: 0 };
+    }
+};
+
+
+
+
