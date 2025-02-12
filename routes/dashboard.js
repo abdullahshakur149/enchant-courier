@@ -8,6 +8,7 @@ router.use(checkAuthenticated);
 
 router.get('/', async (req, res) => {
     try {
+        // stats for code
         const stats = await getMonthlyOrderStats();
         // console.log("Order Stats:", stats);
 
