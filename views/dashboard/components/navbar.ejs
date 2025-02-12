@@ -21,56 +21,27 @@
 
         <!-- Logout Button -->
         <div class="logout-button">
-            <a class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#logoutModal"><i
-                    class="bi bi-box-arrow-left"></i>
-                Logout</a>
-        </div><!-- End Logout Button -->
+            <button id="logoutButton" class="btn btn-danger">
+                <i class="bi bi-box-arrow-left"></i> Logout
+            </button>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+            document.getElementById('logoutButton').addEventListener('click', function (event) {
+                event.preventDefault();
+
+                axios.delete('/logout')
+                    .then(response => {
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Logout Error:', error);
+                        alert("Error logging out. Please try again.");
+                    });
+            });
+        </script>
+
 
     </header><!-- End Header -->
 </div>
-
-
-
-
-<!-- Logout Modal -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog ">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmation</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to logout?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="/logout" class="btn btn-danger">Logout</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- <script>
-    // JavaScript to filter table rows based on search input
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('searchInput');
-        const tableRows = document.querySelectorAll('.table tbody tr');
-
-        // Function to perform search
-        const searchTable = () => {
-            const searchText = searchInput.value.toLowerCase();
-            tableRows.forEach(row => {
-                const name = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                if (name.includes(searchText)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        };
-
-        // Event listener for input in search field
-        searchInput.addEventListener('input', searchTable);
-    });
-</script> -->

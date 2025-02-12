@@ -17,8 +17,9 @@ router.post('/', passport.authenticate('local', {
 router.delete('/', (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
-        res.redirect('/login');
+        res.json({ success: true, redirectUrl: '/login' });
     });
 });
+
 
 export default router;
