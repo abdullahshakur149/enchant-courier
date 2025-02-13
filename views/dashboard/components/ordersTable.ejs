@@ -144,10 +144,16 @@
             axios.put('/order/update-order', formData)
                 .then(response => {
                     if (response.data.success === true) {
-                        alert(response.data.message);
+                        Toastify({
+                            text: response.data.message,
+                            style: { background: "green" }
+                        }).showToast();
                         location.reload();
                     } else {
-                        alert(response.data.message)
+                        Toastify({
+                            text: response.data.message,
+                            style: { background: "red" }
+                        }).showToast();
                     }
 
                 })
