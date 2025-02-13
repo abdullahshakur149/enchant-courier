@@ -132,15 +132,15 @@ export const checkReturnedOrder = async (req, res) => {
     try {
         const { trackingNumber, flyNumber } = req.body;
 
+        const orderExists = await ReturnedOrder.findOne({ trackingNumber });
+        if (orderExists) {
+            return res.json({ success: false, message: "Order already exists" });
+        }
+
         const order = await Order.findOne({ trackingNumber });
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order does not exist" });
-        }
-
-        const orderExists = await ReturnedOrder.findOne({ trackingNumber });
-        if (orderExists) {
-            return res.json({ success: false, message: "Order already exists" });
         }
 
 
