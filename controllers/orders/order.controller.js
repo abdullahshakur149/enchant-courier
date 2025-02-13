@@ -12,6 +12,14 @@ export const submitOrder = async (req, res) => {
             });
         }
 
+        const orderExists = await Order.findOne({ trackingNumber })
+        if (orderExists) {
+            res.json({
+                status: 'false',
+                data: { message: 'Order already exists' }
+            });
+        }
+
         const newOrder = new Order({
             trackingNumber,
             flyerId: flyNumber
@@ -123,11 +131,19 @@ export const getReturnedOrders = async (req, res) => {
 export const checkReturnedOrder = async (req, res) => {
     try {
         const { trackingNumber, flyNumber } = req.body;
+
         const order = await Order.findOne({ trackingNumber });
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order does not exist" });
         }
+
+        const orderExists = await ReturnedOrder.findOne({ trackingNumber });
+        if (orderExists) {
+            return res.json({ success: false, message: "Order already exists" });
+        }
+
+
 
         const returnedOrder = new ReturnedOrder({
             trackingNumber: order.trackingNumber,
@@ -144,9 +160,11 @@ export const checkReturnedOrder = async (req, res) => {
         res.json({ success: true, message: "Order moved to returned orders successfully", order: returnedOrder });
 
     } catch (error) {
+        console.error(error); // Log the error for debugging
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
 
 export const getMonthlyOrderStats = async () => {
     try {
