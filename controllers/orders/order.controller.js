@@ -12,7 +12,7 @@ export const submitOrder = async (req, res) => {
             });
         }
 
-        const orderExists = await Order.findOne({ trackingNumber })
+        const orderExists = await Order.findOne({ trackingNumber, flyNumber })
         if (orderExists) {
             res.json({
                 status: 'false',
