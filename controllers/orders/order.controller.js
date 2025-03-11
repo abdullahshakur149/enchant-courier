@@ -4,41 +4,48 @@ import fs from 'fs/promises';
 export const submitOrder = async (req, res) => {
     try {
         console.log(req.body);
-        const { trackingNumber, flyNumber } = req.body;
+        const { trackingNumber, flyerNumber, courierType } = req.body;
 
-        if (!trackingNumber || !flyNumber) {
-            return res.status(400).json({
-                message: "Fill out all of the information"
+        // Validate form data
+        if (!trackingNumber || !flyerNumber || !courierType) {
+            return res.json({
+                success: false,
+                message: 'Fill the form properly'
             });
         }
 
-        const orderExists = await Order.findOne({ trackingNumber, flyNumber })
+        // Check if order already exists
+        const orderExists = await Order.findOne({ trackingNumber, flyerId: flyerNumber });
         if (orderExists) {
-            res.json({
-                status: 'false',
-                data: { message: 'Order already exists' }
+            return res.json({
+                success: false,
+                message: 'Order already exists'
             });
         }
 
+        // Save new order
         const newOrder = new Order({
             trackingNumber,
-            flyerId: flyNumber
+            flyerId: flyerNumber,
+            courierType
         });
 
         await newOrder.save();
 
-        res.json({
-            status: 'success',
-            data: { message: 'Order submitted successfully' }
+        return res.json({
+            success: true,
+            message: 'Order submitted successfully'
         });
+
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({
-            status: 'error',
-            data: { message: 'Please try again later.' }
+        return res.status(500).json({
+            success: false,
+            message: 'Please try again later.'
         });
     }
 };
+
 
 export const getOrders = async () => {
     try {
