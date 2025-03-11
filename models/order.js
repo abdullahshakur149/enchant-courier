@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 const orderSchema = new mongoose.Schema({
     trackingNumber: { type: String, required: true, unique: true },
     flyerId: { type: String, required: true, unique: true },
+    courierType: { type: String, required: true },
     status: {
         type: String,
         enum: ['dispatched', 'return_recieved', 'payment_recieved'],
