@@ -3,6 +3,7 @@ const POSTEXMERCHANT_KEY = "OTBkMjQ5ODkzNWU4NGZhNWJmZTljOGFiZmZiZDk5M2E6YmVjNTRi
 const DAEWOOMERCHANT_KEY = "$$ENCHAN-API17224X-PP$"
 import axios from 'axios';
 
+// Submit order
 export const submitOrder = async (req, res) => {
     try {
         console.log(req.body);
