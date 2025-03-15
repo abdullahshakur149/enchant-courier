@@ -15,24 +15,22 @@
         <tr>
             <th>#</th>
             <th>Tracking Number</th>
-            <th>Flyer Id</th>
-            <th>Status</th>
-            <th>Courier Status</th>
+            <th>Flyer ID</th>
+            <th>Courier Type</th>
+            <th>Transaction Status</th>
             <th>Actions</th>
         </tr>
     </thead>
     <tbody id="orderTable">
-        <% if (orders.length===0) { %>
+        <% if (trackingData.length===0) { %>
             <tr>
                 <td colspan="6" class="text-center">No orders found</td>
             </tr>
             <% } else { %>
-                <% orders.forEach((order, index)=> { %>
-                    <tr data-order-id="<%= order.id %>">
+                <% trackingData.forEach((order, index)=> { %>
+                    <tr data-order-id="<%= order.trackingNumber %>">
                         <td>
                             <%= index + 1 %>
-                                <!-- <%= order._id %> -->
-
                         </td>
                         <td>
                             <%= order.trackingNumber %>
@@ -40,26 +38,32 @@
                         <td>
                             <%= order.flyerId || 'N/A' %>
                         </td>
+                        <td>
+                            <%= order.courierType || 'N/A' %>
+                        </td>
 
-                        <!-- Status Column -->
-                        <% const statusClasses={ 'completed' : 'bg-success' , 'dispatched' : 'bg-success' , 'payed'
-                            : 'bg-success' , 'returned' : 'bg-warning text-dark' }; %>
-                            <td class="status-column">
-                                <span class="badge <%= statusClasses[order.status] || 'bg-secondary' %> status-text">
-                                    <%= order.status %>
+                        <% let status='N/A' ; if (order.courierType==='postex' ) {
+                            status=order.trackingResponse?.transactionStatus || 'N/A' ; } else if
+                            (order.courierType==='Daewoo' ) { status=order.trackingResponse?.status || 'N/A' ; } %>
+
+                            <td>
+                                <span class="badge 
+                            <%= status.includes('Delivered') ? 'bg-success' :
+                                status.includes('Returned') ? 'bg-warning text-dark' :
+                                status.includes('On Route') ? 'bg-info' :
+                                status.includes('Ready for Pickup') ? 'bg-primary' :
+                                'bg-secondary' %>">
+                                    <%= status %>
                                 </span>
                             </td>
 
                             <td>
-                                <%= order.courierStatus || 'N/A' %>
-                            </td>
-                            <td>
                                 <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
                                 <button type="button" class="btn btn-success btn-edit btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editOrderModal" data-id="<%= order._id %>"
-                                    data-tracking-number="<%= order.trackingNumber %>"
-                                    data-flyer-id="<%= order.flyerId %>" data-status="<%= order.status %>"
-                                    data-courier-status="<%= order.courierStatus %>">
+                                    data-bs-target="#editOrderModal" data-id="<%= order.trackingNumber %>"
+                                    data-courier-status="<%= order.trackingResponse?.courierStatus || 'N/A' %>"
+                                    data-courier-type="<%= order.trackingResponse?.courierType || 'N/A' %>"
+                                    data-transaction-status="<%= status %>">
                                     <i class="bi bi-pen"></i>
                                 </button>
                             </td>
@@ -67,7 +71,10 @@
                     <% }) %>
                         <% } %>
     </tbody>
+
+
 </table>
+
 
 <!-- Edit Order Modal -->
 <div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">

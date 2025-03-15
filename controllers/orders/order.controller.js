@@ -1,5 +1,7 @@
 import { Order, CompletedOrder, ReturnedOrder } from '../../models/order.js';
-import fs from 'fs/promises';
+const POSTEXMERCHANT_KEY = "OTBkMjQ5ODkzNWU4NGZhNWJmZTljOGFiZmZiZDk5M2E6YmVjNTRiMDJkODU1NDk1YzkzOGFkOThhOGNmNTEzN2E=";
+const DAEWOOMERCHANT_KEY = "$$ENCHAN-API17224X-PP$"
+import axios from 'axios';
 
 export const submitOrder = async (req, res) => {
     try {
@@ -47,32 +49,112 @@ export const submitOrder = async (req, res) => {
 };
 
 
+
+
+
 export const getOrders = async () => {
     try {
-        const orders = await Order.find();
-        let information = [];
+        const orders = await Order.find({}, "trackingNumber courierType flyerId");
 
-        try {
-            const data = await fs.readFile('courier.json', 'utf8');
-            information = JSON.parse(data);
-        } catch (fileError) {
-            console.error("Error reading courier.json:", fileError);
+        if (orders.length === 0) {
+            return { trackingData: [], message: "No orders found." };
         }
 
-        const mergedOrders = orders.map(order => {
-            const courierInfo = information.orders.find(courier => courier.tracking_id === order.trackingNumber);
-            return {
-                ...order.toObject(),
-                courierStatus: courierInfo ? courierInfo.status : 'Unknown'
-            };
-        });
+        const postexTrackingNumbers = orders
+            .filter(order => order.courierType.toLowerCase() === "postex")
+            .map(order => order.trackingNumber);
 
-        return { orders: mergedOrders, information };
+        const daewooTrackingNumbers = orders
+            .filter(order => order.courierType.toLowerCase() === "daewoo")
+            .map(order => order.trackingNumber);
+
+        let trackingData = [];
+
+        // PostEx API Call
+        if (postexTrackingNumbers.length > 0) {
+            try {
+                const postexApiUrl = "https://api.postex.pk/services/integration/api/order/v1/track-bulk-order";
+                const postexResponse = await axios.get(postexApiUrl, {
+                    headers: {
+                        "token": POSTEXMERCHANT_KEY,
+                        "Content-Type": "application/json"
+                    },
+                    params: { TrackingNumbers: postexTrackingNumbers },
+                    paramsSerializer: { indexes: null }
+                });
+
+                if (postexResponse.data?.dist) {
+                    const postexTrackingData = postexResponse.data.dist.map(item => {
+                        const order = orders.find(order => order.trackingNumber === item.trackingNumber);
+                        return {
+                            trackingNumber: item.trackingNumber,
+                            courierType: order ? order.courierType : null,
+                            flyerId: order ? order.flyerId : null,
+                            trackingResponse: item.trackingResponse
+                        };
+                    });
+                    trackingData = [...trackingData, ...postexTrackingData];
+                }
+            } catch (error) {
+                console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
+            }
+        }
+
+        // Daewoo API Call (fetch one by one since their API does not support bulk tracking)
+        if (daewooTrackingNumbers.length > 0) {
+            try {
+                const daewooBaseUrl = "https://codapi.daewoo.net.pk/api/booking/quickTrack?trackingNo=";
+                const daewooResponses = await Promise.all(
+                    daewooTrackingNumbers.map(async (trackingNo) => {
+                        try {
+                            const daewooResponse = await axios.get(`${daewooBaseUrl}${trackingNo}`);
+                            const order = orders.find(order => order.trackingNumber === trackingNo);
+
+                            // Extract tracking details safely
+                            const trackingResult = daewooResponse.data?.Result || {};
+                            const trackingDetails = trackingResult.TrackingDetails || [];
+
+                            // Get the latest status (last entry in TrackingDetails array)
+                            const latestStatus = trackingDetails.length > 0
+                                ? trackingDetails[trackingDetails.length - 1]  // Last status update
+                                : { Status: "N/A", Status_Reason: "No Tracking Info" };
+
+                            return {
+                                trackingNumber: trackingNo,
+                                courierType: "Daewoo",
+                                flyerId: order ? order.flyerId : null,
+                                trackingResponse: {
+                                    status: latestStatus.Status,
+                                    reason: latestStatus.Status_Reason,
+                                    terminal: latestStatus.TransactionTerminal,
+                                    date: latestStatus.Date
+                                }
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching Daewoo tracking for ${trackingNo}:`, error.response?.data || error.message);
+                            return null;
+                        }
+                    })
+                );
+
+                trackingData = [...trackingData, ...daewooResponses.filter(data => data !== null)];
+            } catch (error) {
+                console.error("Error fetching Daewoo tracking info:", error.response?.data || error.message);
+            }
+        }
+
+
+        return { trackingData, message: "Orders fetched successfully." };
+
     } catch (error) {
-        console.error('Error in fetching orders:', error);
-        return { orders: [], information: [] };
+        console.error("Error fetching orders:", error.response?.data || error.message);
+        return { trackingData: [], message: "Error fetching orders." };
     }
 };
+
+
+
+
 
 
 export const updateOrder = async (req, res) => {

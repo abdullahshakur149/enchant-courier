@@ -1,6 +1,7 @@
 import express from 'express';
 import { submitOrder, getOrders, updateOrder, getCompletedOrders, getReturnedOrders, checkReturnedOrder } from "../controllers/orders/order.controller.js";
 import { checkAuthenticated } from '../config/webAuth.js';
+import axios from 'axios';
 
 
 const router = express.Router();
@@ -16,16 +17,22 @@ router.get('/check-return', checkAuthenticated, (req, res) => {
 // updating the order 
 router.put('/update-order', updateOrder)
 
-// getting the orders in the table api
-router.get('/orders', checkAuthenticated, async (req, res) => {
-    try {
-        const { orders, information } = await getOrders();
-        res.render('dashboard/orders', { orders, information });
-    } catch (error) {
-        console.error("Error fetching orders:", error);
-        res.status(500).send("Server error");
-    }
-});
+    / router.get('/orders', checkAuthenticated, async (req, res) => {
+        try {
+            const { trackingData } = await getOrders();
+
+            if (!trackingData || trackingData.length === 0) {
+                console.warn("No orders found.");
+            }
+
+            res.render('dashboard/orders', { trackingData });
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+            res.status(500).send("Server error while fetching orders.");
+        }
+    });
+
+
 
 // getting completed orders in the dashboard
 router.get('/completed-orders', checkAuthenticated, async (req, res) => {
