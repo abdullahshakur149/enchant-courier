@@ -42,9 +42,11 @@
                             <%= order.courierType || 'N/A' %>
                         </td>
 
-                        <% let status='N/A' ; if (order.courierType==='postex' ) {
+                        <% let status='N/A' ; if (order.courierType.toLowerCase()==='postex' ) {
                             status=order.trackingResponse?.transactionStatus || 'N/A' ; } else if
-                            (order.courierType==='Daewoo' ) { status=order.trackingResponse?.status || 'N/A' ; } %>
+                            (order.courierType.toLowerCase()==='daewoo' ) { status=order.trackingResponse?.status
+                            || 'N/A' ; } else if (order.courierType.toLowerCase()==='trax' ) {
+                            status=order.trackingResponse?.status || 'N/A' ; } %>
 
                             <td>
                                 <span class="badge 
@@ -59,67 +61,14 @@
 
                             <td>
                                 <button class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-                                <button type="button" class="btn btn-success btn-edit btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editOrderModal" data-id="<%= order.trackingNumber %>"
-                                    data-courier-status="<%= order.trackingResponse?.courierStatus || 'N/A' %>"
-                                    data-courier-type="<%= order.trackingResponse?.courierType || 'N/A' %>"
-                                    data-transaction-status="<%= status %>">
-                                    <i class="bi bi-pen"></i>
-                                </button>
                             </td>
                     </tr>
                     <% }) %>
                         <% } %>
     </tbody>
-
-
 </table>
 
 
-<!-- Edit Order Modal -->
-<div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editOrderModalLabel">Edit Order</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editOrderForm">
-                    <input type="hidden" id="orderId" value="<" name="orderId">
-
-                    <div class="mb-3">
-                        <label for="trackingNumber" class="form-label">Tracking Number</label>
-                        <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" readonly>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="flyerId" class="form-label">Flyer ID</label>
-                        <input type="text" class="form-control" id="flyerId" name="flyerId" readonly>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="courier_status" class="form-label">Courier Status</label>
-                        <input type="text" class="form-control" id="courierStatus" name="courierStatus" readonly>
-                    </div>
-
-                    <!-- Editable Status -->
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="payment_recieved">Payment recieved</option>
-                            <option value="return_recieved">Return recieved</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" form="editOrderForm" class="btn btn-primary">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Scripts -->
 
@@ -128,49 +77,6 @@
     integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<script>
-    $(document).ready(function () {
-        $(".btn-edit").click(function () {
-            let orderId = $(this).data("id");
-            let trackingNumber = $(this).data("tracking-number");
-            let flyerId = $(this).data("flyer-id");
-            let status = $(this).data("status");
-            let courierStatus = $(this).data("courier-status");
-
-            $("#orderId").val(orderId);
-            $("#trackingNumber").val(trackingNumber);
-            $("#flyerId").val(flyerId);
-            $("#courierStatus").val(courierStatus);
-            $("#status").val(status);
-        });
-
-        $("#editOrderForm").on('submit', function (e) {
-            e.preventDefault();
-            let formData = $(this).serialize();
-
-            axios.put('/order/update-order', formData)
-                .then(response => {
-                    if (response.data.success === true) {
-                        Toastify({
-                            text: response.data.message,
-                            style: { background: "green" }
-                        }).showToast();
-                        location.reload();
-                    } else {
-                        Toastify({
-                            text: response.data.message,
-                            style: { background: "red" }
-                        }).showToast();
-                    }
-
-                })
-                .catch(error => {
-                    console.error("Error updating order:", error);
-                    alert("Failed to update order!");
-                });
-        });
-    });
-</script>
 
 
 

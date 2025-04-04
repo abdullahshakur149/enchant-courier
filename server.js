@@ -51,7 +51,6 @@ import dashboardRoute from './routes/dashboard.js'
 import trackRoute from './routes/track.js'
 
 app.use('/', indexRoute);
-app.use('/return-order', indexRoute);
 app.use('/order', orderRouter);
 app.use('/login', loginRoute);
 app.use('/logout', loginRoute);

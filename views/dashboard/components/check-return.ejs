@@ -7,7 +7,7 @@
                     <p>Fill in the data below.</p>
                     <form id="registrationForm" class="requires-validation" novalidate>
                         <div class="d-flex justify-content-center">
-                            <input class="form-control  w-50" type="text" id="trackingNumber" name="trackingNumber"
+                            <input class="form-control w-50" type="text" id="trackingNumber" name="trackingNumber"
                                 placeholder="Tracking Number" required>
                         </div>
 
@@ -27,52 +27,29 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    document.getElementById("registrationForm").addEventListener("submit", function (event) {
-        event.preventDefault();
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('registrationForm');
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const trackingNumber = document.getElementById('trackingNumber').value;
+            const flyNumber = document.getElementById('flyNumber').value;
 
-        let trackingNumber = document.getElementById("trackingNumber").value;
-        let flyNumber = document.getElementById("flyNumber").value;
-
-        if (!trackingNumber || !flyNumber) {
-            alert("Please fill in both fields.");
-            return;
-        }
-        submitData(trackingNumber, flyNumber);
+            axios.post('/order/verify-returns', {
+                trackingNumber,
+                flyNumber
+            })
+                .then(response => {
+                    if (response.data.success) {
+                        alert('Success: ' + response.data.message);
+                    } else {
+                        alert('Error: ' + response.data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
     });
-
-    function submitData(trackingNumber, flyNumber) {
-        // console.log("Tracking Number:", trackingNumber);
-        // console.log("flyNumber:", flyNumber);
-
-        const data = { trackingNumber, flyNumber }
-
-        axios.post('/checkreturned-order', data).then(
-            response => {
-                // console.log(response)
-                if (response.data.success === true) {
-                    Toastify({
-                        text: response.data.message,
-                        style: { background: "green" }
-                    }).showToast();
-                    document.querySelector('#registrationForm').reset();
-
-                } else {
-                    Toastify({
-                        text: response.data.message,
-                        style: { background: "red" }
-                    }).showToast();
-                }
-            }
-        )
-            .catch(error => {
-                console.error('Error:', error);
-                Toastify({
-                    text: 'An error occurred. Please try again.',
-                    style: { background: "red" }
-                }).showToast();
-            });
-
-    }
-
 </script>

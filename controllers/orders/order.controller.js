@@ -1,6 +1,4 @@
 import { Order, CompletedOrder, ReturnedOrder } from '../../models/order.js';
-const POSTEXMERCHANT_KEY = "OTBkMjQ5ODkzNWU4NGZhNWJmZTljOGFiZmZiZDk5M2E6YmVjNTRiMDJkODU1NDk1YzkzOGFkOThhOGNmNTEzN2E=";
-const DAEWOOMERCHANT_KEY = "$$ENCHAN-API17224X-PP$"
 import axios from 'axios';
 
 export const submitOrder = async (req, res) => {
@@ -68,6 +66,10 @@ export const getOrders = async () => {
             .filter(order => order.courierType.toLowerCase() === "daewoo")
             .map(order => order.trackingNumber);
 
+        const traxTrackingNumbers = orders
+            .filter(order => order.courierType.toLowerCase() === "trax")
+            .map(order => order.trackingNumber);
+
         let trackingData = [];
 
         // PostEx API Call
@@ -76,7 +78,7 @@ export const getOrders = async () => {
                 const postexApiUrl = "https://api.postex.pk/services/integration/api/order/v1/track-bulk-order";
                 const postexResponse = await axios.get(postexApiUrl, {
                     headers: {
-                        "token": POSTEXMERCHANT_KEY,
+                        "token": process.env.POSTEXMERCHANT_KEY,
                         "Content-Type": "application/json"
                     },
                     params: { TrackingNumbers: postexTrackingNumbers },
@@ -93,9 +95,10 @@ export const getOrders = async () => {
                             trackingResponse: item.trackingResponse
                         };
                     });
-                    // few changes
+                    // Add PostEx tracking data to the final result
                     trackingData = [...trackingData, ...postexTrackingData];
                 }
+
             } catch (error) {
                 console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
             }
@@ -144,6 +147,56 @@ export const getOrders = async () => {
             }
         }
 
+        // Trax API Call
+        if (traxTrackingNumbers.length > 0) {
+            try {
+                const traxBaseUrl = "https://sonic.pk/api/shipment/track";
+                const traxResponses = await Promise.all(
+                    traxTrackingNumbers.map(async (trackingNo) => {
+                        try {
+                            // Send GET request to Trax API
+                            const traxResponse = await axios.get(traxBaseUrl, {
+                                headers: {
+                                    Authorization: process.env.TRAXMERCHANT_KEY,
+                                },
+                                params: {
+                                    tracking_number: trackingNo,
+                                    type: 0
+                                }
+                            });
+
+                            // Extract tracking history (ensure this field exists and is an array)
+                            const history = traxResponse.data?.details?.tracking_history || [];
+
+                            // If history is empty, log a message
+                            if (history.length === 0) {
+                                console.log(`No tracking history found for ${trackingNo}`);
+                            }
+
+                            // Get the latest status (first element in the history array)
+                            const latestStatus = history.length > 0 ? history[0].status : "No tracking info";
+
+                            const order = orders.find(order => order.trackingNumber === trackingNo);
+                            return {
+                                trackingNumber: trackingNo,
+                                courierType: "Trax",
+                                flyerId: order?.flyerId || null,
+                                trackingResponse: {
+                                    status: latestStatus,
+                                }
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching Trax tracking for ${trackingNo}:`, error.response?.data || error.message);
+                            return null;
+                        }
+                    })
+                );
+
+                trackingData = [...trackingData, ...traxResponses.filter(data => data !== null)];
+            } catch (error) {
+                console.error("Error fetching Trax tracking info:", error.response?.data || error.message);
+            }
+        }
 
         return { trackingData, message: "Orders fetched successfully." };
 
@@ -158,48 +211,7 @@ export const getOrders = async () => {
 
 
 
-export const updateOrder = async (req, res) => {
-    const { orderId, trackingNumber, flyerId, courierStatus, status } = req.body;
 
-    try {
-        const existingOrder = await Order.findById(orderId);
-        if (!existingOrder) {
-            return res.status(404).json({ success: false, message: 'Order not found' });
-        }
-
-        if (courierStatus === 'delivered' && status === 'payment_recieved') {
-            const completedOrder = new CompletedOrder({
-                trackingNumber: trackingNumber,
-                flyerId: flyerId,
-                status: status
-            });
-            await completedOrder.save();
-
-            await Order.findByIdAndDelete(orderId);
-
-            return res.status(200).json({ success: true, message: 'Order moved to completed orders' });
-        }
-
-        else if (courierStatus === 'returned' && status === 'return_recieved') {
-            const returnedOrder = new ReturnedOrder({
-                trackingNumber: trackingNumber,
-                flyerId: flyerId,
-                status: status
-            });
-            await returnedOrder.save();
-
-            await Order.findByIdAndDelete(orderId);
-
-            return res.status(200).json({ success: true, message: 'Order moved to returned orders' });
-        }
-
-        return res.status(400).json({ success: false, message: 'Invalid status update' });
-
-    } catch (error) {
-        console.error('Error updating order:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
 
 export const getCompletedOrders = async (req, res) => {
     try {
@@ -223,12 +235,12 @@ export const checkReturnedOrder = async (req, res) => {
     try {
         const { trackingNumber, flyNumber } = req.body;
 
-        const orderExists = await ReturnedOrder.findOne({ trackingNumber });
+        const orderExists = await ReturnedOrder.findOne({ trackingNumber, flyNumber });
         if (orderExists) {
             return res.json({ success: false, message: "Order already exists" });
         }
 
-        const order = await Order.findOne({ trackingNumber });
+        const order = await Order.findOne({ trackingNumber, flyNumber });
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order does not exist" });

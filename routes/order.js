@@ -1,5 +1,5 @@
 import express from 'express';
-import { submitOrder, getOrders, updateOrder, getCompletedOrders, getReturnedOrders, checkReturnedOrder } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, getCompletedOrders, getReturnedOrders, checkReturnedOrder } from "../controllers/orders/order.controller.js";
 import { checkAuthenticated } from '../config/webAuth.js';
 import axios from 'axios';
 
@@ -13,24 +13,23 @@ router.post('/submit-order', submitOrder);
 router.get('/check-return', checkAuthenticated, (req, res) => {
     res.render('dashboard/return')
 })
+router.post('/verify-returns', checkReturnedOrder)
 
-// updating the order 
-router.put('/update-order', updateOrder)
 
-    / router.get('/orders', checkAuthenticated, async (req, res) => {
-        try {
-            const { trackingData } = await getOrders();
+router.get('/orders', checkAuthenticated, async (req, res) => {
+    try {
+        const { trackingData } = await getOrders();
 
-            if (!trackingData || trackingData.length === 0) {
-                console.warn("No orders found.");
-            }
-
-            res.render('dashboard/orders', { trackingData });
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-            res.status(500).send("Server error while fetching orders.");
+        if (!trackingData || trackingData.length === 0) {
+            console.warn("No orders found.");
         }
-    });
+
+        res.render('dashboard/orders', { trackingData });
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        res.status(500).send("Server error while fetching orders.");
+    }
+});
 
 
 
@@ -55,8 +54,6 @@ router.get('/returned-orders', checkAuthenticated, async (req, res) => {
     }
 })
 
-// for checking the returned orders
-router.post('/checkreturned-order', checkAuthenticated, checkReturnedOrder)
 
 
 
