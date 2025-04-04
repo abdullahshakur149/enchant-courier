@@ -31,25 +31,30 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('registrationForm');
-        form.addEventListener('submit', function (event) {
+        form.addEventListener('submit', async function (event) {
             event.preventDefault();
+
             const trackingNumber = document.getElementById('trackingNumber').value;
             const flyNumber = document.getElementById('flyNumber').value;
 
-            axios.post('/order/verify-returns', {
-                trackingNumber,
-                flyNumber
-            })
-                .then(response => {
-                    if (response.data.success) {
-                        alert('Success: ' + response.data.message);
-                    } else {
-                        alert('Error: ' + response.data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+            const data = {
+                trackingNumber: trackingNumber,
+                flyNumber: flyNumber
+            };
+
+            try {
+                const response = await axios.post('/order/verify-returns', data);
+
+                if (response.data.success) {
+                    alert(response.data.message);
+                    form.reset();
+                } else {
+                    alert(response.data.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Something went wrong, please try again.');
+            }
         });
     });
 </script>

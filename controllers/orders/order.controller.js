@@ -231,7 +231,7 @@ export const getReturnedOrders = async (req, res) => {
 }
 
 // check this later
-export const checkReturnedOrder = async (req, res) => {
+export const verifyReturnedOrders = async (req, res) => {
     try {
         const { trackingNumber, flyNumber } = req.body;
 
