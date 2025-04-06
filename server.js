@@ -49,6 +49,7 @@ import orderRouter from './routes/order.js';
 import loginRoute from './routes/login.js';
 import dashboardRoute from './routes/dashboard.js'
 import trackRoute from './routes/track.js'
+import verifyRoute from './routes/verify.js';
 
 app.use('/', indexRoute);
 app.use('/order', orderRouter);
@@ -57,6 +58,7 @@ app.use('/logout', loginRoute);
 app.use('/dashboard', dashboardRoute)
 app.use('/', orderRouter)
 app.use('/track', trackRoute)
+app.use('/verify', verifyRoute);
 // Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

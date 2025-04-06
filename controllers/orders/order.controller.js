@@ -235,17 +235,16 @@ export const verifyReturnedOrders = async (req, res) => {
     try {
         const { trackingNumber, flyNumber } = req.body;
 
-        const orderExists = await ReturnedOrder.findOne({ trackingNumber, flyNumber });
+        const orderExists = await ReturnedOrder.findOne({ trackingNumber, flyerId: flyNumber });
         if (orderExists) {
             return res.json({ success: false, message: "Order already exists" });
         }
 
-        const order = await Order.findOne({ trackingNumber, flyNumber });
+        const order = await Order.findOne({ trackingNumber, flyerId: flyNumber });
 
         if (!order) {
             return res.status(404).json({ success: false, message: "Order does not exist" });
         }
-
 
 
         const returnedOrder = new ReturnedOrder({
@@ -260,7 +259,7 @@ export const verifyReturnedOrders = async (req, res) => {
 
         await Order.deleteOne({ _id: order._id });
 
-        res.json({ success: true, message: "Order moved to returned orders successfully", order: returnedOrder });
+        res.json({ success: true, message: "Order moved to returned orders successfully" });
 
     } catch (error) {
         console.error(error); // Log the error for debugging
@@ -268,6 +267,42 @@ export const verifyReturnedOrders = async (req, res) => {
     }
 };
 
+
+export const verifyCompletedOrders = async (req, res) => {
+    try {
+        const { trackingNumber, flyNumber } = req.body;
+
+        const orderExists = await ReturnedOrder.findOne({ trackingNumber, flyerId: flyNumber });
+        if (orderExists) {
+            return res.json({ success: false, message: "Order already exists" });
+        }
+
+        const order = await Order.findOne({ trackingNumber, flyerId: flyNumber });
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order does not exist" });
+        }
+
+
+        const completedOrder = new CompletedOrder({
+            trackingNumber: order.trackingNumber,
+            flyerId: order.flyerId,
+            status: "Delivered & Completed",
+            createdAt: order.createdAt,
+            updatedAt: new Date()
+        });
+
+        await completedOrder.save();
+
+        await Order.deleteOne({ _id: order._id });
+
+        res.json({ success: true, message: "Order moved to completed orders successfully" });
+
+    } catch (error) {
+        console.error(error); // Log the error for debugging
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
 
 export const getMonthlyOrderStats = async () => {
     try {
