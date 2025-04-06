@@ -291,6 +291,7 @@ export const verifyCompletedOrders = async (req, res) => {
             createdAt: order.createdAt,
             updatedAt: new Date()
         });
+        // changes done
 
         await completedOrder.save();
 
