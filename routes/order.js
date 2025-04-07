@@ -1,5 +1,5 @@
 import express from 'express';
-import { submitOrder, getOrders, getCompletedOrders, getReturnedOrders, } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, getReturnedOrders, updateOrder } from "../controllers/orders/order.controller.js";
 import { checkAuthenticated } from '../config/webAuth.js';
 import axios from 'axios';
 
@@ -30,6 +30,7 @@ router.get('/orders', checkAuthenticated, async (req, res) => {
     }
 });
 
+router.post('/update-order', checkAuthenticated, updateOrder)
 
 
 // getting completed orders in the dashboard

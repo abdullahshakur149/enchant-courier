@@ -208,17 +208,42 @@ export const getOrders = async () => {
 };
 
 
-
-
-
-
-
-
-export const getCompletedOrders = async (req, res) => {
+// update order 
+export const updateOrder = async (req, res) => {
     try {
-        const completedOrders = await CompletedOrder.find()
-        return completedOrders;
+        const { trackingNumber, flyerId, courierType } = req.body;
+
+        // Validate form data
+        if (!trackingNumber || !flyerId || !courierType) {
+            return res.json({
+                success: false,
+                message: 'Fill the form properly'
+            });
+        }
+
+        // Check if order already exists
+        const orderExists = await Order.findOne({ trackingNumber, flyerId });
+        if (!orderExists) {
+            return res.json({
+                success: false,
+                message: 'Order does not exist'
+            });
+        }
+
+        // Update order
+        await Order.updateOne({ trackingNumber, flyerId }, { courierType });
+
+        return res.json({
+            success: true,
+            message: 'Order updated successfully'
+        });
+
     } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Please try again later.'
+        });
     }
 }
 
