@@ -118,11 +118,19 @@ export const getOrders = async () => {
                             // Extract tracking details safely
                             const trackingResult = daewooResponse.data?.Result || {};
                             const trackingDetails = trackingResult.TrackingDetails || [];
+                            // console.log(trackingDetails);
 
                             // Get the latest status (last entry in TrackingDetails array)
                             const latestStatus = trackingDetails.length > 0
                                 ? trackingDetails[trackingDetails.length - 1]  // Last status update
                                 : { Status: "N/A", Status_Reason: "No Tracking Info" };
+
+                            if (latestStatus.Status?.toLowerCase().includes("delivered") && order) {
+                                await CompletedOrder.create(order.toObject());
+                                await Order.deleteOne({ _id: order._id });
+                                console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
+                            }
+
 
                             return {
                                 trackingNumber: trackingNo,
@@ -283,6 +291,14 @@ export const deleteOrder = async (req, res) => {
             success: false,
             message: 'Please try again later.'
         });
+    }
+}
+
+export const getCompletedOrders = async (req, res) => {
+    try {
+        const completedOrder = await CompletedOrder.find()
+        return completedOrder;
+    } catch (error) {
     }
 }
 

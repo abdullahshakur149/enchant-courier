@@ -1,5 +1,5 @@
 import express from 'express';
-import { submitOrder, getOrders, getReturnedOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, getCompletedOrders, getReturnedOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
 import { checkAuthenticated } from '../config/webAuth.js';
 import axios from 'axios';
 
