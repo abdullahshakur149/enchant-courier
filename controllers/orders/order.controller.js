@@ -50,6 +50,7 @@ export const submitOrder = async (req, res) => {
 
 
 
+
 export const getOrders = async () => {
     try {
         const orders = await Order.find({}, "trackingNumber courierType flyerId");
@@ -58,115 +59,152 @@ export const getOrders = async () => {
             return { trackingData: [], message: "No orders found." };
         }
 
-        // Group orders by courierType
-        const groupedOrders = orders.reduce((acc, order) => {
-            const { courierType, trackingNumber } = order;
-            if (!acc[courierType]) acc[courierType] = [];
-            acc[courierType].push({ trackingNumber, flyerId: order.flyerId });
-            return acc;
-        }, {});
+        const postexTrackingNumbers = orders
+            .filter(order => order.courierType.toLowerCase() === "postex")
+            .map(order => order.trackingNumber);
 
-        // Prepare tracking numbers
-        const postexTrackingNumbers = groupedOrders["postex"] || [];
-        const daewooTrackingNumbers = groupedOrders["daewoo"] || [];
-        const traxTrackingNumbers = groupedOrders["trax"] || [];
+        const daewooTrackingNumbers = orders
+            .filter(order => order.courierType.toLowerCase() === "daewoo")
+            .map(order => order.trackingNumber);
+
+        const traxTrackingNumbers = orders
+            .filter(order => order.courierType.toLowerCase() === "trax")
+            .map(order => order.trackingNumber);
 
         let trackingData = [];
 
-        // Fetch data for each courier concurrently
-        const fetchPostexData = postexTrackingNumbers.length > 0
-            ? axios.get("https://api.postex.pk/services/integration/api/order/v1/track-bulk-order", {
-                headers: {
-                    "token": process.env.POSTEXMERCHANT_KEY,
-                    "Content-Type": "application/json"
-                },
-                params: { TrackingNumbers: postexTrackingNumbers.map(order => order.trackingNumber) },
-                paramsSerializer: { indexes: null }
-            })
-            : Promise.resolve({ data: { dist: [] } });
+        // PostEx API Call
+        if (postexTrackingNumbers.length > 0) {
+            try {
+                const postexApiUrl = "https://api.postex.pk/services/integration/api/order/v1/track-bulk-order";
+                const postexResponse = await axios.get(postexApiUrl, {
+                    headers: {
+                        "token": process.env.POSTEXMERCHANT_KEY,
+                        "Content-Type": "application/json"
+                    },
+                    params: { TrackingNumbers: postexTrackingNumbers },
+                    paramsSerializer: { indexes: null }
+                });
 
-        const fetchDaewooData = daewooTrackingNumbers.length > 0
-            ? Promise.all(daewooTrackingNumbers.map(async ({ trackingNumber, flyerId }) => {
-                try {
-                    const daewooResponse = await axios.get(`https://codapi.daewoo.net.pk/api/booking/quickTrack?trackingNo=${trackingNumber}`);
-                    const trackingResult = daewooResponse.data?.Result || {};
-                    const trackingDetails = trackingResult.TrackingDetails || [];
-                    const latestStatus = trackingDetails.length > 0 ? trackingDetails[trackingDetails.length - 1] : { Status: "N/A" };
-
-                    return {
-                        trackingNumber,
-                        courierType: "Daewoo",
-                        flyerId,
-                        trackingResponse: {
-                            status: latestStatus.Status,
-                            reason: latestStatus.Status_Reason,
-                        }
-                    };
-                } catch (error) {
-                    console.error(`Error fetching Daewoo tracking for ${trackingNumber}:`, error.response?.data || error.message);
-                    return null;
-                }
-            }))
-            : Promise.resolve([]);
-
-        const fetchTraxData = traxTrackingNumbers.length > 0
-            ? Promise.all(traxTrackingNumbers.map(async ({ trackingNumber, flyerId }) => {
-                try {
-                    const traxResponse = await axios.get("https://sonic.pk/api/shipment/track", {
-                        headers: {
-                            Authorization: process.env.TRAXMERCHANT_KEY,
-                        },
-                        params: {
-                            tracking_number: trackingNumber,
-                            type: 0
-                        }
+                if (postexResponse.data?.dist) {
+                    const postexTrackingData = postexResponse.data.dist.map(item => {
+                        const order = orders.find(order => order.trackingNumber === item.trackingNumber);
+                        return {
+                            trackingNumber: item.trackingNumber,
+                            courierType: order ? order.courierType : null,
+                            flyerId: order ? order.flyerId : null,
+                            trackingResponse: item.trackingResponse
+                        };
                     });
-                    const history = traxResponse.data?.details?.tracking_history || [];
-                    const latestStatus = history.length > 0 ? history[0].status : "No tracking info";
-
-                    return {
-                        trackingNumber,
-                        courierType: "Trax",
-                        flyerId,
-                        trackingResponse: { status: latestStatus }
-                    };
-                } catch (error) {
-                    console.error(`Error fetching Trax tracking for ${trackingNumber}:`, error.response?.data || error.message);
-                    return null;
+                    trackingData = [...trackingData, ...postexTrackingData];
                 }
-            }))
-            : Promise.resolve([]);
-
-        // Wait for all API calls to resolve
-        const [postexResponse, daewooResponses, traxResponses] = await Promise.all([fetchPostexData, fetchDaewooData, fetchTraxData]);
-
-        // Process PostEx tracking data
-        if (postexResponse.data?.dist) {
-            const postexTrackingData = postexResponse.data.dist.map(item => {
-                const order = orders.find(order => order.trackingNumber === item.trackingNumber);
-                return {
-                    trackingNumber: item.trackingNumber,
-                    courierType: order ? order.courierType : null,
-                    flyerId: order ? order.flyerId : null,
-                    trackingResponse: item.trackingResponse
-                };
-            });
-            trackingData = [...trackingData, ...postexTrackingData];
+            } catch (error) {
+                console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
+            }
         }
 
-        // Process Daewoo and Trax data
-        trackingData = [
-            ...trackingData,
-            ...daewooResponses.filter(data => data !== null),
-            ...traxResponses.filter(data => data !== null)
-        ];
+        // Daewoo API Call (fetch one by one since their API does not support bulk tracking)
+        if (daewooTrackingNumbers.length > 0) {
+            try {
+                const daewooBaseUrl = "https://codapi.daewoo.net.pk/api/booking/quickTrack?trackingNo=";
+                const daewooResponses = await Promise.all(
+                    daewooTrackingNumbers.map(async (trackingNo) => {
+                        try {
+                            const daewooResponse = await axios.get(`${daewooBaseUrl}${trackingNo}`);
+                            const order = orders.find(order => order.trackingNumber === trackingNo);
+
+                            const trackingResult = daewooResponse.data?.Result || {};
+                            const trackingDetails = trackingResult.TrackingDetails || [];
+
+                            const latestStatus = trackingDetails.length > 0
+                                ? trackingDetails[trackingDetails.length - 1]
+                                : { Status: "N/A", Status_Reason: "No Tracking Info" };
+
+                            if (latestStatus.Status?.toLowerCase().includes("delivered") && order) {
+                                await CompletedOrder.create(order.toObject());
+                                await Order.deleteOne({ _id: order._id });
+                                console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
+                            }
+
+                            return {
+                                trackingNumber: trackingNo,
+                                courierType: "Daewoo",
+                                flyerId: order ? order.flyerId : null,
+                                trackingResponse: {
+                                    status: latestStatus.Status,
+                                    reason: latestStatus.Status_Reason,
+                                    terminal: latestStatus.TransactionTerminal,
+                                    date: latestStatus.Date
+                                }
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching Daewoo tracking for ${trackingNo}:`, error.response?.data || error.message);
+                            return null;
+                        }
+                    })
+                );
+
+                trackingData = [...trackingData, ...daewooResponses.filter(data => data !== null)];
+            } catch (error) {
+                console.error("Error fetching Daewoo tracking info:", error.response?.data || error.message);
+            }
+        }
+
+        // Trax API Call
+        if (traxTrackingNumbers.length > 0) {
+            try {
+                const traxBaseUrl = "https://sonic.pk/api/shipment/track";
+                const traxResponses = await Promise.all(
+                    traxTrackingNumbers.map(async (trackingNo) => {
+                        try {
+                            const traxResponse = await axios.get(traxBaseUrl, {
+                                headers: {
+                                    Authorization: process.env.TRAXMERCHANT_KEY,
+                                },
+                                params: {
+                                    tracking_number: trackingNo,
+                                    type: 0
+                                }
+                            });
+
+                            const history = traxResponse.data?.details?.tracking_history || [];
+
+                            if (history.length === 0) {
+                                console.log(`No tracking history found for ${trackingNo}`);
+                            }
+
+                            const latestStatus = history.length > 0 ? history[0].status : "No tracking info";
+
+                            const order = orders.find(order => order.trackingNumber === trackingNo);
+                            return {
+                                trackingNumber: trackingNo,
+                                courierType: "Trax",
+                                flyerId: order?.flyerId || null,
+                                trackingResponse: {
+                                    status: latestStatus,
+                                }
+                            };
+                        } catch (error) {
+                            console.error(`Error fetching Trax tracking for ${trackingNo}:`, error.response?.data || error.message);
+                            return null;
+                        }
+                    })
+                );
+
+                trackingData = [...trackingData, ...traxResponses.filter(data => data !== null)];
+            } catch (error) {
+                console.error("Error fetching Trax tracking info:", error.response?.data || error.message);
+            }
+        }
 
         return { trackingData, message: "Orders fetched successfully." };
+
     } catch (error) {
         console.error("Error fetching orders:", error.response?.data || error.message);
         return { trackingData: [], message: "Error fetching orders." };
     }
 };
+
 
 
 
