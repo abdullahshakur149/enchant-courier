@@ -13,9 +13,6 @@ router.get('/order/check-return', checkAuthenticated, (req, res) => {
     res.render('dashboard/verify-returns.ejs');
 });
 
-router.get('/order/check-complete', checkAuthenticated, (req, res) => {
-    res.render('dashboard/verify-complete.ejs');
-});
 
 router.get('/orders', checkAuthenticated, async (req, res) => {
     try {

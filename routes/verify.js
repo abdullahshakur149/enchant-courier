@@ -6,7 +6,5 @@ import { verifyReturnedOrders, verifyCompletedOrders } from '../controllers/orde
 
 router.post('/verify-return', checkAuthenticated, verifyReturnedOrders);
 
-router.post('/verify-complete', checkAuthenticated, verifyCompletedOrders);
-
 
 export default router;
