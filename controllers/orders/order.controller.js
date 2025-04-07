@@ -247,6 +247,45 @@ export const updateOrder = async (req, res) => {
     }
 }
 
+// delete order
+export const deleteOrder = async (req, res) => {
+    try {
+        const { trackingNumber, flyerId } = req.body;
+
+        // Validate form data
+        if (!trackingNumber || !flyerId) {
+            return res.json({
+                success: false,
+                message: 'Fill the form properly'
+            });
+        }
+
+        // Check if order exists
+        const orderExists = await Order.findOne({ trackingNumber, flyerId });
+        if (!orderExists) {
+            return res.json({
+                success: false,
+                message: 'Order does not exist'
+            });
+        }
+
+        // Delete order
+        await Order.deleteOne({ trackingNumber, flyerId });
+
+        return res.json({
+            success: true,
+            message: 'Order deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Please try again later.'
+        });
+    }
+}
+
 // controllers
 export const getReturnedOrders = async (req, res) => {
     try {
