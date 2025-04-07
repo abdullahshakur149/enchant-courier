@@ -302,7 +302,7 @@ export const getCompletedOrders = async (req, res) => {
     }
 }
 
-// controllers
+// controllers updates
 export const getReturnedOrders = async (req, res) => {
     try {
         const returnedOrders = await ReturnedOrder.find()
