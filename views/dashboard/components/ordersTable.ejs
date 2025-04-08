@@ -95,9 +95,16 @@
                         <input type="text" class="form-control" id="modalFlyerId">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Courier Type</label>
-                        <input type="text" class="form-control" id="modalCourierType">
+                        <label for="modalCourierType" class="form-label">Courier Type</label>
+                        <select class="form-control" id="modalCourierType">
+                            <option value="" hidden selected disabled>Select a courier</option>
+                            <option value="trax">Trax</option>
+                            <option value="daewoo">Daewoo</option>
+                            <option value="postex">PostEx</option>
+                        </select>
                     </div>
+
+
                 </form>
                 <div id="verify-result" class="mt-3 text-center"></div>
             </div>
