@@ -13,6 +13,7 @@
 <table class="table table-hover table-bordered">
     <thead class="table-dark">
         <tr>
+            <th hidden>id</th>
             <th>#</th>
             <th>Tracking Number</th>
             <th>Flyer ID</th>
@@ -42,6 +43,9 @@
                     }
                     const productInfo = order.productInfo || {};
                     %>
+                    <tr data-id="<%= order._id %>" data-tracking-number="<%= order.trackingNumber %>"
+                        data-flyer-id="<%= order.flyerId || 'N/A' %>"
+                        data-courier-type="<%= order.courierType || 'N/A' %>" data-status="<%= status %>">
                     <tr data-id="<%= order._id %>" data-tracking-number="<%= order.trackingNumber %>"
                         data-flyer-id="<%= order.flyerId || 'N/A' %>"
                         data-courier-type="<%= order.courierType || 'N/A' %>" data-status="<%= status %>">
@@ -148,6 +152,7 @@
         const resultContainer = document.getElementById("verify-result");
         const form = document.getElementById("editOrderForm");
 
+        // Edit order button functionality
         editButtons.forEach(btn => {
             btn.addEventListener("click", function () {
                 const row = btn.closest("tr");
@@ -158,6 +163,7 @@
             });
         });
 
+        // Save changes functionality
         document.getElementById("saveChangesBtn").addEventListener("click", async function () {
             const orderId = this.getAttribute("data-id");
 
@@ -183,6 +189,27 @@
             }
         });
 
+        // Delete order button functionality
+        document.querySelectorAll('.delete-order-btn').forEach((button) => {
+            button.addEventListener('click', async (e) => {
+                const row = e.target.closest('tr');
+                const orderId = row.getAttribute('data-id');
 
+                // console.log('Deleting order with ID:', orderId);
+
+                try {
+                    const response = await axios.delete(`/order/delete-order/${orderId}`);
+
+                    if (response.data.success) {
+                        row.remove();
+                    } else {
+                        console.log('Error deleting order:', response.data.message);
+                    }
+                } catch (error) {
+                    console.error(error);
+                    resultContainer.innerHTML = `<span class="badge bg-danger">${error.response?.data?.message || "Server error"}</span>`;
+                }
+            });
+        });
     });
 </script>

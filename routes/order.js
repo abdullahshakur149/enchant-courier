@@ -32,7 +32,7 @@ router.get('/orders', checkAuthenticated, async (req, res) => {
 
 router.post('/update-order', checkAuthenticated, updateOrder)
 
-router.delete('/delete-order', checkAuthenticated, deleteOrder)
+router.delete('/delete-order/:id', checkAuthenticated, deleteOrder);
 
 
 // getting completed orders in the dashboard

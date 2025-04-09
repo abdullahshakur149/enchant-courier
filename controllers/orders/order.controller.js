@@ -216,7 +216,7 @@ export const getOrders = async () => {
                                 CustomerName: traxResponse.data?.details?.consignee.name || "No Customer Name",
                                 Address: traxResponse.data?.details?.consignee.address || "No Address",
                                 OrderDetails: {
-                                    ProductName: traxResponse.data?.details?.order_information.items[0]?.product_type || "No Product Name",
+                                    ProductName: traxResponse.data?.details?.order_information.items[0]?.description || "No Product Name",
                                     Quantity: traxResponse.data?.details?.order_information.items[0]?.quantity || "No Quantity",
                                 }
                             };
@@ -226,7 +226,7 @@ export const getOrders = async () => {
                                 await Order.deleteOne({ _id: order._id });
                                 console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
                             }
-                            console.log('Latest Status:', latestStatus);
+                            // console.log('Latest Status:', latestStatus);
 
 
 
@@ -323,10 +323,10 @@ export const updateOrder = async (req, res) => {
 // delete order
 export const deleteOrder = async (req, res) => {
     try {
-        const { trackingNumber, flyerId } = req.body;
+        const { id } = req.params;
 
         // Validate form data
-        if (!trackingNumber || !flyerId) {
+        if (!id) {
             return res.json({
                 success: false,
                 message: 'Fill the form properly'
@@ -334,7 +334,7 @@ export const deleteOrder = async (req, res) => {
         }
 
         // Check if order exists
-        const orderExists = await Order.findOne({ trackingNumber, flyerId });
+        const orderExists = await Order.findOne({ _id: id });
         if (!orderExists) {
             return res.json({
                 success: false,
@@ -343,7 +343,7 @@ export const deleteOrder = async (req, res) => {
         }
 
         // Delete order
-        await Order.deleteOne({ trackingNumber, flyerId });
+        await Order.deleteOne({ id });
 
         return res.json({
             success: true,
