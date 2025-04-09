@@ -1,4 +1,6 @@
 import { Order, CompletedOrder, ReturnedOrder } from '../../models/order.js';
+import { formatDate } from '../../utils/helpers.js';
+
 import axios from 'axios';
 
 export const submitOrder = async (req, res) => {
@@ -13,6 +15,7 @@ export const submitOrder = async (req, res) => {
                 message: 'Fill the form properly'
             });
         }
+        // test
 
         // Check if order already exists
         const orderExists = await Order.findOne({ trackingNumber, flyerId: flyerNumber });
@@ -71,6 +74,7 @@ export const getOrders = async () => {
             .filter(order => order.courierType.toLowerCase() === "trax")
             .map(order => order.trackingNumber);
 
+        // Using formatDate here for the date formatting
         const postexPromise = (async () => {
             if (postexTrackingNumbers.length === 0) return [];
             try {
@@ -84,16 +88,14 @@ export const getOrders = async () => {
                     paramsSerializer: { indexes: null }
                 });
 
-
                 if (postexResponse.data?.dist) {
                     return postexResponse.data.dist.map(item => {
                         const order = orders.find(order => order.trackingNumber === item.trackingNumber);
                         const data = item.trackingResponse || {};
-                        // console.log(data)
 
                         const productInfo = {
                             OrderNumber: data.orderRefNumber || "Not Available",
-                            date: data.transactionDate || "Not Available",
+                            date: formatDate(data.transactionDate || "Not Available"),
                             CustomerName: data.customerName || "Not Available",
                             OrderDetails: {
                                 ProductName: data.orderDetail || "Not Available",
@@ -102,11 +104,9 @@ export const getOrders = async () => {
                             }
                         };
 
-                        // console.log(productInfo.OrderDetails)
                         const trackingResponse = {
                             status: item.trackingResponse?.transactionStatus || "Not Available",
-                        }
-                        // console.log(trackingResponse)
+                        };
 
                         return {
                             _id: order._id,
@@ -126,6 +126,7 @@ export const getOrders = async () => {
             }
         })();
 
+        // Similarly, use formatDate for Daewoo and Trax data
         const daewooPromise = (async () => {
             if (daewooTrackingNumbers.length === 0) return [];
             try {
@@ -135,10 +136,7 @@ export const getOrders = async () => {
                         try {
                             const daewooResponse = await axios.get(`${daewooBaseUrl}${trackingNo}`);
                             const order = orders.find(order => order.trackingNumber === trackingNo);
-                            // console.log('here is the data', daewooResponse.data)
-                            // console.log(daewooResponse.data.Result)
                             const trackingResult = daewooResponse.data?.Result || {};
-                            console.log('this is the result', trackingResult)
                             const trackingDetails = trackingResult.TrackingDetails || [];
                             let latestStatus;
                             if (trackingDetails.length > 0) {
@@ -146,36 +144,34 @@ export const getOrders = async () => {
                             } else {
                                 return null;
                             }
+
                             if (latestStatus?.Status?.toLowerCase().includes("delivered") && order) {
                                 await CompletedOrder.create(order.toObject());
                                 await Order.deleteOne({ _id: order._id });
-                                // console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
+                                // console.log(Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.);
                             }
 
                             const productInfo = {
                                 OrderNumber: trackingResult.OrderNumber || "No Order Number",
+                                date: (trackingResult.Date || trackingDetails[0]?.Date || "No Booking Date"),  // Applying formatDate
                                 CustomerName: trackingResult.CustomerName || "No Customer Name",
                                 OrderDetails: {
                                     ProductName: trackingResult.ProductName || "No Product Name",
                                     Quantity: trackingResult.Quantity || "No Quantity",
-                                },
-                                date: trackingResult.date ? trackingResult.date.toString() : "No Date",
-
-                            }
-
-                            const trackingResponse = {
-                                status: latestStatus.Status,
+                                }
                             };
 
+                            const trackingResponse = {
+                                status: latestStatus.Status || "Not Available",
+                            };
 
                             return {
                                 _id: order._id,
                                 trackingNumber: trackingNo,
                                 courierType: "Daewoo",
                                 flyerId: order?.flyerId || null,
-                                trackingResponse,
                                 productInfo: productInfo,
-
+                                trackingResponse: trackingResponse,
                             };
                         } catch (error) {
                             console.error(`Error fetching Daewoo tracking for ${trackingNo}:`, error.response?.data || error.message);
@@ -207,31 +203,36 @@ export const getOrders = async () => {
                                     type: 0
                                 }
                             });
-                            // console.log('this is the trax response', traxResponse.data?.details?.order_information.items)
-
+                            // console.log(traxResponse.data.details.order_information);
 
                             const history = traxResponse.data?.details?.tracking_history || [];
-                            // console.log('this is the history', history)
                             const latestStatus = history.length > 0 ? history[0].status : "No tracking info";
 
                             const order = orders.find(order => order.trackingNumber === trackingNo);
+
+                            const productInfo = {
+                                OrderNumber: traxResponse.data?.details?.order_id || "No Order ID",
+                                date: formatDate(traxResponse.data?.details?.booking_date),  // Applying formatDate
+                                CustomerName: traxResponse.data?.details?.consignee.name || "No Customer Name",
+                                Address: traxResponse.data?.details?.consignee.address || "No Address",
+                                OrderDetails: {
+                                    ProductName: traxResponse.data?.details?.order_information.items[0]?.product_type || "No Product Name",
+                                    Quantity: traxResponse.data?.details?.order_information.items[0]?.quantity || "No Quantity",
+                                }
+                            };
 
                             if (latestStatus?.toLowerCase().includes("delivered") && order) {
                                 await CompletedOrder.create(order.toObject());
                                 await Order.deleteOne({ _id: order._id });
                                 console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
                             }
-                            const productInfo = {
-                                OrderNumber: traxResponse.data?.details?.order_id || "No Order ID",
-                                date: traxResponse.data?.details?.booking_date.toString() || "No Booking Date",
-                                CustomerName: traxResponse.data?.details?.consignee.name || "No Customer Name",
-                                OrderDetails: {
-                                    ProductName: traxResponse.data?.details?.order_information.items.product_type || "No Product Name",
-                                    Quantity: traxResponse.data?.details?.order_information.items.quantity || "No Quantity",
-                                }
+                            console.log('Latest Status:', latestStatus);
 
-                            }
 
+
+                            const trackingResponse = {
+                                status: latestStatus || "Not Available",
+                            };
 
                             return {
                                 _id: order._id,
@@ -239,9 +240,7 @@ export const getOrders = async () => {
                                 courierType: "Trax",
                                 flyerId: order?.flyerId || null,
                                 productInfo: productInfo,
-                                trackingResponse: {
-                                    status: latestStatus,
-                                }
+                                trackingResponse: trackingResponse,
                             };
                         } catch (error) {
                             console.error(`Error fetching Trax tracking for ${trackingNo}:`, error.response?.data || error.message);
@@ -264,17 +263,20 @@ export const getOrders = async () => {
             traxPromise
         ]);
 
-        const trackingData = [...postexData, ...daewooData, ...traxData];
-        // console.log("Tracking Data:", trackingData);
+        // Combine all the data into a single response
+        const trackingData = [
+            ...postexData,
+            ...daewooData,
+            ...traxData
+        ];
 
-        return { trackingData, message: "Orders fetched successfully." };
+        return { trackingData, message: "Orders retrieved successfully." };
 
     } catch (error) {
-        console.error("Error fetching orders:", error.response?.data || error.message);
+        console.error("Error fetching orders:", error.message);
         return { trackingData: [], message: "Error fetching orders." };
     }
 };
-
 
 
 

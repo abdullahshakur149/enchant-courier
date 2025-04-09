@@ -17,6 +17,11 @@
             <th>Tracking Number</th>
             <th>Flyer ID</th>
             <th>Courier Type</th>
+            <th>Date</th>
+            <th>Customer Name</th>
+            <th>Address</th>
+            <th>Product Name</th>
+            <th>Quantity</th>
             <th>Transaction Status</th>
             <th>Actions</th>
         </tr>
@@ -31,12 +36,11 @@
                     let status = 'N/A';
                     if (order.courierType.toLowerCase() === 'postex') {
                     status = order.trackingResponse?.status || 'N/A';
-                    } else if (
-                    order.courierType.toLowerCase() === 'daewoo' ||
-                    order.courierType.toLowerCase() === 'trax'
-                    ) {
+                    } else if (order.courierType.toLowerCase() === 'daewoo' || order.courierType.toLowerCase() ===
+                    'trax') {
                     status = order.trackingResponse?.status || 'N/A';
                     }
+                    const productInfo = order.productInfo || {};
                     %>
                     <tr data-id="<%= order._id %>" data-tracking-number="<%= order.trackingNumber %>"
                         data-flyer-id="<%= order.flyerId || 'N/A' %>"
@@ -54,12 +58,27 @@
                             <%= order.courierType || 'N/A' %>
                         </td>
                         <td>
+                            <%= productInfo.date %>
+                        </td>
+                        <td>
+                            <%= productInfo.CustomerName %>
+                        </td>
+                        <td>
+                            <%= productInfo.Address %>
+                        </td>
+                        <td>
+                            <%= productInfo.OrderDetails?.ProductName || 'N/A' %>
+                        </td>
+                        <td>
+                            <%= productInfo.OrderDetails?.Quantity || 'N/A' %>
+                        </td>
+                        <td>
                             <span class="badge 
-                        <%= status.includes('Delivered') ? 'bg-success' :
-                        status.includes('Returned') ? 'bg-warning text-dark' :
-                        status.includes('On Route') ? 'bg-info' :
-                        status.includes('Ready for Pickup') ? 'bg-primary' :
-                        'bg-secondary' %>">
+                            <%= status.includes('Delivered') ? 'bg-success' :
+                            status.includes('Returned') ? 'bg-warning text-dark' :
+                            status.includes('On Route') ? 'bg-info' :
+                            status.includes('Ready for Pickup') ? 'bg-primary' :
+                            'bg-secondary' %>">
                                 <%= status %>
                             </span>
                         </td>
@@ -75,6 +94,7 @@
                         <% } %>
     </tbody>
 </table>
+
 
 <!-- Edit Modal -->
 <div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
