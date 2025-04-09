@@ -97,12 +97,13 @@ export const getOrders = async () => {
                             OrderNumber: data.orderRefNumber || "Not Available",
                             date: formatDate(data.transactionDate || "Not Available"),
                             CustomerName: data.customerName || "Not Available",
+                            Address: data?.deliveryAddress || "Not Available",
                             OrderDetails: {
                                 ProductName: data.orderDetail || "Not Available",
                                 Quantity: data.items?.toString() || "Not Available",
-                                Address: data?.deliveryAddress || "Not Available",
                             }
                         };
+                        // console.log('here is the product info', productInfo)
 
                         const trackingResponse = {
                             status: item.trackingResponse?.transactionStatus || "Not Available",
@@ -343,7 +344,11 @@ export const deleteOrder = async (req, res) => {
         }
 
         // Delete order
-        await Order.deleteOne({ id });
+        const deleted = await Order.deleteOne({ _id: id });
+        if (deleted) {
+            console.log('order has been deleted')
+        }
+
 
         return res.json({
             success: true,
