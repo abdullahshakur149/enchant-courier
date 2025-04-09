@@ -83,16 +83,7 @@ export const getOrders = async () => {
                     params: { TrackingNumbers: postexTrackingNumbers },
                     paramsSerializer: { indexes: null }
                 });
-                // console.log("this is the postex response:");
-                // postexResponse.data.dist.forEach(item => {
-                //     // console.log("Tracking Number:", item.trackingNumber);
-                //     // console.log("Message:", item.message);
-                //     if (item.trackingResponse) {
-                //         console.log("Tracking Response:", item.trackingResponse);
-                //     } else {
-                //         console.log("No tracking response available.");
-                //     }
-                // });
+
 
                 if (postexResponse.data?.dist) {
                     return postexResponse.data.dist.map(item => {
@@ -107,11 +98,15 @@ export const getOrders = async () => {
                             OrderDetails: {
                                 ProductName: data.orderDetail || "Not Available",
                                 Quantity: data.items?.toString() || "Not Available",
+                                Address: data?.deliveryAddress || "Not Available",
                             }
                         };
+
+                        // console.log(productInfo.OrderDetails)
                         const trackingResponse = {
-                            status: order.trackingResponse.transactionStatus,
+                            status: item.trackingResponse?.transactionStatus || "Not Available",
                         }
+                        // console.log(trackingResponse)
 
                         return {
                             _id: order._id,
@@ -143,7 +138,7 @@ export const getOrders = async () => {
                             // console.log('here is the data', daewooResponse.data)
                             // console.log(daewooResponse.data.Result)
                             const trackingResult = daewooResponse.data?.Result || {};
-                            // console.log('this is the result', trackingResult)
+                            console.log('this is the result', trackingResult)
                             const trackingDetails = trackingResult.TrackingDetails || [];
                             let latestStatus;
                             if (trackingDetails.length > 0) {
@@ -164,7 +159,7 @@ export const getOrders = async () => {
                                     ProductName: trackingResult.ProductName || "No Product Name",
                                     Quantity: trackingResult.Quantity || "No Quantity",
                                 },
-                                date: trackingResult.Date.toString() || "No Date",
+                                date: trackingResult.date ? trackingResult.date.toString() : "No Date",
 
                             }
 

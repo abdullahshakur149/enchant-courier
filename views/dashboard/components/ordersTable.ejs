@@ -30,7 +30,7 @@
                 <% trackingData.forEach((order, index)=> {
                     let status = 'N/A';
                     if (order.courierType.toLowerCase() === 'postex') {
-                    status = order.trackingResponse?.transactionStatus || 'N/A';
+                    status = order.trackingResponse?.status || 'N/A';
                     } else if (
                     order.courierType.toLowerCase() === 'daewoo' ||
                     order.courierType.toLowerCase() === 'trax'
