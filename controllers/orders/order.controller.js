@@ -54,12 +54,26 @@ export const submitOrder = async (req, res) => {
 
 
 
-export const getOrders = async () => {
+export const getOrders = async (page = 1, limit = 50) => {
     try {
-        const orders = await Order.find({}, "trackingNumber courierType flyerId");
+        const skip = (page - 1) * limit;
+        const orders = await Order.find({}, "trackingNumber courierType flyerId")
+            .skip(skip)
+            .limit(limit);
+
+        const totalOrders = await Order.countDocuments();
 
         if (orders.length === 0) {
-            return { trackingData: [], message: "No orders found." };
+            return {
+                trackingData: [],
+                message: "No orders found.",
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(totalOrders / limit),
+                    totalOrders,
+                    limit
+                }
+            };
         }
 
         const postexTrackingNumbers = orders
@@ -271,11 +285,29 @@ export const getOrders = async () => {
             ...traxData
         ];
 
-        return { trackingData, message: "Orders retrieved successfully." };
+        return {
+            trackingData,
+            message: "Orders retrieved successfully.",
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalOrders / limit),
+                totalOrders,
+                limit
+            }
+        };
 
     } catch (error) {
         console.error("Error fetching orders:", error.message);
-        return { trackingData: [], message: "Error fetching orders." };
+        return {
+            trackingData: [],
+            message: "Error fetching orders.",
+            pagination: {
+                currentPage: 1,
+                totalPages: 1,
+                totalOrders: 0,
+                limit
+            }
+        };
     }
 };
 

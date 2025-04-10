@@ -17,13 +17,16 @@ router.get('/order/check-return', checkAuthenticated, (req, res) => {
 
 router.get('/orders', checkAuthenticated, async (req, res) => {
     try {
-        const { trackingData } = await getOrders();
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+
+        const { trackingData, pagination } = await getOrders(page, limit);
 
         if (!trackingData || trackingData.length === 0) {
             console.warn("No orders found.");
         }
 
-        res.render('dashboard/orders', { trackingData });
+        res.render('dashboard/orders', { trackingData, pagination });
     } catch (error) {
         console.error("Error fetching orders:", error);
         res.status(500).send("Server error while fetching orders.");
