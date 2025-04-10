@@ -9,13 +9,14 @@
       </a>
       <i class="bi bi-list toggle-sidebar-btn"></i>
 
-
-      <div class="search-bar">
-        <form class="search-form d-flex align-items-center" method="POST" action="#">
-          <input type="text" id="searchInput" name="query" placeholder="Search" title="Enter search keyword">
-          <button type="submit" title="Search"><i class="bi bi-search"></i></button>
-        </form>
-      </div><!-- End Search Bar -->
+      <% if (typeof hideSearchBar==='undefined' || !hideSearchBar) { %>
+        <div class="search-bar">
+          <form class="search-form d-flex align-items-center" method="POST" action="#">
+            <input type="text" id="searchInput" name="query" placeholder="Search" title="Enter search keyword">
+            <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+          </form>
+        </div><!-- End Search Bar -->
+        <% } %>
     </div>
 
 
@@ -28,32 +29,33 @@
         class="nav-link bg-success text-light px-4 py-2 rounded-3 shadow-sm transition-all hover-bg-success">Postex</a>
     </div>
 
+    <% if (typeof hideSearchBar==='undefined' || !hideSearchBar) { %>
+      <!-- Logout Button -->
+      <div class="logout-button">
+        <button id="logoutButton" class="btn btn-danger">
+          <i class="bi bi-box-arrow-left"></i> Logout
+        </button>
+      </div>
 
-    <!-- Logout Button -->
-    <div class="logout-button">
-      <button id="logoutButton" class="btn btn-danger">
-        <i class="bi bi-box-arrow-left"></i> Logout
-      </button>
-    </div>
+      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+      <script>
+        document
+          .getElementById("logoutButton")
+          .addEventListener("click", function (event) {
+            event.preventDefault();
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-      document
-        .getElementById("logoutButton")
-        .addEventListener("click", function (event) {
-          event.preventDefault();
-
-          axios
-            .delete("/logout")
-            .then((response) => {
-              window.location.reload();
-            })
-            .catch((error) => {
-              console.error("Logout Error:", error);
-              alert("Error logging out. Please try again.");
-            });
-        });
-    </script>
+            axios
+              .delete("/logout")
+              .then((response) => {
+                window.location.reload();
+              })
+              .catch((error) => {
+                console.error("Logout Error:", error);
+                alert("Error logging out. Please try again.");
+              });
+          });
+      </script>
+      <% } %>
   </header>
   <!-- End Header -->
 </div>

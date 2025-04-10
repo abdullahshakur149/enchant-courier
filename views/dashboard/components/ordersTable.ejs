@@ -221,21 +221,35 @@
         const row = e.target.closest('tr');
         const orderId = row.getAttribute('data-id');
 
-        // console.log('Deleting order with ID:', orderId);
+        // Simple confirmation dialog
+        if (confirm('Are you sure you want to delete this order?')) {
+          try {
+            const response = await axios.delete(`/order/delete-order/${orderId}`);
 
-        try {
-          const response = await axios.delete(`/order/delete-order/${orderId}`);
+            if (response.data.success) {
+              // Show success message
+              const successMessage = document.createElement('div');
+              successMessage.className = 'alert alert-success alert-dismissible fade show';
+              successMessage.innerHTML = `
+                ${response.data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              `;
+              document.querySelector('.d-flex.justify-content-between.align-items-center.mb-3').appendChild(successMessage);
 
-          if (response.data.success) {
-            alert(response.data.message);
-            row.remove();
-          } else {
-            alert(response.data.message);
-            console.log('Error deleting order:', response.data.message);
+              // Remove the row with animation
+              row.style.transition = 'opacity 0.5s ease';
+              row.style.opacity = '0';
+              setTimeout(() => {
+                row.remove();
+              }, 500);
+            } else {
+              alert(response.data.message);
+              console.log('Error deleting order:', response.data.message);
+            }
+          } catch (error) {
+            console.error(error);
+            resultContainer.innerHTML = `<span class="badge bg-danger">${error.response?.data?.message || "Server error"}</span>`;
           }
-        } catch (error) {
-          console.error(error);
-          resultContainer.innerHTML = `<span class="badge bg-danger">${error.response?.data?.message || "Server error"}</span>`;
         }
       });
     });
