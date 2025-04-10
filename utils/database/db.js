@@ -1,6 +1,7 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
-const mongoose = require('mongoose');
+dotenv.config();
 
 const MONGO_URL = process.env.MONGO_URL;
 
@@ -9,9 +10,6 @@ const connectDB = async () => {
         const con = await mongoose.connect(MONGO_URL, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
-            // Remove the following options as they are deprecated
-            // useFindAndModify: false,
-            // useCreateIndex: true
         });
         console.log(`MongoDB connected: ${con.connection.host}`);
     } catch (err) {
@@ -20,4 +18,4 @@ const connectDB = async () => {
     }
 };
 
-module.exports = connectDB;
+export default connectDB;
