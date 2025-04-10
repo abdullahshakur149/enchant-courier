@@ -1,4 +1,3 @@
-
 :root {
   scroll-behavior: smooth;
 }
@@ -57,10 +56,6 @@ h6 {
   font-weight: 600;
   color: #012970;
 }
-
-
-
-
 
 .dropdown-menu .dropdown-header,
 .dropdown-menu .dropdown-footer {
@@ -219,8 +214,6 @@ h6 {
   box-shadow: none;
 }
 
-
-
 /*--------------------------------------------------------------
 # Header
 --------------------------------------------------------------*/
@@ -331,7 +324,7 @@ h6 {
   list-style: none;
 }
 
-.header-nav>ul {
+.header-nav > ul {
   margin: 0;
   padding: 0;
 }
@@ -342,7 +335,6 @@ h6 {
   margin-right: 25px;
   position: relative;
 }
-
 
 /*--------------------------------------------------------------
 # Sidebar
@@ -380,10 +372,8 @@ h6 {
 }
 
 @media (min-width: 1200px) {
-
   #main,
   #footer {
-    margin-left: 300px;
   }
 }
 
@@ -394,7 +384,6 @@ h6 {
 }
 
 @media (min-width: 1200px) {
-
   .toggle-sidebar #main,
   .toggle-sidebar #footer {
     margin-left: 0;
@@ -548,8 +537,6 @@ h6 {
   background: #ffecdf;
 }
 
-
-
 /* Recent Sales */
 .dashboard .recent-sales {
   font-size: 14px;
@@ -594,27 +581,24 @@ h6 {
   max-width: 60px;
 }
 
-.logout-button{
+.logout-button {
   margin-right: 15px;
 }
 
-
-
-
 .modal {
-  display: none; 
-  position: fixed; 
+  display: none;
+  position: fixed;
   z-index: 9999;
   left: 0;
   top: 0;
   width: 100%;
-  height: 100%; 
-  overflow: auto; 
-  background-color: rgb(0,0,0);
-  background-color: rgba(0,0,0,0.9); 
+  height: 100%;
+  overflow: auto;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.9);
 }
 .modal-content {
-  position: relative; 
+  position: relative;
   margin: auto;
   top: 30px;
   max-width: 550px;
@@ -625,19 +609,24 @@ h6 {
   -webkit-animation-duration: 0.4s;
   animation-name: zoom;
   animation-duration: 0.4s;
-  
 }
 
-
-
 @-webkit-keyframes zoom {
-  from {-webkit-transform:scale(0)} 
-  to {-webkit-transform:scale(1)}
+  from {
+    -webkit-transform: scale(0);
+  }
+  to {
+    -webkit-transform: scale(1);
+  }
 }
 
 @keyframes zoom {
-  from {transform:scale(0)} 
-  to {transform:scale(1)}
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 .close {
   position: absolute;
@@ -656,11 +645,11 @@ h6 {
   text-decoration: none;
   cursor: pointer;
 }
-.img{
+.img {
   transition: 0.4s ease-in-out;
   cursor: pointer;
 }
-.img:hover{
+.img:hover {
   filter: brightness(30%);
 }
 
@@ -674,7 +663,6 @@ h6 {
   width: 200px;
   margin-right: 10px;
   font-weight: bold;
-  
 }
 
 .detail img {
@@ -684,7 +672,6 @@ h6 {
 .detail span {
   flex: 8;
 }
-
 
 .selected-sports {
   display: flex;
@@ -709,7 +696,126 @@ h6 {
   margin-right: 0;
 }
 
+.table {
+  table-layout: fixed;
+  width: 100%;
+}
 
+.table th,
+.table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 8px;
+}
 
+/* Column widths */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 5%;
+}
 
+/* # */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 12%;
+}
 
+/* Tracking Number */
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 10%;
+}
+
+/* Flyer ID */
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 10%;
+}
+
+/* Courier Type */
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 10%;
+}
+
+/* Date */
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 12%;
+}
+
+/* Customer Name */
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 15%;
+}
+
+/* Address */
+.table th:nth-child(8),
+.table td:nth-child(8) {
+  width: 12%;
+}
+
+/* Product Name */
+.table th:nth-child(9),
+.table td:nth-child(9) {
+  width: 8%;
+}
+
+/* Quantity */
+.table th:nth-child(10),
+.table td:nth-child(10) {
+  width: 8%;
+}
+
+/* Transaction Status */
+.table th:nth-child(11),
+.table td:nth-child(11) {
+  width: 8%;
+}
+
+/* Actions */
+
+/* Add tooltip on hover for truncated content */
+.table td {
+  position: relative;
+}
+
+.table td:hover::after {
+  content: attr(data-full-text);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background: white;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  z-index: 1000;
+  white-space: normal;
+  max-width: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Tooltip styles */
+.table td[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+.table td[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background: white;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  z-index: 1000;
+  white-space: normal;
+  max-width: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  line-height: 1.4;
+}

@@ -46,9 +46,6 @@
           <tr data-id="<%= order._id %>" data-tracking-number="<%= order.trackingNumber %>"
             data-flyer-id="<%= order.flyerId || 'N/A' %>" data-courier-type="<%= order.courierType || 'N/A' %>"
             data-status="<%= status %>">
-          <tr data-id="<%= order._id %>" data-tracking-number="<%= order.trackingNumber %>"
-            data-flyer-id="<%= order.flyerId || 'N/A' %>" data-courier-type="<%= order.courierType || 'N/A' %>"
-            data-status="<%= status %>">
             <td>
               <%= index + 1 %>
             </td>
@@ -64,13 +61,13 @@
             <td>
               <%= productInfo.date %>
             </td>
-            <td>
+            <td data-full-text="<%= productInfo.CustomerName %>">
               <%= productInfo.CustomerName %>
             </td>
-            <td>
+            <td data-tooltip="<%= productInfo.Address %>">
               <%= productInfo.Address %>
             </td>
-            <td>
+            <td data-tooltip="<%= productInfo.OrderDetails?.ProductName || 'N/A' %>">
               <%= productInfo.OrderDetails?.ProductName || 'N/A' %>
             </td>
             <td>
@@ -210,6 +207,38 @@
         } catch (error) {
           console.error(error);
           resultContainer.innerHTML = `<span class="badge bg-danger">${error.response?.data?.message || "Server error"}</span>`;
+        }
+      });
+    });
+
+    // Add tooltip functionality
+    document.querySelectorAll('td[data-tooltip]').forEach(cell => {
+      cell.addEventListener('mouseenter', function (e) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = this.getAttribute('data-tooltip');
+        tooltip.style.cssText = `
+          position: absolute;
+          background: white;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          z-index: 1000;
+          white-space: normal;
+          max-width: 300px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          font-size: 14px;
+          line-height: 1.4;
+          left: ${e.target.offsetLeft}px;
+          top: ${e.target.offsetTop + e.target.offsetHeight}px;
+        `;
+        document.body.appendChild(tooltip);
+      });
+
+      cell.addEventListener('mouseleave', function () {
+        const tooltip = document.querySelector('.tooltip');
+        if (tooltip) {
+          tooltip.remove();
         }
       });
     });
