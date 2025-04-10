@@ -88,25 +88,26 @@ export const getOrders = async (page = 1, limit = 50) => {
             .filter(order => order.courierType.toLowerCase() === "trax")
             .map(order => order.trackingNumber);
 
-        // Using formatDate here for the date formatting
-        const postexPromise = (async () => {
-            if (postexTrackingNumbers.length === 0) return [];
-            try {
-                const postexApiUrl = process.env.POSTEXAPI_URL;
-                const postexResponse = await axios.get(postexApiUrl, {
-                    headers: {
-                        "token": process.env.POSTEXMERCHANT_KEY,
-                        "Content-Type": "application/json"
-                    },
-                    params: { TrackingNumbers: postexTrackingNumbers },
-                    paramsSerializer: { indexes: null }
-                });
-
-                if (postexResponse.data?.dist) {
-                    return postexResponse.data.dist.map(item => {
+            const postexPromise = (async () => {
+                if (postexTrackingNumbers.length === 0) return [];
+                try {
+                    const postexApiUrl = process.env.POSTEXAPI_URL;
+                    const postexResponse = await axios.get(postexApiUrl, {
+                        headers: {
+                            "token": process.env.POSTEXMERCHANT_KEY,
+                            "Content-Type": "application/json"
+                        },
+                        params: { TrackingNumbers: postexTrackingNumbers },
+                        paramsSerializer: { indexes: null }
+                    });
+            
+                    // Corrected part: No need for nested .map()
+                    return await Promise.all(postexResponse.data.dist.map(async (item) => {
                         const order = orders.find(order => order.trackingNumber === item.trackingNumber);
                         const data = item.trackingResponse || {};
-
+            
+                        const latestStatus = data.transactionStatus || "";
+            
                         const productInfo = {
                             OrderNumber: data.orderRefNumber || "Not Available",
                             date: formatDate(data.transactionDate || "Not Available"),
@@ -117,12 +118,18 @@ export const getOrders = async (page = 1, limit = 50) => {
                                 Quantity: data.items?.toString() || "Not Available",
                             }
                         };
-                        // console.log('here is the product info', productInfo)
-
+            
                         const trackingResponse = {
                             status: item.trackingResponse?.transactionStatus || "Not Available",
                         };
-
+            
+                        // Move to CompletedOrder if delivered
+                        if (latestStatus.toLowerCase().includes("delivered") && order) {
+                            await CompletedOrder.create(order.toObject());
+                            await Order.deleteOne({ _id: order._id });
+                            console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
+                        }
+            
                         return {
                             _id: order._id,
                             trackingNumber: item.trackingNumber,
@@ -131,15 +138,13 @@ export const getOrders = async (page = 1, limit = 50) => {
                             productInfo: productInfo,
                             trackingResponse: trackingResponse,
                         };
-                    });
+                    }));
+                } catch (error) {
+                    console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
+                    return [];
                 }
-
-                return [];
-            } catch (error) {
-                console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
-                return [];
-            }
-        })();
+            })();
+            
 
         // Similarly, use formatDate for Daewoo and Trax data
         const daewooPromise = (async () => {
@@ -317,18 +322,18 @@ export const getOrders = async (page = 1, limit = 50) => {
 // update order 
 export const updateOrder = async (req, res) => {
     try {
-        const { trackingNumber, flyerId, courierType } = req.body;
+        const { _id, ...updateFields } = req.body;
 
-        // Validate form data
-        if (!trackingNumber || !flyerId || !courierType) {
+        // Validate _id
+        if (!_id) {
             return res.json({
                 success: false,
-                message: 'Fill the form properly'
+                message: 'Order ID is required'
             });
         }
 
-        // Check if order already exists
-        const orderExists = await Order.findOne({ trackingNumber, flyerId });
+        // Check if order exists by _id
+        const orderExists = await Order.findById(_id);
         if (!orderExists) {
             return res.json({
                 success: false,
@@ -336,8 +341,15 @@ export const updateOrder = async (req, res) => {
             });
         }
 
-        // Update order
-        await Order.updateOne({ trackingNumber, flyerId }, { courierType });
+        // Only update fields that are provided
+        const updateData = {};
+        if (updateFields.trackingNumber) updateData.trackingNumber = updateFields.trackingNumber;
+        if (updateFields.flyerId) updateData.flyerId = updateFields.flyerId;
+        if (updateFields.courierType) updateData.courierType = updateFields.courierType;
+        if (updateFields.status) updateData.status = updateFields.status;
+
+        // Update order using _id
+        await Order.findByIdAndUpdate(_id, updateData);
 
         return res.json({
             success: true,
@@ -377,9 +389,7 @@ export const deleteOrder = async (req, res) => {
 
         // Delete order
         const deleted = await Order.deleteOne({ _id: id });
-        if (deleted) {
-            console.log('order has been deleted')
-        }
+      
 
 
         return res.json({

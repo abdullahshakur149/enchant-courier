@@ -33,7 +33,7 @@ router.get('/orders', checkAuthenticated, async (req, res) => {
     }
 });
 
-router.post('/update-order', checkAuthenticated, updateOrder)
+router.post('/update-order/:id', checkAuthenticated, updateOrder);
 
 router.delete('/delete-order/:id', checkAuthenticated, deleteOrder);
 
