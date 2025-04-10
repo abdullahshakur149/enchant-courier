@@ -8,6 +8,7 @@
     </button>
   </div>
 </div>
+<!-- changes -->
 <!-- Order Table -->
 <table class="table table-hover table-bordered order-table">
   <thead class="table-dark">
@@ -100,12 +101,14 @@
     width: 100%;
     min-width: 1440px;
   }
+
   .order-table th:not(:last-child),
   .order-table td:not(:last-child) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .order-table th:last-child,
   .order-table td:last-child {
     white-space: nowrap;
@@ -238,7 +241,7 @@
         resultContainer.innerHTML = `<span class="badge bg-danger">${error.response?.data?.message || "Server error"}</span>`;
       }
     });
-// changes
+    // changes
     // Delete order button functionality
     document.querySelectorAll('.delete-order-btn').forEach((button) => {
       button.addEventListener('click', async (e) => {
@@ -278,7 +281,7 @@
       });
     });
 
-   
+
 
     // Preserve search parameter when navigating pages
     document.querySelectorAll('.pagination .page-link').forEach(link => {
