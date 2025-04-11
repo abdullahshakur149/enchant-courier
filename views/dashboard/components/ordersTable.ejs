@@ -196,6 +196,50 @@
     const deleteButtons = document.querySelectorAll(".delete-order-btn");
     const resultContainer = document.getElementById("verify-result");
     const form = document.getElementById("editOrderForm");
+    const searchInput = document.getElementById("searchInput");
+
+    // Add search functionality
+    searchInput.addEventListener("input", function () {
+      const searchTerm = this.value.toLowerCase();
+      const tableRows = document.querySelectorAll("#orderTable tr:not(.no-results)");
+      let hasResults = false;
+
+      tableRows.forEach(row => {
+        const trackingNumber = row.querySelector("td:nth-child(2)")?.textContent.toLowerCase() || "";
+        const flyerId = row.querySelector("td:nth-child(3)")?.textContent.toLowerCase() || "";
+        const courierType = row.querySelector("td:nth-child(4)")?.textContent.toLowerCase() || "";
+        const customerName = row.querySelector("td:nth-child(6)")?.textContent.toLowerCase() || "";
+        const address = row.querySelector("td:nth-child(7)")?.textContent.toLowerCase() || "";
+        const productName = row.querySelector("td:nth-child(8)")?.textContent.toLowerCase() || "";
+        const status = row.querySelector("td:nth-child(10) .badge")?.textContent.toLowerCase() || "";
+
+        const matchesSearch =
+          trackingNumber.includes(searchTerm) ||
+          flyerId.includes(searchTerm) ||
+          courierType.includes(searchTerm) ||
+          customerName.includes(searchTerm) ||
+          address.includes(searchTerm) ||
+          productName.includes(searchTerm) ||
+          status.includes(searchTerm);
+
+        row.style.display = matchesSearch ? "" : "none";
+        if (matchesSearch) hasResults = true;
+      });
+
+      // Handle no results found
+      let noResultsRow = document.querySelector("#orderTable tr.no-results");
+      if (!hasResults) {
+        if (!noResultsRow) {
+          noResultsRow = document.createElement("tr");
+          noResultsRow.className = "no-results";
+          noResultsRow.innerHTML = '<td colspan="11" class="text-center">No matching records found</td>';
+          document.getElementById("orderTable").appendChild(noResultsRow);
+        }
+        noResultsRow.style.display = "";
+      } else if (noResultsRow) {
+        noResultsRow.style.display = "none";
+      }
+    });
 
     // Edit order button functionality
     editButtons.forEach(btn => {

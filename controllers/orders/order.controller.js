@@ -88,63 +88,63 @@ export const getOrders = async (page = 1, limit = 50) => {
             .filter(order => order.courierType.toLowerCase() === "trax")
             .map(order => order.trackingNumber);
 
-            const postexPromise = (async () => {
-                if (postexTrackingNumbers.length === 0) return [];
-                try {
-                    const postexApiUrl = process.env.POSTEXAPI_URL;
-                    const postexResponse = await axios.get(postexApiUrl, {
-                        headers: {
-                            "token": process.env.POSTEXMERCHANT_KEY,
-                            "Content-Type": "application/json"
-                        },
-                        params: { TrackingNumbers: postexTrackingNumbers },
-                        paramsSerializer: { indexes: null }
-                    });
-            
-                    // Corrected part: No need for nested .map()
-                    return await Promise.all(postexResponse.data.dist.map(async (item) => {
-                        const order = orders.find(order => order.trackingNumber === item.trackingNumber);
-                        const data = item.trackingResponse || {};
-            
-                        const latestStatus = data.transactionStatus || "";
-            
-                        const productInfo = {
-                            OrderNumber: data.orderRefNumber || "Not Available",
-                            date: formatDate(data.transactionDate || "Not Available"),
-                            CustomerName: data.customerName || "Not Available",
-                            Address: data?.deliveryAddress || "Not Available",
-                            OrderDetails: {
-                                ProductName: data.orderDetail || "Not Available",
-                                Quantity: data.items?.toString() || "Not Available",
-                            }
-                        };
-            
-                        const trackingResponse = {
-                            status: item.trackingResponse?.transactionStatus || "Not Available",
-                        };
-            
-                        // Move to CompletedOrder if delivered
-                        if (latestStatus.toLowerCase().includes("delivered") && order) {
-                            await CompletedOrder.create(order.toObject());
-                            await Order.deleteOne({ _id: order._id });
-                            console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
+        const postexPromise = (async () => {
+            if (postexTrackingNumbers.length === 0) return [];
+            try {
+                const postexApiUrl = process.env.POSTEXAPI_URL;
+                const postexResponse = await axios.get(postexApiUrl, {
+                    headers: {
+                        "token": process.env.POSTEXMERCHANT_KEY,
+                        "Content-Type": "application/json"
+                    },
+                    params: { TrackingNumbers: postexTrackingNumbers },
+                    paramsSerializer: { indexes: null }
+                });
+
+                // Corrected part: No need for nested .map()
+                return await Promise.all(postexResponse.data.dist.map(async (item) => {
+                    const order = orders.find(order => order.trackingNumber === item.trackingNumber);
+                    const data = item.trackingResponse || {};
+
+                    const latestStatus = data.transactionStatus || "";
+
+                    const productInfo = {
+                        OrderNumber: data.orderRefNumber || "Not Available",
+                        date: formatDate(data.transactionDate || "Not Available"),
+                        CustomerName: data.customerName || "Not Available",
+                        Address: data?.deliveryAddress || "Not Available",
+                        OrderDetails: {
+                            ProductName: data.orderDetail || "Not Available",
+                            Quantity: data.items?.toString() || "Not Available",
                         }
-            
-                        return {
-                            _id: order._id,
-                            trackingNumber: item.trackingNumber,
-                            courierType: order?.courierType || null,
-                            flyerId: order?.flyerId || null,
-                            productInfo: productInfo,
-                            trackingResponse: trackingResponse,
-                        };
-                    }));
-                } catch (error) {
-                    console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
-                    return [];
-                }
-            })();
-            
+                    };
+
+                    const trackingResponse = {
+                        status: item.trackingResponse?.transactionStatus || "Not Available",
+                    };
+
+                    // Move to CompletedOrder if delivered
+                    if (latestStatus.toLowerCase().includes("delivered") && order) {
+                        await CompletedOrder.create(order.toObject());
+                        await Order.deleteOne({ _id: order._id });
+                        console.log(`Order ${order.trackingNumber} moved to CompletedOrders and removed from Orders.`);
+                    }
+
+                    return {
+                        _id: order._id,
+                        trackingNumber: item.trackingNumber,
+                        courierType: order?.courierType || null,
+                        flyerId: order?.flyerId || null,
+                        productInfo: productInfo,
+                        trackingResponse: trackingResponse,
+                    };
+                }));
+            } catch (error) {
+                console.error("Error fetching PostEx tracking info:", error.response?.data || error.message);
+                return [];
+            }
+        })();
+
 
         // Similarly, use formatDate for Daewoo and Trax data
         const daewooPromise = (async () => {
@@ -389,7 +389,7 @@ export const deleteOrder = async (req, res) => {
 
         // Delete order
         const deleted = await Order.deleteOne({ _id: id });
-      
+
 
 
         return res.json({
@@ -500,31 +500,40 @@ export const verifyCompletedOrders = async (req, res) => {
 
 export const getMonthlyOrderStats = async () => {
     try {
-        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-        const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+        // Get current month's start and end dates
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
 
-        const dispatchedResult = await Order.aggregate([
-            { $match: { status: "dispatched", createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
-            { $count: "count" }
-        ]);
-        const dispatchedCount = dispatchedResult.length > 0 ? dispatchedResult[0].count : 0;
+        const endOfMonth = new Date();
+        endOfMonth.setHours(23, 59, 59, 999);
 
-        const returnedResult = await ReturnedOrder.aggregate([
-            { $match: { status: "return_recieved", createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
-            { $count: "count" }
-        ]);
-        const returnedCount = returnedResult.length > 0 ? returnedResult[0].count : 0;
+        // Get active orders (orders in the main Order collection)
+        const activeOrders = await Order.countDocuments();
 
-        const completedResult = await CompletedOrder.aggregate([
-            { $match: { status: "payment_recieved", createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
-            { $count: "count" }
-        ]);
-        const completedCount = completedResult.length > 0 ? completedResult[0].count : 0;
+        // Get returned orders
+        const returnedOrders = await ReturnedOrder.countDocuments();
 
-        return { dispatchedCount, returnedCount, completedCount };
+        // Get completed orders
+        const completedOrders = await CompletedOrder.countDocuments();
+
+        // Calculate total orders (active + returned + completed)
+        const totalOrders = activeOrders;
+
+        return {
+            dispatchedCount: activeOrders,
+            returnedCount: returnedOrders,
+            completedCount: completedOrders,
+            totalOrders: totalOrders
+        };
     } catch (error) {
         console.error("Error fetching order stats:", error);
-        return { dispatchedCount: 0, returnedCount: 0, completedCount: 0 };
+        return {
+            dispatchedCount: 0,
+            returnedCount: 0,
+            completedCount: 0,
+            totalOrders: 0
+        };
     }
 };
 
