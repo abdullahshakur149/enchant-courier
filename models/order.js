@@ -15,9 +15,21 @@ const orderSchema = new mongoose.Schema({
 const completedOrdersSchema = new mongoose.Schema({
     trackingNumber: { type: String, required: true, unique: true },
     flyerId: { type: String, required: true, unique: true },
-    courierType: {
-        type: String,
-    }
+    courierType: { type: String, required: true },
+    productInfo: {
+        OrderNumber: { type: String },
+        date: { type: String },
+        CustomerName: { type: String },
+        Address: { type: String },
+        OrderDetails: {
+            ProductName: { type: String },
+            Quantity: { type: String }
+        }
+    },
+    trackingResponse: {
+        status: { type: String }
+    },
+    status: { type: String }
 }, { timestamps: true });
 
 const returnedOrdersSchema = new mongoose.Schema({
