@@ -167,10 +167,20 @@ export const updateOrder = async (req, res) => {
         if (updateFields.trackingNumber) updateData.trackingNumber = updateFields.trackingNumber;
         if (updateFields.flyerId) updateData.flyerId = updateFields.flyerId;
         if (updateFields.courierType) updateData.courierType = updateFields.courierType;
-        if (updateFields.status) updateData.status = updateFields.status;
 
         // Update order using _id
         await Order.findByIdAndUpdate(_id, updateData);
+
+        // If tracking number or courier type changed, we should create a new OrderUpdate
+        if (updateFields.trackingNumber || updateFields.courierType) {
+            const orderUpdate = new OrderUpdate({
+                orderId: _id,
+                latestStatus: orderExists.status || "Status Updated",
+                productInfo: orderExists.productInfo || {},
+                rawJson: { updatedFields: updateFields }
+            });
+            await orderUpdate.save();
+        }
 
         return res.json({
             success: true,
@@ -195,23 +205,32 @@ export const deleteOrder = async (req, res) => {
         if (!id) {
             return res.json({
                 success: false,
-                message: 'Fill the form properly'
+                message: 'Order ID is required'
             });
         }
 
-        // Check if order exists
-        const orderExists = await Order.findOne({ _id: id });
-        if (!orderExists) {
+        // Check if order exists in any collection
+        const orderExists = await Order.findById(id);
+        const completedOrderExists = await CompletedOrder.findOne({ _id: id });
+        const returnedOrderExists = await ReturnedOrder.findOne({ _id: id });
+
+        if (!orderExists && !completedOrderExists && !returnedOrderExists) {
             return res.json({
                 success: false,
                 message: 'Order does not exist'
             });
         }
 
-        // Delete order
-        const deleted = await Order.deleteOne({ _id: id });
-
-
+        // Delete from appropriate collection
+        if (orderExists) {
+            // Delete all related OrderUpdate records first
+            await OrderUpdate.deleteMany({ orderId: id });
+            await Order.deleteOne({ _id: id });
+        } else if (completedOrderExists) {
+            await CompletedOrder.deleteOne({ _id: id });
+        } else if (returnedOrderExists) {
+            await ReturnedOrder.deleteOne({ _id: id });
+        }
 
         return res.json({
             success: true,
