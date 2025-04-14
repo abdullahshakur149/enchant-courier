@@ -254,51 +254,7 @@ export const getCompletedOrders = async (req, res) => {
     }
 }
 
-// controllers updates
-export const getReturnedOrders = async (req, res) => {
-    try {
-        const returnedOrders = await ReturnedOrder.find()
-        return returnedOrders;
-    } catch (error) {
-    }
-}
 
-// check this later
-export const verifyReturnedOrders = async (req, res) => {
-    try {
-        const { trackingNumber, flyNumber } = req.body;
-
-        const orderExists = await ReturnedOrder.findOne({ trackingNumber, flyerId: flyNumber });
-        if (orderExists) {
-            return res.json({ success: false, message: "Order already exists" });
-        }
-
-        const order = await Order.findOne({ trackingNumber, flyerId: flyNumber });
-
-        if (!order) {
-            return res.status(404).json({ success: false, message: "Order does not exist" });
-        }
-
-
-        const returnedOrder = new ReturnedOrder({
-            trackingNumber: order.trackingNumber,
-            flyerId: order.flyerId,
-            status: "return_received",
-            createdAt: order.createdAt,
-            updatedAt: new Date()
-        });
-
-        await returnedOrder.save();
-
-        await Order.deleteOne({ _id: order._id });
-
-        res.json({ success: true, message: "Order moved to returned orders successfully" });
-
-    } catch (error) {
-        console.error(error); // Log the error for debugging
-        res.status(500).json({ success: false, message: "Internal Server Error" });
-    }
-};
 
 
 

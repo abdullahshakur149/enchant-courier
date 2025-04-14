@@ -1,5 +1,5 @@
 import express from 'express';
-import { submitOrder, getOrders, getCompletedOrders, getReturnedOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, getCompletedOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
 import { updateOrderStatuses } from '../controllers/orders/cron.controller.js';
 
 import { checkAuthenticated } from '../config/webAuth.js';
@@ -11,9 +11,7 @@ const router = express.Router();
 router.post('/submit-order', submitOrder);
 
 
-router.get('/order/check-return', checkAuthenticated, (req, res) => {
-    res.render('dashboard/verify-returns.ejs');
-});
+
 
 router.get('/update-status', (req, res) => {
     console.log('Update status route hit');
@@ -66,16 +64,7 @@ router.get('/completed-orders', checkAuthenticated, async (req, res) => {
     }
 })
 
-// getting the returned orders in the dashboard
-router.get('/returned-orders', checkAuthenticated, async (req, res) => {
-    try {
-        const returnedOrders = await getReturnedOrders();
-        // console.log(returnedOrders)
-        res.render('dashboard/returnedOrder.ejs', { returnedOrders })
-    } catch (error) {
 
-    }
-})
 
 
 
