@@ -62,15 +62,48 @@ export const updateOrderStatuses = async (req, res) => {
                         await Order.deleteOne({ _id: order._id });
                         console.log(`Deleted PostEx order ${order.trackingNumber} from active orders`);
                     } else {
-                        // Save to OrderUpdate only if not delivered
-                        const orderUpdate = new OrderUpdate({
-                            orderId: order._id,
-                            latestStatus: status,
-                            productInfo: trackingInfo.productInfo,
-                            rawJson: item
-                        });
-                        await orderUpdate.save();
-                        console.log(`Updated PostEx order ${order.trackingNumber}`);
+                        // Find existing OrderUpdate or create new one
+                        let orderUpdate = await OrderUpdate.findOne({ orderId: order._id });
+
+                        if (orderUpdate) {
+                            // Update existing OrderUpdate and store history
+                            const currentHistory = orderUpdate.rawJson?.history || [];
+                            const newStatus = {
+                                status: status,
+                                timestamp: new Date(),
+                                productInfo: trackingInfo.productInfo
+                            };
+
+                            // Only add to history if status has changed
+                            if (orderUpdate.latestStatus !== status) {
+                                orderUpdate.rawJson = {
+                                    ...orderUpdate.rawJson,
+                                    history: [...currentHistory, newStatus]
+                                };
+                            }
+
+                            orderUpdate.latestStatus = status;
+                            orderUpdate.productInfo = trackingInfo.productInfo;
+                            orderUpdate.updatedAt = new Date();
+                            await orderUpdate.save();
+                            console.log(`Updated existing status for PostEx order ${order.trackingNumber}`);
+                        } else {
+                            // Create new OrderUpdate with initial history
+                            orderUpdate = new OrderUpdate({
+                                orderId: order._id,
+                                latestStatus: status,
+                                productInfo: trackingInfo.productInfo,
+                                rawJson: {
+                                    history: [{
+                                        status: status,
+                                        timestamp: new Date(),
+                                        productInfo: trackingInfo.productInfo
+                                    }]
+                                }
+                            });
+                            await orderUpdate.save();
+                            console.log(`Created new status update for PostEx order ${order.trackingNumber}`);
+                        }
                     }
                 }));
             } catch (error) {
@@ -121,15 +154,48 @@ export const updateOrderStatuses = async (req, res) => {
                         await Order.deleteOne({ _id: order._id });
                         console.log(`Deleted Daewoo order ${order.trackingNumber} from active orders`);
                     } else {
-                        // Save to OrderUpdate only if not delivered
-                        const orderUpdate = new OrderUpdate({
-                            orderId: order._id,
-                            latestStatus: status,
-                            productInfo: trackingInfo.productInfo,
-                            rawJson: daewooResponse.data
-                        });
-                        await orderUpdate.save();
-                        console.log(`Updated Daewoo order ${order.trackingNumber}`);
+                        // Find existing OrderUpdate or create new one
+                        let orderUpdate = await OrderUpdate.findOne({ orderId: order._id });
+
+                        if (orderUpdate) {
+                            // Update existing OrderUpdate and store history
+                            const currentHistory = orderUpdate.rawJson?.history || [];
+                            const newStatus = {
+                                status: status,
+                                timestamp: new Date(),
+                                productInfo: trackingInfo.productInfo
+                            };
+
+                            // Only add to history if status has changed
+                            if (orderUpdate.latestStatus !== status) {
+                                orderUpdate.rawJson = {
+                                    ...orderUpdate.rawJson,
+                                    history: [...currentHistory, newStatus]
+                                };
+                            }
+
+                            orderUpdate.latestStatus = status;
+                            orderUpdate.productInfo = trackingInfo.productInfo;
+                            orderUpdate.updatedAt = new Date();
+                            await orderUpdate.save();
+                            console.log(`Updated existing status for Daewoo order ${order.trackingNumber}`);
+                        } else {
+                            // Create new OrderUpdate with initial history
+                            orderUpdate = new OrderUpdate({
+                                orderId: order._id,
+                                latestStatus: status,
+                                productInfo: trackingInfo.productInfo,
+                                rawJson: {
+                                    history: [{
+                                        status: status,
+                                        timestamp: new Date(),
+                                        productInfo: trackingInfo.productInfo
+                                    }]
+                                }
+                            });
+                            await orderUpdate.save();
+                            console.log(`Created new status update for Daewoo order ${order.trackingNumber}`);
+                        }
                     }
                 } catch (error) {
                     console.error(`Error updating Daewoo order ${order.trackingNumber}:`, error);
@@ -188,15 +254,48 @@ export const updateOrderStatuses = async (req, res) => {
                         await Order.deleteOne({ _id: order._id });
                         console.log(`Deleted Trax order ${order.trackingNumber} from active orders`);
                     } else {
-                        // Save to OrderUpdate only if not delivered
-                        const orderUpdate = new OrderUpdate({
-                            orderId: order._id,
-                            latestStatus: latestStatus,
-                            productInfo: trackingInfo.productInfo,
-                            rawJson: traxResponse.data
-                        });
-                        await orderUpdate.save();
-                        console.log(`Updated Trax order ${order.trackingNumber}`);
+                        // Find existing OrderUpdate or create new one
+                        let orderUpdate = await OrderUpdate.findOne({ orderId: order._id });
+
+                        if (orderUpdate) {
+                            // Update existing OrderUpdate and store history
+                            const currentHistory = orderUpdate.rawJson?.history || [];
+                            const newStatus = {
+                                status: latestStatus,
+                                timestamp: new Date(),
+                                productInfo: trackingInfo.productInfo
+                            };
+
+                            // Only add to history if status has changed
+                            if (orderUpdate.latestStatus !== latestStatus) {
+                                orderUpdate.rawJson = {
+                                    ...orderUpdate.rawJson,
+                                    history: [...currentHistory, newStatus]
+                                };
+                            }
+
+                            orderUpdate.latestStatus = latestStatus;
+                            orderUpdate.productInfo = trackingInfo.productInfo;
+                            orderUpdate.updatedAt = new Date();
+                            await orderUpdate.save();
+                            console.log(`Updated existing status for Trax order ${order.trackingNumber}`);
+                        } else {
+                            // Create new OrderUpdate with initial history
+                            orderUpdate = new OrderUpdate({
+                                orderId: order._id,
+                                latestStatus: latestStatus,
+                                productInfo: trackingInfo.productInfo,
+                                rawJson: {
+                                    history: [{
+                                        status: latestStatus,
+                                        timestamp: new Date(),
+                                        productInfo: trackingInfo.productInfo
+                                    }]
+                                }
+                            });
+                            await orderUpdate.save();
+                            console.log(`Created new status update for Trax order ${order.trackingNumber}`);
+                        }
                     }
                 } catch (error) {
                     console.error(`Error updating Trax order ${order.trackingNumber}:`, error);
