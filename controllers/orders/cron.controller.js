@@ -6,6 +6,8 @@ export const updateOrderStatuses = async (req, res) => {
     try {
 
         console.log('i have been hit at 3:00 by cronjob')
+        console.log('i have been hit at 3:00 by cronjob')
+
         const orders = await Order.find({}, "trackingNumber courierType flyerId");
 
         // ===================== PostEx =====================
