@@ -27,7 +27,7 @@ app.use(session({
     resave: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
-        ttl: 24 * 60 * 60,
+        ttl: 4 * 24 * 60 * 60,
         autoRemove: 'native'
     }),
     cookie: {
