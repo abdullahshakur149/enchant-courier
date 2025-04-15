@@ -1,16 +1,12 @@
 import express from 'express';
 import { submitOrder, getOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
 import { updateOrderStatuses } from '../controllers/orders/cron.controller.js';
-
 import { checkAuthenticated } from '../config/webAuth.js';
-
-
+import { CompletedOrder } from '../models/order.js';
 
 const router = express.Router();
 
 router.post('/submit-order', submitOrder);
-
-
 
 // change done
 router.get('/update-status', (req, res) => {
@@ -49,15 +45,48 @@ router.get('/orders', checkAuthenticated, async (req, res) => {
     }
 });
 
+// New route for delivered orders
+router.get('/delivered', checkAuthenticated, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const skip = (page - 1) * limit;
+
+        // Get delivered orders
+        const deliveredOrders = await CompletedOrder.find({})
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalOrders = await CompletedOrder.countDocuments();
+
+        const trackingData = deliveredOrders.map(order => ({
+            _id: order._id,
+            trackingNumber: order.trackingNumber,
+            courierType: order.courierType,
+            flyerId: order.flyerId,
+            productInfo: order.productInfo || {},
+            trackingResponse: {
+                status: order.latestStatus || "Delivered"
+            }
+        }));
+
+        const pagination = {
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit),
+            totalOrders,
+            limit
+        };
+
+        res.render('dashboard/delivered', { trackingData, pagination });
+    } catch (error) {
+        console.error("Error fetching delivered orders:", error);
+        res.status(500).send("Server error while fetching delivered orders.");
+    }
+});
+
 router.post('/update-order/:id', checkAuthenticated, updateOrder);
 
 router.delete('/delete-order/:id', checkAuthenticated, deleteOrder);
-
-
-
-
-
-
-
 
 export default router;

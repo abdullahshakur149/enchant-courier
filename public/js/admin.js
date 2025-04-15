@@ -1,3 +1,18 @@
+/**
+ * Helper function to select elements
+ */
+function select(el) {
+  return document.querySelector(el);
+}
+
+/**
+ * Helper function to add event listeners
+ */
+function on(event, el, handler) {
+  if (el) {
+    el.addEventListener(event, handler);
+  }
+}
 
 /**
  * Sidebar toggle

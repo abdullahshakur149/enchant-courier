@@ -10,7 +10,7 @@
     <meta content="" name="keywords">
 
     <!-- Favicons -->
-    <link href="img/logo.png" rel="icon">
+    <link href="/img/logo.png" rel="icon">
 
     <!-- Google Fonts -->
     <link href="https://fonts.gstatic.com" rel="preconnect">
@@ -75,89 +75,134 @@
 
                 <section class="section dashboard">
                     <div class="row">
-                        <!-- Left side columns -->
-                        <div class="col-lg-8">
-                            <div class="row">
-                                <!-- Total Orders Card -->
-                                <div class="col-xxl-4 col-md-6">
-                                    <div class="card info-card sales-card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Total Orders <span>|</span></h5>
-                                            <div class="d-flex align-items-center">
-                                                <div
-                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-box"></i>
-                                                </div>
-                                                <div class="ps-3">
-                                                    <h6>
-                                                        <%= stats.totalOrders %>
-                                                    </h6>
-                                                </div>
-                                            </div>
+                        <!-- Active Orders Card -->
+                        <div class="col-xxl-4 col-md-6">
+                            <div class="card info-card sales-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Active Orders <span>| This Month</span></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div
+                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-box"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>
+                                                <%= stats.dispatchedCount %>
+                                            </h6>
+                                            <span class="text-primary small pt-1 fw-bold">In Transit</span>
                                         </div>
                                     </div>
-                                </div><!-- End Total Orders Card -->
+                                </div>
+                            </div>
+                        </div>
 
-                                <!-- Dispatched Orders Card -->
-                                <div class="col-xxl-4 col-md-6">
-                                    <div class="card info-card sales-card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Dispatched Orders</h5>
-                                            <div class="d-flex align-items-center">
-                                                <div
-                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-truck"></i>
-                                                </div>
-                                                <div class="ps-3">
-                                                    <h6>
-                                                        <%= stats.dispatchedCount %>
-                                                    </h6>
-                                                </div>
-                                            </div>
+                        <!-- Completed Orders Card -->
+                        <div class="col-xxl-4 col-md-6">
+                            <div class="card info-card sales-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Completed Orders <span>| This Month</span></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div
+                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-check-circle"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>
+                                                <%= stats.completedCount %>
+                                            </h6>
+                                            <span class="text-success small pt-1 fw-bold">Delivered</span>
                                         </div>
                                     </div>
-                                </div><!-- End Dispatched Orders Card -->
+                                </div>
+                            </div>
+                        </div>
 
-                                <!-- Returned Orders Card -->
-                                <div class="col-xxl-4 col-md-6">
-                                    <div class="card info-card sales-card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Returned Orders</h5>
-                                            <div class="d-flex align-items-center">
-                                                <div
-                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-arrow-counterclockwise"></i>
-                                                </div>
-                                                <div class="ps-3">
-                                                    <h6>
-                                                        <%= stats.returnedCount %>
-                                                    </h6>
-                                                </div>
-                                            </div>
+                        <!-- Returned Orders Card -->
+                        <div class="col-xxl-4 col-md-6">
+                            <div class="card info-card sales-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Returned Orders <span>| This Month</span></h5>
+                                    <div class="d-flex align-items-center">
+                                        <div
+                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>
+                                                <%= stats.returnedCount %>
+                                            </h6>
+                                            <span class="text-warning small pt-1 fw-bold">Returned</span>
                                         </div>
                                     </div>
-                                </div><!-- End Returned Orders Card -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <!-- Completed Orders Card -->
-                                <div class="col-xxl-4 col-md-6">
-                                    <div class="card info-card sales-card">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Completed Orders</h5>
-                                            <div class="d-flex align-items-center">
-                                                <div
-                                                    class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                                    <i class="bi bi-check-circle"></i>
-                                                </div>
-                                                <div class="ps-3">
-                                                    <h6>
-                                                        <%= stats.completedCount %>
-                                                    </h6>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div><!-- End Completed Orders Card -->
+                    <div class="row">
+                        <!-- Order Status Distribution -->
+                        <div class="col-xxl-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Order Status Distribution</h5>
+                                    <canvas id="orderStatusChart" style="max-height: 400px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- Courier Distribution -->
+                        <div class="col-xxl-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Courier Distribution</h5>
+                                    <canvas id="courierDistributionChart" style="max-height: 400px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Recent Orders -->
+                        <div class="col-12">
+                            <div class="card recent-sales overflow-auto">
+                                <div class="card-body">
+                                    <h5 class="card-title">Recent Orders</h5>
+                                    <table class="table table-borderless datatable">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Tracking Number</th>
+                                                <th scope="col">Flyer ID</th>
+                                                <th scope="col">Courier</th>
+                                                <th scope="col">Customer</th>
+                                                <th scope="col">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% recentOrders.forEach(order=> { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= order.trackingNumber %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.flyerId %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.courierType %>
+                                                    </td>
+                                                    <td>
+                                                        <%= order.productInfo?.CustomerName || 'N/A' %>
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            class="badge bg-<%= order.trackingResponse?.status?.toLowerCase().includes('delivered') ? 'success' : 'primary' %>">
+                                                            <%= order.trackingResponse?.status || 'In Transit' %>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <% }); %>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -167,14 +212,14 @@
             </main><!-- End #main -->
 
             <!-- Vendor JS Files -->
+            <!-- Chart.js -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
             <!-- ApexCharts -->
             <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.29.0/dist/apexcharts.min.js"></script>
 
             <!-- Bootstrap (including Bootstrap Bundle) -->
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-            <!-- Chart.js -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.umd.js"></script>
 
             <!-- ECharts -->
             <script src="https://cdn.jsdelivr.net/npm/echarts@5.3.0/dist/echarts.min.js"></script>
@@ -184,6 +229,74 @@
 
             <!-- Template Main JS File -->
             <script src="js/admin.js"></script>
+
+            <script>
+                // Wait for DOM to be fully loaded
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Check if Chart.js is loaded
+                    if (typeof Chart === 'undefined') {
+                        console.error('Chart.js is not loaded');
+                        return;
+                    }
+
+                    // Order Status Distribution Chart
+                    const statusCtx = document.getElementById('orderStatusChart');
+                    if (statusCtx) {
+                        new Chart(statusCtx.getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Active', 'Completed', 'Returned'],
+                                datasets: [{
+                                    data: [
+                                        <%= stats.dispatchedCount %>,
+                                        <%= stats.completedCount %>,
+                                        <%= stats.returnedCount %>
+                                    ],
+                                    backgroundColor: ['#4154f1', '#2eca6a', '#ff771d']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Courier Distribution Chart
+                    const courierCtx = document.getElementById('courierDistributionChart');
+                    if (courierCtx) {
+                        new Chart(courierCtx.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: ['PostEx', 'Daewoo', 'Trax'],
+                                datasets: [{
+                                    label: 'Orders by Courier',
+                                    data: [
+                                        <%= courierStats.postex %>,
+                                        <%= courierStats.daewoo %>,
+                                        <%= courierStats.trax %>
+                                    ],
+                                    backgroundColor: ['#4154f1', '#2eca6a', '#ff771d']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            </script>
 
 </body>
 
