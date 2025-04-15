@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { checkAuthenticated } from '../config/webAuth.js';
 import { getMonthlyOrderStats } from "../controllers/orders/order.controller.js";
-import { Order, CompletedOrder, ReturnedOrder } from '../models/order.js';
+import { Order } from '../models/order.js';
 
 // Authentication middleware
 router.use(checkAuthenticated);
