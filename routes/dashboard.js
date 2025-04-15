@@ -2,10 +2,10 @@ import express from 'express';
 const router = express.Router();
 import { checkAuthenticated } from '../config/webAuth.js';
 import { getMonthlyStats } from "../controllers/orders/order.controller.js";
-import { Order } from '../models/order.js';
+import { Order, OrderUpdate } from '../models/order.js';
 import User from '../models/user.js';
-import { 
-    updateSystemSettings, 
+import {
+    updateSystemSettings,
     getUserSettings,
     addUser,
     updateUser,
@@ -24,10 +24,16 @@ router.get('/', async (req, res) => {
             throw new Error(statsResponse.message || 'Failed to get monthly stats');
         }
 
-        // Get recent orders (last 10)
         const recentOrders = await Order.find({})
             .sort({ createdAt: -1 })
             .limit(10);
+
+        for (let order of recentOrders) {
+            const orderUpdate = await OrderUpdate.findOne({ orderId: order._id }).sort({ createdAt: -1 }).lean();
+            if (orderUpdate?.productInfo) {
+                order.productInfo = orderUpdate.productInfo;
+            }
+        }
 
         res.render('dashboard/dashboard', {
             user: req.user,
