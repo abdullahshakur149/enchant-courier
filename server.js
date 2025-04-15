@@ -10,7 +10,7 @@ import initializePassport from './config/passportConfig.js';
 dotenv.config();
 
 
-// Initialize DB Connection
+// Initialize DB Connection updates
 connectDB();
 
 const app = express();
