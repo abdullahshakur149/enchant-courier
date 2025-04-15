@@ -26,7 +26,7 @@ router.get('/update-status', (req, res) => {
     updateOrderStatuses(req, res);
 });
 
-router.get('/test', updateOrderStatuses)
+// router.get('/test', updateOrderStatuses)
 
 router.get('/orders', checkAuthenticated, async (req, res) => {
     try {
