@@ -84,7 +84,6 @@ export const getOrders = async (page = 1, limit = 50) => {
         })
             .sort({ createdAt: -1 })
             .then(updates => {
-                // Group updates by orderId and take only the latest one
                 const latestByOrder = {};
                 updates.forEach(update => {
                     if (!latestByOrder[update.orderId] ||
