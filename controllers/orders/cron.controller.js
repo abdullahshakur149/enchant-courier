@@ -81,19 +81,20 @@ export const updateOrderStatuses = async (req, res) => {
                                     ...orderUpdate.rawJson,
                                     history: [...currentHistory, newStatus]
                                 };
+                                orderUpdate.latestStatus = status;
+                                orderUpdate.productInfo = trackingInfo.productInfo;
+                                orderUpdate.updatedAt = new Date();
+                                orderUpdate.last_tracking_update = new Date();
+                                await orderUpdate.save();
+                                console.log(`Updated existing status for PostEx order ${order.trackingNumber}`);
                             }
-
-                            orderUpdate.latestStatus = status;
-                            orderUpdate.productInfo = trackingInfo.productInfo;
-                            orderUpdate.updatedAt = new Date();
-                            await orderUpdate.save();
-                            console.log(`Updated existing status for PostEx order ${order.trackingNumber}`);
                         } else {
                             // Create new OrderUpdate with initial history
                             orderUpdate = new OrderUpdate({
                                 orderId: order._id,
                                 latestStatus: status,
                                 productInfo: trackingInfo.productInfo,
+                                last_tracking_update: new Date(),
                                 rawJson: {
                                     history: [{
                                         status: status,
@@ -173,19 +174,20 @@ export const updateOrderStatuses = async (req, res) => {
                                     ...orderUpdate.rawJson,
                                     history: [...currentHistory, newStatus]
                                 };
+                                orderUpdate.latestStatus = status;
+                                orderUpdate.productInfo = trackingInfo.productInfo;
+                                orderUpdate.updatedAt = new Date();
+                                orderUpdate.last_tracking_update = new Date();
+                                await orderUpdate.save();
+                                console.log(`Updated existing status for Daewoo order ${order.trackingNumber}`);
                             }
-
-                            orderUpdate.latestStatus = status;
-                            orderUpdate.productInfo = trackingInfo.productInfo;
-                            orderUpdate.updatedAt = new Date();
-                            await orderUpdate.save();
-                            console.log(`Updated existing status for Daewoo order ${order.trackingNumber}`);
                         } else {
                             // Create new OrderUpdate with initial history
                             orderUpdate = new OrderUpdate({
                                 orderId: order._id,
                                 latestStatus: status,
                                 productInfo: trackingInfo.productInfo,
+                                last_tracking_update: new Date(),
                                 rawJson: {
                                     history: [{
                                         status: status,
@@ -273,19 +275,20 @@ export const updateOrderStatuses = async (req, res) => {
                                     ...orderUpdate.rawJson,
                                     history: [...currentHistory, newStatus]
                                 };
+                                orderUpdate.latestStatus = latestStatus;
+                                orderUpdate.productInfo = trackingInfo.productInfo;
+                                orderUpdate.updatedAt = new Date();
+                                orderUpdate.last_tracking_update = new Date();
+                                await orderUpdate.save();
+                                console.log(`Updated existing status for Trax order ${order.trackingNumber}`);
                             }
-
-                            orderUpdate.latestStatus = latestStatus;
-                            orderUpdate.productInfo = trackingInfo.productInfo;
-                            orderUpdate.updatedAt = new Date();
-                            await orderUpdate.save();
-                            console.log(`Updated existing status for Trax order ${order.trackingNumber}`);
                         } else {
                             // Create new OrderUpdate with initial history
                             orderUpdate = new OrderUpdate({
                                 orderId: order._id,
                                 latestStatus: latestStatus,
                                 productInfo: trackingInfo.productInfo,
+                                last_tracking_update: new Date(),
                                 rawJson: {
                                     history: [{
                                         status: latestStatus,

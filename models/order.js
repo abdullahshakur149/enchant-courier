@@ -26,6 +26,7 @@ const orderUpdatesSchema = new mongoose.Schema({
             Quantity: { type: String },
         },
     },
+    last_tracking_update: { type: Date },
     rawJson: {}
 }, { timestamps: true });
 
