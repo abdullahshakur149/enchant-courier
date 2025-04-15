@@ -57,8 +57,9 @@ export const getOrders = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        // Get orders
+        // Get orders with all necessary fields
         const orders = await Order.find({})
+            .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment')
             .skip(skip)
             .limit(limit);
 
@@ -97,16 +98,38 @@ export const getOrders = async (page = 1, limit = 50) => {
         // Format the response
         const trackingData = orders.map(order => {
             const latestUpdate = latestUpdates[order._id.toString()];
+            const statusRecord = latestUpdate?.status_record || [];
+            const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
+
             return {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
                 flyerId: order.flyerId,
-                productInfo: latestUpdate?.productInfo || {},
-                trackingResponse: {
-                    status: latestUpdate?.latestStatus || "Not Available"
+                customer_name: order.customer_name,
+                address: order.address,
+                status: order.status,
+                delivered_at: order.delivered_at,
+                returned_at: order.returned_at,
+                last_tracking_update: order.last_tracking_update,
+                latest_courier_status: order.latest_courier_status,
+                invoicePayment: order.invoicePayment,
+                productInfo: latestUpdate?.productInfo || {
+                    OrderNumber: order.trackingNumber,
+                    date: new Date().toISOString(),
+                    CustomerName: order.customer_name || "Not Available",
+                    Address: order.address || "Not Available",
+                    OrderDetails: {
+                        ProductName: "Not Available",
+                        Quantity: "Not Available"
+                    }
                 },
-                lastUpdated: latestUpdate?.createdAt || null
+                trackingResponse: {
+                    status: latestStatus || order.status || "Not Available",
+                    status_record: statusRecord,
+                    rawJson: latestUpdate?.rawJson || {}
+                },
+                lastUpdated: latestUpdate?.last_tracking_update || order.last_tracking_update || null
             };
         });
 
@@ -208,28 +231,20 @@ export const deleteOrder = async (req, res) => {
             });
         }
 
-        // Check if order exists in any collection
+        // Check if order exists
         const orderExists = await Order.findById(id);
-        const completedOrderExists = await CompletedOrder.findOne({ _id: id });
-        const returnedOrderExists = await ReturnedOrder.findOne({ _id: id });
-
-        if (!orderExists && !completedOrderExists && !returnedOrderExists) {
+        if (!orderExists) {
             return res.json({
                 success: false,
                 message: 'Order does not exist'
             });
         }
 
-        // Delete from appropriate collection
-        if (orderExists) {
-            // Delete all related OrderUpdate records first
-            await OrderUpdate.deleteMany({ orderId: id });
-            await Order.deleteOne({ _id: id });
-        } else if (completedOrderExists) {
-            await CompletedOrder.deleteOne({ _id: id });
-        } else if (returnedOrderExists) {
-            await ReturnedOrder.deleteOne({ _id: id });
-        }
+        // Delete all related OrderUpdate records first
+        await OrderUpdate.deleteMany({ orderId: id });
+
+        // Delete the order
+        await Order.deleteOne({ _id: id });
 
         return res.json({
             success: true,
@@ -252,7 +267,7 @@ export const deleteOrder = async (req, res) => {
 
 
 
-export const getMonthlyOrderStats = async () => {
+export const getMonthlyStats = async (req, res) => {
     try {
         // Get current month's start and end dates
         const startOfMonth = new Date();
@@ -262,27 +277,53 @@ export const getMonthlyOrderStats = async () => {
         const endOfMonth = new Date();
         endOfMonth.setHours(23, 59, 59, 999);
 
-        // Get all types of orders
-        const activeOrders = await Order.countDocuments();
-        const returnedOrders = await ReturnedOrder.countDocuments();
-        const completedOrders = await CompletedOrder.countDocuments();
+        // Get all orders for the current month
+        const orders = await Order.find({
+            createdAt: {
+                $gte: startOfMonth,
+                $lte: endOfMonth
+            }
+        });
 
-        // Calculate total orders (active + returned + completed)
-        const totalOrders = activeOrders + returnedOrders + completedOrders;
+        // Calculate statistics based on latest_courier_status
+        const deliveredOrders = orders.filter(order => 
+            order.latest_courier_status?.toLowerCase().includes('delivered')
+        );
+        const returnedOrders = orders.filter(order => 
+            order.latest_courier_status?.toLowerCase().includes('return')
+        );
+        const activeOrders = orders.filter(order => 
+            !order.latest_courier_status?.toLowerCase().includes('delivered') && 
+            !order.latest_courier_status?.toLowerCase().includes('return')
+        );
 
-        return {
-            dispatchedCount: activeOrders,
-            returnedCount: returnedOrders,
-            completedCount: completedOrders,
-            totalOrders: totalOrders
+        // Calculate total revenue from delivered orders
+        const totalRevenue = deliveredOrders.reduce((sum, order) => 
+            sum + (order.invoicePayment || 0), 0);
+
+        const stats = {
+            activeCount: activeOrders.length,
+            deliveredCount: deliveredOrders.length,
+            returnedCount: returnedOrders.length,
+            totalOrders: orders.length,
+            totalRevenue: totalRevenue,
+            byCourier: {
+                postex: orders.filter(order => order.courierType === 'postex').length,
+                daewoo: orders.filter(order => order.courierType === 'daewoo').length,
+                trax: orders.filter(order => order.courierType === 'trax').length
+            }
         };
-    } catch (error) {
-        console.error("Error fetching order stats:", error);
+
         return {
-            dispatchedCount: 0,
-            returnedCount: 0,
-            completedCount: 0,
-            totalOrders: 0
+            success: true,
+            stats
+        };
+
+    } catch (error) {
+        console.error('Error:', error);
+        return {
+            success: false,
+            message: 'Please try again later.'
         };
     }
 };

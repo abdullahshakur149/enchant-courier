@@ -1,0 +1,104 @@
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Orders</h5>
+        <table class="table table-hover datatable">
+            <thead>
+                <tr>
+                    <th scope="col">Tracking Number</th>
+                    <th scope="col">Flyer ID</th>
+                    <th scope="col">Courier</th>
+                    <th scope="col">Order Status</th>
+                    <th scope="col">Latest Status</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% trackingData.forEach(order=> { %>
+                    <tr>
+                        <td class="fw-semibold"><%= order.trackingNumber %></td>
+                        <td><%= order.flyerId %></td>
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                <%= order.courierType.toUpperCase() %>
+                            </span>
+                        </td>
+                        <td>
+                            <% if (order.status === 'dispatched') { %>
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-box-seam me-1"></i>
+                                    Dispatched
+                                </span>
+                            <% } else if (order.status === 'return_recieved') { %>
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-arrow-return-left me-1"></i>
+                                    Return Received
+                                </span>
+                            <% } else if (order.status === 'payment_recieved') { %>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-cash-stack me-1"></i>
+                                    Payment Received
+                                </span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <% if (order.latest_courier_status?.toLowerCase().includes('delivered')) { %>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Delivered
+                                </span>
+                            <% } else if (order.latest_courier_status?.toLowerCase().includes('return')) { %>
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                    Returned
+                                </span>
+                            <% } else { %>
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>
+                                    <%= order.latest_courier_status || 'In Transit' %>
+                                </span>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewOrder('<%= order._id %>')">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="editOrder('<%= order._id %>')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder('<%= order._id %>')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    .badge {
+        padding: 0.5em 0.75em;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+    }
+    .badge i {
+        font-size: 0.9em;
+    }
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    .btn i {
+        font-size: 0.9em;
+    }
+    th {
+        white-space: nowrap;
+    }
+</style> 
