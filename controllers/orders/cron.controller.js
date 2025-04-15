@@ -46,7 +46,6 @@ export const updateOrderStatuses = async (req, res) => {
                         }
                     };
 
-                    // Check delivery status first
                     if (status.toLowerCase().includes("delivered")) {
                         // Create completed order
                         const completedOrder = new CompletedOrder({
@@ -57,17 +56,16 @@ export const updateOrderStatuses = async (req, res) => {
                             productInfo: trackingInfo.productInfo
                         });
                         await completedOrder.save();
-                        console.log(`Moved PostEx order ${order.trackingNumber} to completed orders`);
+                        // console.log(`Moved PostEx order ${order.trackingNumber} to completed orders`);
 
                         // Delete from active orders
                         await Order.deleteOne({ _id: order._id });
-                        console.log(`Deleted PostEx order ${order.trackingNumber} from active orders`);
+                        // console.log(`Deleted PostEx order ${order.trackingNumber} from active orders`);
                     } else {
                         // Find existing OrderUpdate or create new one
                         let orderUpdate = await OrderUpdate.findOne({ orderId: order._id });
 
                         if (orderUpdate) {
-                            // Update existing OrderUpdate and store history
                             const currentHistory = orderUpdate.rawJson?.history || [];
                             const newStatus = {
                                 status: status,
@@ -75,7 +73,6 @@ export const updateOrderStatuses = async (req, res) => {
                                 productInfo: trackingInfo.productInfo
                             };
 
-                            // Only add to history if status has changed
                             if (orderUpdate.latestStatus !== status) {
                                 orderUpdate.rawJson = {
                                     ...orderUpdate.rawJson,
@@ -251,11 +248,11 @@ export const updateOrderStatuses = async (req, res) => {
                             productInfo: trackingInfo.productInfo
                         });
                         await completedOrder.save();
-                        console.log(`Moved Trax order ${order.trackingNumber} to completed orders`);
+                        // console.log(`Moved Trax order ${order.trackingNumber} to completed orders`);
 
                         // Delete from active orders
                         await Order.deleteOne({ _id: order._id });
-                        console.log(`Deleted Trax order ${order.trackingNumber} from active orders`);
+                        // console.log(`Deleted Trax order ${order.trackingNumber} from active orders`);
                     } else {
                         // Find existing OrderUpdate or create new one
                         let orderUpdate = await OrderUpdate.findOne({ orderId: order._id });
@@ -280,7 +277,7 @@ export const updateOrderStatuses = async (req, res) => {
                                 orderUpdate.updatedAt = new Date();
                                 orderUpdate.last_tracking_update = new Date();
                                 await orderUpdate.save();
-                                console.log(`Updated existing status for Trax order ${order.trackingNumber}`);
+                                // console.log(`Updated existing status for Trax order ${order.trackingNumber}`);
                             }
                         } else {
                             // Create new OrderUpdate with initial history
@@ -298,7 +295,7 @@ export const updateOrderStatuses = async (req, res) => {
                                 }
                             });
                             await orderUpdate.save();
-                            console.log(`Created new status update for Trax order ${order.trackingNumber}`);
+                            // console.log(`Created new status update for Trax order ${order.trackingNumber}`);
                         }
                     }
                 } catch (error) {
@@ -307,7 +304,7 @@ export const updateOrderStatuses = async (req, res) => {
             }));
         }
 
-        console.log("Order status update process completed");
+        // console.log("Order status update process completed");
         res.json({
             success: true,
             message: "Order statuses updated successfully",

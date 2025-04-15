@@ -246,13 +246,7 @@ export const deleteOrder = async (req, res) => {
     }
 }
 
-export const getCompletedOrders = async (req, res) => {
-    try {
-        const completedOrder = await CompletedOrder.find()
-        return completedOrder;
-    } catch (error) {
-    }
-}
+
 
 
 
@@ -293,6 +287,7 @@ export const getMonthlyOrderStats = async () => {
         };
     }
 };
+
 
 
 

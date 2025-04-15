@@ -1,5 +1,5 @@
 import express from 'express';
-import { submitOrder, getOrders, getCompletedOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
 import { updateOrderStatuses } from '../controllers/orders/cron.controller.js';
 
 import { checkAuthenticated } from '../config/webAuth.js';
@@ -54,15 +54,6 @@ router.post('/update-order/:id', checkAuthenticated, updateOrder);
 router.delete('/delete-order/:id', checkAuthenticated, deleteOrder);
 
 
-// getting completed orders in the dashboard
-router.get('/completed-orders', checkAuthenticated, async (req, res) => {
-    try {
-        const completedOrders = await getCompletedOrders();
-        res.render('dashboard/completeOrder.ejs', { completedOrders })
-    } catch (error) {
-
-    }
-})
 
 
 
