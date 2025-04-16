@@ -74,22 +74,23 @@
                 </div><!-- End Page Title -->
 
                 <section class="section dashboard">
+                    <!-- Overview Cards -->
                     <div class="row">
-                        <!-- Active Orders Card -->
-                        <div class="col-xxl-4 col-md-6">
+                        <div class="col-12">
+                            <h5 class="card-title mb-3">Order Overview</h5>
+                        </div>
+                        <!-- Total Orders Card -->
+                        <div class="col-xxl-3 col-md-6">
                             <div class="card info-card sales-card">
                                 <div class="card-body">
-                                    <h5 class="card-title">Active Orders <span>| This Month</span></h5>
+                                    <h5 class="card-title">Total Orders</h5>
                                     <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                            <i class="bi bi-box"></i>
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-box-seam"></i>
                                         </div>
                                         <div class="ps-3">
-                                            <h6>
-                                                <%= stats.activeCount %>
-                                            </h6>
-                                            <span class="text-primary small pt-1 fw-bold">In Progress</span>
+                                            <h6><%= orderStats.total %></h6>
+                                            <span class="text-primary small pt-1 fw-bold">All Time</span>
                                         </div>
                                     </div>
                                 </div>
@@ -97,20 +98,17 @@
                         </div>
 
                         <!-- Delivered Orders Card -->
-                        <div class="col-xxl-4 col-md-6">
+                        <div class="col-xxl-3 col-md-6">
                             <div class="card info-card sales-card">
                                 <div class="card-body">
-                                    <h5 class="card-title">Delivered Orders <span>| This Month</span></h5>
+                                    <h5 class="card-title">Delivered Orders</h5>
                                     <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                                             <i class="bi bi-check-circle"></i>
                                         </div>
                                         <div class="ps-3">
-                                            <h6>
-                                                <%= stats.deliveredCount %>
-                                            </h6>
-                                            <span class="text-success small pt-1 fw-bold">Completed</span>
+                                            <h6><%= orderStats.delivered %></h6>
+                                            <span class="text-success small pt-1 fw-bold">All Time</span>
                                         </div>
                                     </div>
                                 </div>
@@ -118,40 +116,35 @@
                         </div>
 
                         <!-- Returned Orders Card -->
-                        <div class="col-xxl-4 col-md-6">
+                        <div class="col-xxl-3 col-md-6">
                             <div class="card info-card sales-card">
                                 <div class="card-body">
-                                    <h5 class="card-title">Returned Orders <span>| This Month</span></h5>
+                                    <h5 class="card-title">Returned Orders</h5>
                                     <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                                             <i class="bi bi-arrow-counterclockwise"></i>
                                         </div>
                                         <div class="ps-3">
-                                            <h6>
-                                                <%= stats.returnedCount %>
-                                            </h6>
-                                            <span class="text-warning small pt-1 fw-bold">Returned</span>
+                                            <h6><%= orderStats.returned %></h6>
+                                            <span class="text-warning small pt-1 fw-bold">All Time</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Revenue Card -->
-                        <div class="col-xxl-4 col-md-6">
-                            <div class="card info-card revenue-card">
+                        <!-- Pending Orders Card -->
+                        <div class="col-xxl-3 col-md-6">
+                            <div class="card info-card sales-card">
                                 <div class="card-body">
-                                    <h5 class="card-title">Revenue <span>| This Month</span></h5>
+                                    <h5 class="card-title">Pending Orders</h5>
                                     <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                            <i class="bi bi-currency-dollar"></i>
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-clock"></i>
                                         </div>
                                         <div class="ps-3">
-                                            <h6>Rs. <%= stats.totalRevenue.toLocaleString() %>
-                                            </h6>
-                                            <span class="text-success small pt-1 fw-bold">From Delivered Orders</span>
+                                            <h6><%= orderStats.pending %></h6>
+                                            <span class="text-info small pt-1 fw-bold">All Time</span>
                                         </div>
                                     </div>
                                 </div>
@@ -159,7 +152,71 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <!-- Performance Metrics -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="card-title mb-3">Performance Metrics</h5>
+                        </div>
+                        <!-- Success Rate Card -->
+                        <div class="col-xxl-4 col-md-6">
+                            <div class="card info-card customers-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Success Rate</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-graph-up"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6><%= ((orderStats.delivered / orderStats.total) * 100 || 0).toFixed(1) %>%</h6>
+                                            <span class="text-success small pt-1 fw-bold">Successful Deliveries</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Return Rate Card -->
+                        <div class="col-xxl-4 col-md-6">
+                            <div class="card info-card customers-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Return Rate</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6><%= ((orderStats.returned / orderStats.total) * 100 || 0).toFixed(1) %>%</h6>
+                                            <span class="text-warning small pt-1 fw-bold">Returned Orders</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Average Order Value Card -->
+                        <div class="col-xxl-4 col-md-6">
+                            <div class="card info-card sales-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Average Order Value</h5>
+                                    <div class="d-flex align-items-center">
+                                        <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                            <i class="bi bi-cart"></i>
+                                        </div>
+                                        <div class="ps-3">
+                                            <h6>Rs. <%= (orderStats.delivered > 0 ? (orderStats.delivered * 1000 / orderStats.delivered) : 0).toLocaleString() %></h6>
+                                            <span class="text-primary small pt-1 fw-bold">Per Delivered Order</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="card-title mb-3">Visual Analytics</h5>
+                        </div>
                         <!-- Order Status Distribution -->
                         <div class="col-xxl-6">
                             <div class="card">
@@ -170,91 +227,7 @@
                             </div>
                         </div>
 
-                        <!-- Courier Distribution -->
-                        <div class="col-xxl-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Courier Distribution</h5>
-                                    <canvas id="courierDistributionChart" style="max-height: 400px;"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <!-- Financial Metrics -->
-                        <div class="col-xxl-4 col-md-6">
-                            <div class="card info-card revenue-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Revenue <span>| This Month</span></h5>
-                                    <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                            <i class="bi bi-currency-dollar"></i>
-                                        </div>
-                                        <div class="ps-3">
-                                            <h6>Rs. <%= stats.totalRevenue.toLocaleString() %>
-                                            </h6>
-                                            <span class="text-success small pt-1 fw-bold">From Delivered Orders</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xxl-4 col-md-6">
-                            <div class="card info-card sales-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Average Order Value <span>| This Month</span></h5>
-                                    <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                            <i class="bi bi-cart"></i>
-                                        </div>
-                                        <div class="ps-3">
-                                            <h6>Rs. <%= (stats.totalRevenue / stats.deliveredCount ||
-                                                    0).toLocaleString() %>
-                                            </h6>
-                                            <span class="text-primary small pt-1 fw-bold">Per Delivered Order</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xxl-4 col-md-6">
-                            <div class="card info-card customers-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Success Rate <span>| This Month</span></h5>
-                                    <div class="d-flex align-items-center">
-                                        <div
-                                            class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                            <i class="bi bi-graph-up"></i>
-                                        </div>
-                                        <div class="ps-3">
-                                            <h6>
-                                                <%= ((stats.deliveredCount / stats.totalOrders) * 100 || 0).toFixed(1)
-                                                    %>%
-                                            </h6>
-                                            <span class="text-success small pt-1 fw-bold">Successful Deliveries</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <!-- Performance Metrics -->
-                        <div class="col-xxl-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Revenue by Courier</h5>
-                                    <canvas id="revenueByCourierChart" style="max-height: 400px;"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
+                        <!-- Delivery Performance -->
                         <div class="col-xxl-6">
                             <div class="card">
                                 <div class="card-body">
@@ -265,122 +238,50 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <!-- Recent Orders with Enhanced Details -->
+                    <!-- Recent Orders Section -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="card-title mb-3">Recent Orders</h5>
+                        </div>
                         <div class="col-12">
                             <div class="card recent-sales overflow-auto">
                                 <div class="card-body">
-                                    <h5 class="card-title">Recent Orders</h5>
-                                    <table class="table table-hover datatable">
+                                    <table class="table table-borderless datatable">
                                         <thead>
                                             <tr>
-                                                <th scope="col">Tracking Number</th>
-                                                <th scope="col">Flyer ID</th>
-                                                <th scope="col">Customer</th>
-                                                <th scope="col">Product</th>
+                                                <th scope="col">Tracking #</th>
                                                 <th scope="col">Courier</th>
-                                                <th scope="col">Order Status</th>
-                                                <th scope="col">Latest Status</th>
-                                                <th scope="col">Amount</th>
-                                                <th scope="col">Actions</th>
+                                                <th scope="col">Customer</th>
+                                                <th scope="col">Status</th>
+                                                <th scope="col">Last Update</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <% recentOrders.forEach(order=> { %>
+                                            <% recentOrders.forEach(order => { %>
                                                 <tr>
-                                                    <td class="fw-semibold">
-                                                        <%= order.trackingNumber %>
-                                                    </td>
                                                     <td>
-                                                        <%= order.flyerId %>
+                                                        <a href="/dashboard/orders/<%= order._id %>">
+                                                            <%= order.trackingNumber %>
+                                                        </a>
                                                     </td>
+                                                    <td><%= order.courierType %></td>
+                                                    <td><%= order.customer_name || 'N/A' %></td>
                                                     <td>
-                                                        <div class="d-flex flex-column">
-                                                            <span class="fw-semibold">
-                                                                <%= order.customer_name || 'N/A' %>
-                                                            </span>
-                                                            <small class="text-muted">
-                                                                <%= order.address || 'N/A' %>
-                                                            </small>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex flex-column">
-                                                            <span>
-                                                                <%= order.productInfo?.OrderDetails?.ProductName
-                                                                    || 'N/A' %>
-                                                            </span>
-                                                            <small class="text-muted">Qty: <%=
-                                                                    order.productInfo?.OrderDetails?.Quantity || 'N/A'
-                                                                    %>
-
-                                                            </small>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge bg-info text-dark">
-                                                            <%= order.courierType.toUpperCase() %>
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <% if (order.status==='dispatched' ) { %>
+                                                        <% if (order.isDelivered) { %>
+                                                            <span class="badge bg-success">Delivered</span>
+                                                        <% } else if (order.isReturned) { %>
+                                                            <span class="badge bg-warning">Returned</span>
+                                                        <% } else { %>
                                                             <span class="badge bg-primary">
-                                                                <i class="bi bi-box-seam me-1"></i>
-                                                                Dispatched
+                                                                <%= order.latestStatus || 'In Progress' %>
                                                             </span>
-                                                            <% } else if (order.status==='return_recieved' ) { %>
-                                                                <span class="badge bg-warning text-dark">
-                                                                    <i class="bi bi-arrow-return-left me-1"></i>
-                                                                    Return Received
-                                                                </span>
-                                                                <% } else if (order.status==='payment_recieved' ) { %>
-                                                                    <span class="badge bg-success">
-                                                                        <i class="bi bi-cash-stack me-1"></i>
-                                                                        Payment Received
-                                                                    </span>
-                                                                    <% } %>
+                                                        <% } %>
                                                     </td>
                                                     <td>
-                                                        <% if
-                                                            (order.latest_courier_status?.toLowerCase().includes('delivered'))
-                                                            { %>
-                                                            <span class="badge bg-success">
-                                                                <i class="bi bi-check-circle me-1"></i>
-                                                                Delivered
-                                                            </span>
-                                                            <% } else if
-                                                                (order.latest_courier_status?.toLowerCase().includes('return'))
-                                                                { %>
-                                                                <span class="badge bg-warning text-dark">
-                                                                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                                                                    Returned
-                                                                </span>
-                                                                <% } else { %>
-                                                                    <span class="badge bg-secondary">
-                                                                        <i class="bi bi-arrow-right-circle me-1"></i>
-                                                                        <%= order.latest_courier_status || 'In Transit'
-                                                                            %>
-                                                                    </span>
-                                                                    <% } %>
-                                                    </td>
-                                                    <td>
-                                                        <span class="fw-semibold">Rs. <%= (order.invoicePayment ||
-                                                                0).toLocaleString() %></span>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex gap-2">
-                                                            <button class="btn btn-sm btn-outline-primary"
-                                                                onclick="viewOrder('<%= order._id %>')">
-                                                                <i class="bi bi-eye"></i>
-                                                            </button>
-                                                            <button class="btn btn-sm btn-outline-warning"
-                                                                onclick="editOrder('<%= order._id %>')">
-                                                                <i class="bi bi-pencil"></i>
-                                                            </button>
-                                                        </div>
+                                                        <%= order.last_tracking_update ? new Date(order.last_tracking_update).toLocaleString() : 'N/A' %>
                                                     </td>
                                                 </tr>
-                                                <% }); %>
+                                            <% }) %>
                                         </tbody>
                                     </table>
                                 </div>
@@ -419,12 +320,12 @@
                         new Chart(statusCtx.getContext('2d'), {
                             type: 'doughnut',
                             data: {
-                                labels: ['Active', 'Delivered', 'Returned'],
+                                labels: ['Pending', 'Delivered', 'Returned'],
                                 datasets: [{
                                     data: [
-                                        <%= stats.activeCount %>,
-                                        <%= stats.deliveredCount %>,
-                                        <%= stats.returnedCount %>
+                                        <%= orderStats.pending %>,
+                                        <%= orderStats.delivered %>,
+                                        <%= orderStats.returned %>
                                     ],
                                     backgroundColor: [
                                         'rgba(54, 162, 235, 0.8)',
@@ -444,56 +345,25 @@
                         });
                     }
 
-                    // Courier Distribution Chart
-                    const courierCtx = document.getElementById('courierDistributionChart');
-                    if (courierCtx) {
-                        new Chart(courierCtx.getContext('2d'), {
-                            type: 'pie',
-                            data: {
-                                labels: ['PostEx', 'Daewoo', 'Trax'],
-                                datasets: [{
-                                    data: [
-                                        <%= stats.byCourier.postex %>,
-                                        <%= stats.byCourier.daewoo %>,
-                                        <%= stats.byCourier.trax %>
-                                    ],
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.8)',
-                                        'rgba(54, 162, 235, 0.8)',
-                                        'rgba(255, 206, 86, 0.8)'
-                                    ]
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    // Revenue by Courier Chart
-                    const revenueCtx = document.getElementById('revenueByCourierChart');
-                    if (revenueCtx) {
-                        new Chart(revenueCtx.getContext('2d'), {
+                    // Delivery Performance Chart
+                    const performanceCtx = document.getElementById('deliveryPerformanceChart');
+                    if (performanceCtx) {
+                        new Chart(performanceCtx.getContext('2d'), {
                             type: 'bar',
                             data: {
-                                labels: ['PostEx', 'Daewoo', 'Trax'],
+                                labels: ['Orders'],
                                 datasets: [{
-                                    label: 'Revenue (Rs.)',
-                                    data: [
-                                        <%= stats.byCourier.postex * 1000 %>,
-                                        <%= stats.byCourier.daewoo * 1000 %>,
-                                        <%= stats.byCourier.trax * 1000 %>
-                                    ],
-                                    backgroundColor: [
-                                        'rgba(255, 99, 132, 0.8)',
-                                        'rgba(54, 162, 235, 0.8)',
-                                        'rgba(255, 206, 86, 0.8)'
-                                    ]
+                                    label: 'Delivered',
+                                    data: [<%= orderStats.delivered %>],
+                                    backgroundColor: 'rgba(75, 192, 192, 0.8)'
+                                }, {
+                                    label: 'Returned',
+                                    data: [<%= orderStats.returned %>],
+                                    backgroundColor: 'rgba(255, 206, 86, 0.8)'
+                                }, {
+                                    label: 'Pending',
+                                    data: [<%= orderStats.pending %>],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.8)'
                                 }]
                             },
                             options: {
@@ -505,42 +375,7 @@
                                 },
                                 scales: {
                                     y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            callback: function (value) {
-                                                return 'Rs. ' + value.toLocaleString();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    // Delivery Performance Chart
-                    const performanceCtx = document.getElementById('deliveryPerformanceChart');
-                    if (performanceCtx) {
-                        new Chart(performanceCtx.getContext('2d'), {
-                            type: 'line',
-                            data: {
-                                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                                datasets: [{
-                                    label: 'Delivered',
-                                    data: [12, 19, 3, 5, 2, 3, 7],
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    tension: 0.1
-                                }, {
-                                    label: 'Returned',
-                                    data: [2, 3, 1, 2, 1, 0, 1],
-                                    borderColor: 'rgba(255, 206, 86, 1)',
-                                    tension: 0.1
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    legend: {
-                                        position: 'bottom'
+                                        beginAtZero: true
                                     }
                                 }
                             }

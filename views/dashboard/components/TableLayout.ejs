@@ -26,7 +26,6 @@
                 <th style="width: 200px">Address</th>
                 <th style="width: 200px">Product Name</th>
                 <th style="width: 100px">Quantity</th>
-                <th style="width: 100px">Status</th>
                 <th style="width: 150px">Latest Courier Status</th>
                 <th style="width: 100px">Actions</th>
             </tr>
@@ -68,24 +67,11 @@
                             <td>
                                 <%= order.productInfo?.OrderDetails?.Quantity || 'N/A' %>
                             </td>
-                            <td>
-                                <span class="badge 
-                                <%= order.status === 'payment_recieved' ? 'bg-success' :
-                                order.status === 'return_recieved' ? 'bg-warning text-dark' :
-                                order.status === 'dispatched' ? 'bg-info' :
-                                'bg-secondary' %>">
-                                    <%= order.status || 'N/A' %>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 cursor-pointer"
+                                      onclick="showStatusHistory('<%= order._id %>', '<%= JSON.stringify(order.trackingResponse.status_record) %>')">
+                                    <%= order.latest_courier_status %>
                                 </span>
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">
-                                    <%= order.latest_courier_status || 'N/A' %>
-                                </span>
-                                <br>
-                                <small>
-                                    <%= order.last_tracking_update %>
-                                </small>
-
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm delete-order-btn"><i
@@ -166,6 +152,53 @@
     .table-responsive-container.scrolled-to-end::after {
         display: none;
     }
+
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+
+    .status-item {
+        position: relative;
+        padding-left: 50px;
+        margin-bottom: 20px;
+    }
+
+    .status-item::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid #fff;
+    }
+
+    .status-item:last-child::before {
+        background: #198754;
+    }
+
+    .status-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .status-text {
+        font-weight: 500;
+        margin-top: 5px;
+    }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mt-3">
@@ -229,6 +262,23 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status History Modal -->
+<div class="modal fade" id="statusHistoryModal" tabindex="-1" aria-labelledby="statusHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Order Status History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="timeline">
+                    <div id="statusHistoryList"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -390,4 +440,48 @@
             this.classList.toggle('scrolled-to-end', isScrolledToEnd);
         });
     });
+
+    function updateStatusRecord(orderId, status) {
+        fetch(`/api/orders/${orderId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Status record updated successfully');
+                location.reload();
+            } else {
+                alert('Failed to update status record');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating status record');
+        });
+    }
+
+    function showStatusHistory(orderId, statusRecord) {
+        const statusHistory = JSON.parse(statusRecord);
+        const statusHistoryList = document.getElementById('statusHistoryList');
+        statusHistoryList.innerHTML = '';
+
+        statusHistory.forEach((status, index) => {
+            const statusItem = document.createElement('div');
+            statusItem.className = 'status-item';
+            
+            const statusText = document.createElement('div');
+            statusText.className = 'status-text';
+            statusText.textContent = status;
+            
+            statusItem.appendChild(statusText);
+            statusHistoryList.appendChild(statusItem);
+        });
+
+        const modal = new bootstrap.Modal(document.getElementById('statusHistoryModal'));
+        modal.show();
+    }
 </script>

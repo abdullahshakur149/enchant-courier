@@ -55,16 +55,20 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isDelivered = true;
                     }
 
-
-                    if (status?.includes("RETURNED" || status?.includes("returned"))) {
-                        updateFields.returned_at = date;
+                    if (status?.includes("RETURNED") || status?.includes("returned")) {
+                        updateFields.returned_at = timestamp.toISOString();
                         updateFields.isReturned = true;
                     }
 
-                    // // Push status to record if not exists
-                    // if (!order.status_record.includes(status)) {
-                    //     updateFields.status_record = [...order.status_record, status];
-                    // }
+                    // Initialize status_record if it doesn't exist
+                    if (!order.status_record) {
+                        order.status_record = [];
+                    }
+
+                    // Push status to record if not exists
+                    if (status && !order.status_record.includes(status)) {
+                        updateFields.status_record = [...order.status_record, status];
+                    }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
                 }));
@@ -107,7 +111,7 @@ export const updateOrderStatuses = async (req, res) => {
                         }
                     };
 
-                    if (status?.includes("DELIVERED" || status?.includes("OK - DELIVERED"))) {
+                    if (status?.includes("DELIVERED") || status?.includes("OK - DELIVERED")) {
                         updateFields.delivered_at = date;
                         updateFields.isDelivered = true;
                     }
@@ -117,9 +121,15 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                    // if (!order.status_record.includes(status)) {
-                    //     updateFields.status_record = [...order.status_record, status];
-                    // }
+                    // Initialize status_record if it doesn't exist
+                    if (!order.status_record) {
+                        order.status_record = [];
+                    }
+
+                    // Push status to record if not exists
+                    if (status && !order.status_record.includes(status)) {
+                        updateFields.status_record = [...order.status_record, status];
+                    }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
@@ -179,14 +189,20 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isDelivered = true;
                     }
 
-                    if (status?.includes("Return - Confirm")) {
-                        updateFields.returned_at = timestamp.toISOString();;
+                    if (status?.includes("Return - Confirm") || status?.includes("Return - Delivered to Shipper")) {
+                        updateFields.returned_at = timestamp.toISOString();
                         updateFields.isReturned = true;
                     }
 
-                    // if (!order.status_record.includes(status)) {
-                    //     updateFields.status_record = [...order.status_record, status];
-                    // }
+                    // Initialize status_record if it doesn't exist
+                    if (!order.status_record) {
+                        order.status_record = [];
+                    }
+
+                    // Push status to record if not exists
+                    if (status && !order.status_record.includes(status)) {
+                        updateFields.status_record = [...order.status_record, status];
+                    }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 

@@ -58,12 +58,24 @@ export const getOrders = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        const orders = await Order.find({})
+        // Find orders that are not delivered and not returned
+        const orders = await Order.find({
+            $and: [
+                { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
+                { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
+            ]
+        })
             .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment status_record productInfo rawJson')
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
-        const totalOrders = await Order.countDocuments();
+        const totalOrders = await Order.countDocuments({
+            $and: [
+                { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
+                { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
+            ]
+        });
 
         if (orders.length === 0) {
             return {
@@ -80,7 +92,8 @@ export const getOrders = async (page = 1, limit = 50) => {
 
         // Format the response
         const trackingData = orders.map(order => {
-            const statusRecord = order.status_record || [];
+            // Initialize status_record if it doesn't exist
+            const statusRecord = Array.isArray(order.status_record) ? order.status_record : [];
             const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
 
             return {
@@ -110,7 +123,8 @@ export const getOrders = async (page = 1, limit = 50) => {
                     status: latestStatus || order.status || "Not Available",
                     status_record: statusRecord,
                 },
-                lastUpdated: order.last_tracking_update || null
+                lastUpdated: order.last_tracking_update || null,
+                createdAt: order.createdAt
             };
         });
 
@@ -166,6 +180,11 @@ export const updateOrder = async (req, res) => {
             });
         }
 
+        // Initialize status_record if it doesn't exist
+        if (!orderExists.status_record) {
+            orderExists.status_record = [];
+        }
+
         // Only update fields that are provided
         const updateData = {};
         if (updateFields.trackingNumber) updateData.trackingNumber = updateFields.trackingNumber;
@@ -180,13 +199,31 @@ export const updateOrder = async (req, res) => {
 
         // Update status_record, productInfo, or rawJson if these fields are part of the update
         if (updateFields.status_record) {
-            updateData.status_record = [...orderExists.status_record, ...updateFields.status_record];
+            // Ensure status_record is an array
+            const newStatuses = Array.isArray(updateFields.status_record) 
+                ? updateFields.status_record 
+                : [updateFields.status_record];
+            
+            // Only add new statuses that don't already exist
+            const uniqueNewStatuses = newStatuses.filter(status => 
+                status && !orderExists.status_record.includes(status)
+            );
+            
+            updateData.status_record = [...orderExists.status_record, ...uniqueNewStatuses];
         }
+        
         if (updateFields.productInfo) {
-            updateData.productInfo = updateFields.productInfo;
+            updateData.productInfo = {
+                ...orderExists.productInfo,
+                ...updateFields.productInfo
+            };
         }
+        
         if (updateFields.rawJson) {
-            updateData.rawJson = { ...orderExists.rawJson, ...updateFields.rawJson };
+            updateData.rawJson = {
+                ...orderExists.rawJson,
+                ...updateFields.rawJson
+            };
         }
 
         // Update order using _id with the gathered data
@@ -252,66 +289,7 @@ export const deleteOrder = async (req, res) => {
 
 
 
-export const getMonthlyStats = async (req, res) => {
-    try {
-        // Get current month's start and end dates
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
 
-        const endOfMonth = new Date();
-        endOfMonth.setMonth(startOfMonth.getMonth() + 1); // first day of next month
-        endOfMonth.setDate(0); // last day of current month
-        endOfMonth.setHours(23, 59, 59, 999);
-
-        // Get all orders for the current month
-        const orders = await Order.find({
-            createdAt: {
-                $gte: startOfMonth,
-                $lte: endOfMonth
-            }
-        });
-
-        // Categorize orders
-        const deliveredOrders = orders.filter(order => order.isDelivered === true);
-
-        const activeOrders = orders.filter(order =>
-            order.isDelivered !== true &&
-            !order.status_record.some(status =>
-                status.status.toLowerCase().includes('return') // Check if no status in the status_record indicates return
-            )
-        );
-
-        // Calculate total revenue from delivered orders
-        const totalRevenue = deliveredOrders.reduce((sum, order) =>
-            sum + (order.invoicePayment || 0), 0);
-
-        const stats = {
-            activeCount: activeOrders.length,
-            deliveredCount: deliveredOrders.length,
-            returnedCount: returnedOrders.length,
-            totalOrders: orders.length,
-            totalRevenue: totalRevenue,
-            byCourier: {
-                postex: orders.filter(order => order.courierType === 'postex').length,
-                daewoo: orders.filter(order => order.courierType === 'daewoo').length,
-                trax: orders.filter(order => order.courierType === 'trax').length
-            }
-        };
-
-        return {
-            success: true,
-            stats
-        };
-
-    } catch (error) {
-        console.error('Error:', error);
-        return {
-            success: false,
-            message: 'Please try again later.'
-        };
-    }
-};
 
 
 

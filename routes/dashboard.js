@@ -1,7 +1,6 @@
 import express from 'express';
 const router = express.Router();
 import { checkAuthenticated } from '../config/webAuth.js';
-import { getMonthlyStats } from "../controllers/orders/order.controller.js";
 import { Order } from '../models/order.js';
 import User from '../models/user.js';
 import {
@@ -12,58 +11,67 @@ import {
     deleteUser
 } from '../controllers/settings/settings.controller.js';
 
+// Function to get order statistics
+const getOrderStatistics = async () => {
+    try {
+        const totalOrders = await Order.countDocuments();
+        const deliveredOrders = await Order.countDocuments({ isDelivered: true });
+        const returnedOrders = await Order.countDocuments({ isReturned: true });
+        const pendingOrders = totalOrders - deliveredOrders - returnedOrders;
+        const order = await Order.find({trackingNumber: '27124450427978'});
+        console.log(order);
+
+        return {
+            total: totalOrders,
+            delivered: deliveredOrders,
+            returned: returnedOrders,
+            pending: pendingOrders
+        };
+    } catch (error) {
+        console.error('Error getting order statistics:', error);
+        throw error;
+    }
+};
+
 // Authentication middleware
 router.use(checkAuthenticated);
 
 // Dashboard main route
 router.get('/', async (req, res) => {
     try {
-
-        const trax = await Order.countDocuments({
-            isDelivered: true,
-            isReturned: true,
-            courierType: 'trax'
-        });
-        const daewoo = await Order.countDocuments({
-            isDelivered: true,
-            isReturned: true,
-            courierType: 'daewoo'
-        });
-        const postex = await Order.countDocuments({
-            isDelivered: true,
-            isReturned: true,
-            courierType: 'postex'
-        });
-        console.log("Delivered Orders:", trax, daewoo, postex);
-
-        const statsResponse = await getMonthlyStats();
-        if (!statsResponse.success) {
-            throw new Error(statsResponse.message || 'Failed to get monthly stats');
-        }
-
+        const orderStats = await getOrderStatistics();
         const recentOrders = await Order.find({})
             .sort({ createdAt: -1 })
-            .limit(10);
+            .limit(10)
+            .select('trackingNumber courierType flyerId customer_name address status_record delivered_at returned_at last_tracking_update latest_courier_status');
 
-        // No need to fetch OrderUpdate anymore since updates are now embedded in the Order model
+        // Process recent orders
         for (let order of recentOrders) {
-            const latestStatus = order.status_record && order.status_record.length > 0
-                ? order.status_record[order.status_record.length - 1]
-                : null;
+            // Initialize status_record if it doesn't exist
+            if (!order.status_record) {
+                order.status_record = [];
+            }
+            
+            // Get latest status
+            const latestStatus = order.status_record.length > 0 
+                ? order.status_record[order.status_record.length - 1] 
+                : order.latest_courier_status || "Not Available";
+            
             order.latestStatus = latestStatus;
         }
 
         res.render('dashboard/dashboard', {
             user: req.user,
-            stats: statsResponse.stats,
+            orderStats,
             recentOrders,
             path: '/dashboard'
         });
-    } catch (err) {
-        console.error("Error in dashboard route:", err);
-        res.status(500).render('error', {
-            message: 'Internal Server Error',
-            error: err.message
+    } catch (error) {
+        console.error('Error in dashboard route:', error);
+        req.flash('error', error.message || 'Please try again later.');
+        res.status(500).render('error', { 
+            message: error.message || 'An unexpected error occurred. Please try again later.',
+            error: process.env.NODE_ENV === 'development' ? error : {}
         });
     }
 });
