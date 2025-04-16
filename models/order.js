@@ -8,16 +8,15 @@ const orderSchema = new mongoose.Schema({
     customer_name: { type: String, default: null },
     address: { type: String, default: null },
     isDelivered: { type: Boolean, default: false },
+    isReturned: { type: Boolean, default: false },
     delivered_at: { type: String, default: null },
     returned_at: { type: String, default: null },
     last_tracking_update: { type: Date, default: null },
     latest_courier_status: { type: String, default: null },
-    invoicePayment: { type: Number, default: null }
-}, { timestamps: true });
+    invoicePayment: { type: Number, default: null },
 
-const orderUpdatesSchema = new mongoose.Schema({
-    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
-    status_record: [],
+    // Merged fields from OrderUpdate
+    status_record: { type: [String], default: [] },
     productInfo: {
         OrderNumber: { type: String },
         date: { type: String },
@@ -28,13 +27,10 @@ const orderUpdatesSchema = new mongoose.Schema({
             Quantity: { type: String },
         },
     },
-    last_tracking_update: { type: Date },
-    rawJson: {}
-}, { timestamps: true });
+    rawJson: { type: Object, default: {} }
 
+}, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);
 
-const OrderUpdate = mongoose.model('OrderUpdate', orderUpdatesSchema);
-
-export { Order, OrderUpdate }; 
+export { Order };

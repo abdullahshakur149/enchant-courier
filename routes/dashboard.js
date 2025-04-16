@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 import { checkAuthenticated } from '../config/webAuth.js';
 import { getMonthlyStats } from "../controllers/orders/order.controller.js";
-import { Order, OrderUpdate } from '../models/order.js';
+import { Order } from '../models/order.js';
 import User from '../models/user.js';
 import {
     updateSystemSettings,
@@ -18,7 +18,24 @@ router.use(checkAuthenticated);
 // Dashboard main route
 router.get('/', async (req, res) => {
     try {
-        // Get monthly stats
+
+        const trax = await Order.countDocuments({
+            isDelivered: true,
+            isReturned: true,
+            courierType: 'trax'
+        });
+        const daewoo = await Order.countDocuments({
+            isDelivered: true,
+            isReturned: true,
+            courierType: 'daewoo'
+        });
+        const postex = await Order.countDocuments({
+            isDelivered: true,
+            isReturned: true,
+            courierType: 'postex'
+        });
+        console.log("Delivered Orders:", trax, daewoo, postex);
+
         const statsResponse = await getMonthlyStats();
         if (!statsResponse.success) {
             throw new Error(statsResponse.message || 'Failed to get monthly stats');
@@ -28,11 +45,12 @@ router.get('/', async (req, res) => {
             .sort({ createdAt: -1 })
             .limit(10);
 
+        // No need to fetch OrderUpdate anymore since updates are now embedded in the Order model
         for (let order of recentOrders) {
-            const orderUpdate = await OrderUpdate.findOne({ orderId: order._id }).sort({ createdAt: -1 }).lean();
-            if (orderUpdate?.productInfo) {
-                order.productInfo = orderUpdate.productInfo;
-            }
+            const latestStatus = order.status_record && order.status_record.length > 0
+                ? order.status_record[order.status_record.length - 1]
+                : null;
+            order.latestStatus = latestStatus;
         }
 
         res.render('dashboard/dashboard', {

@@ -1,4 +1,4 @@
-import { Order, OrderUpdate } from '../../models/order.js';
+import { Order } from '../../models/order.js';
 import { formatDate } from '../../utils/helpers.js';
 
 
@@ -53,13 +53,13 @@ export const submitOrder = async (req, res) => {
 
 
 
+
 export const getOrders = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        // Get orders with all necessary fields
         const orders = await Order.find({})
-            .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment')
+            .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment status_record productInfo rawJson')
             .skip(skip)
             .limit(limit);
 
@@ -78,27 +78,9 @@ export const getOrders = async (page = 1, limit = 50) => {
             };
         }
 
-        // Get latest updates for all orders
-        const orderIds = orders.map(order => order._id);
-        const latestUpdates = await OrderUpdate.find({
-            orderId: { $in: orderIds }
-        })
-            .sort({ createdAt: -1 })
-            .then(updates => {
-                const latestByOrder = {};
-                updates.forEach(update => {
-                    if (!latestByOrder[update.orderId] ||
-                        update.createdAt > latestByOrder[update.orderId].createdAt) {
-                        latestByOrder[update.orderId] = update;
-                    }
-                });
-                return latestByOrder;
-            });
-
         // Format the response
         const trackingData = orders.map(order => {
-            const latestUpdate = latestUpdates[order._id.toString()];
-            const statusRecord = latestUpdate?.status_record || [];
+            const statusRecord = order.status_record || [];
             const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
 
             return {
@@ -114,7 +96,7 @@ export const getOrders = async (page = 1, limit = 50) => {
                 last_tracking_update: order.last_tracking_update,
                 latest_courier_status: order.latest_courier_status,
                 invoicePayment: order.invoicePayment,
-                productInfo: latestUpdate?.productInfo || {
+                productInfo: order.productInfo || {
                     OrderNumber: order.trackingNumber,
                     date: new Date().toISOString(),
                     CustomerName: order.customer_name || "Not Available",
@@ -127,9 +109,8 @@ export const getOrders = async (page = 1, limit = 50) => {
                 trackingResponse: {
                     status: latestStatus || order.status || "Not Available",
                     status_record: statusRecord,
-                    rawJson: latestUpdate?.rawJson || {}
                 },
-                lastUpdated: latestUpdate?.last_tracking_update || order.last_tracking_update || null
+                lastUpdated: order.last_tracking_update || null
             };
         });
 
@@ -162,6 +143,7 @@ export const getOrders = async (page = 1, limit = 50) => {
 
 
 
+
 // update order 
 export const updateOrder = async (req, res) => {
     try {
@@ -189,20 +171,26 @@ export const updateOrder = async (req, res) => {
         if (updateFields.trackingNumber) updateData.trackingNumber = updateFields.trackingNumber;
         if (updateFields.flyerId) updateData.flyerId = updateFields.flyerId;
         if (updateFields.courierType) updateData.courierType = updateFields.courierType;
+        if (updateFields.status) updateData.status = updateFields.status;
+        if (updateFields.delivered_at) updateData.delivered_at = updateFields.delivered_at;
+        if (updateFields.returned_at) updateData.returned_at = updateFields.returned_at;
+        if (updateFields.last_tracking_update) updateData.last_tracking_update = updateFields.last_tracking_update;
+        if (updateFields.latest_courier_status) updateData.latest_courier_status = updateFields.latest_courier_status;
+        if (updateFields.invoicePayment) updateData.invoicePayment = updateFields.invoicePayment;
 
-        // Update order using _id
-        await Order.findByIdAndUpdate(_id, updateData);
-
-        // If tracking number or courier type changed, we should create a new OrderUpdate
-        if (updateFields.trackingNumber || updateFields.courierType) {
-            const orderUpdate = new OrderUpdate({
-                orderId: _id,
-                latestStatus: orderExists.status || "Status Updated",
-                productInfo: orderExists.productInfo || {},
-                rawJson: { updatedFields: updateFields }
-            });
-            await orderUpdate.save();
+        // Update status_record, productInfo, or rawJson if these fields are part of the update
+        if (updateFields.status_record) {
+            updateData.status_record = [...orderExists.status_record, ...updateFields.status_record];
         }
+        if (updateFields.productInfo) {
+            updateData.productInfo = updateFields.productInfo;
+        }
+        if (updateFields.rawJson) {
+            updateData.rawJson = { ...orderExists.rawJson, ...updateFields.rawJson };
+        }
+
+        // Update order using _id with the gathered data
+        await Order.findByIdAndUpdate(_id, updateData);
 
         return res.json({
             success: true,
@@ -216,7 +204,7 @@ export const updateOrder = async (req, res) => {
             message: 'Please try again later.'
         });
     }
-}
+};
 
 // delete order
 export const deleteOrder = async (req, res) => {
@@ -240,9 +228,6 @@ export const deleteOrder = async (req, res) => {
             });
         }
 
-        // Delete all related OrderUpdate records first
-        await OrderUpdate.deleteMany({ orderId: id });
-
         // Delete the order
         await Order.deleteOne({ _id: id });
 
@@ -258,7 +243,7 @@ export const deleteOrder = async (req, res) => {
             message: 'Please try again later.'
         });
     }
-}
+};
 
 
 
@@ -275,6 +260,8 @@ export const getMonthlyStats = async (req, res) => {
         startOfMonth.setHours(0, 0, 0, 0);
 
         const endOfMonth = new Date();
+        endOfMonth.setMonth(startOfMonth.getMonth() + 1); // first day of next month
+        endOfMonth.setDate(0); // last day of current month
         endOfMonth.setHours(23, 59, 59, 999);
 
         // Get all orders for the current month
@@ -285,20 +272,18 @@ export const getMonthlyStats = async (req, res) => {
             }
         });
 
-        // Calculate statistics based on latest_courier_status
-        const deliveredOrders = orders.filter(order => 
-            order.latest_courier_status?.toLowerCase().includes('delivered')
-        );
-        const returnedOrders = orders.filter(order => 
-            order.latest_courier_status?.toLowerCase().includes('return')
-        );
-        const activeOrders = orders.filter(order => 
-            !order.latest_courier_status?.toLowerCase().includes('delivered') && 
-            !order.latest_courier_status?.toLowerCase().includes('return')
+        // Categorize orders
+        const deliveredOrders = orders.filter(order => order.isDelivered === true);
+
+        const activeOrders = orders.filter(order =>
+            order.isDelivered !== true &&
+            !order.status_record.some(status =>
+                status.status.toLowerCase().includes('return') // Check if no status in the status_record indicates return
+            )
         );
 
         // Calculate total revenue from delivered orders
-        const totalRevenue = deliveredOrders.reduce((sum, order) => 
+        const totalRevenue = deliveredOrders.reduce((sum, order) =>
             sum + (order.invoicePayment || 0), 0);
 
         const stats = {
@@ -327,6 +312,8 @@ export const getMonthlyStats = async (req, res) => {
         };
     }
 };
+
+
 
 
 
