@@ -15,7 +15,7 @@ export const updateOrderStatuses = async (req, res) => {
 
         if (postexOrders.length > 0) {
             const postexTrackingNumbers = postexOrders.map(order => order.trackingNumber);
-        
+
             try {
                 const postexApiUrl = process.env.POSTEXAPI_URL;
                 const postexResponse = await axios.get(postexApiUrl, {
@@ -26,24 +26,26 @@ export const updateOrderStatuses = async (req, res) => {
                     params: { TrackingNumbers: postexTrackingNumbers },
                     paramsSerializer: { indexes: null }
                 });
-        
+
                 await Promise.all(postexResponse.data.dist.map(async (item) => {
                     const order = postexOrders.find(o => o.trackingNumber === item.trackingNumber);
                     const data = item.trackingResponse || {};
 
-                    const status = data.transactionStatus?.toLowerCase() || '';
+                    const status = data.transactionStatus
                     const timestamp = new Date();
 
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
                         address: data.deliveryAddress || order.address,
-                        status: data.transactionStatus || order.status,
+                        latest_courier_status: data.transactionStatus || order.status,
                         invoicePayment: data.invoicePayment || order.invoicePayment,
                         last_tracking_update: timestamp,
                     };
 
-                    if (status.includes('delivered')) updateFields.delivered_at = timestamp;
-                    if (status.includes('return')) updateFields.returned_at = timestamp;
+                    if (status.includes('Delivered')) {
+                        updateFields.delivered_at = timestamp;
+                        updateFields.isDelivered = true;
+                    }
 
                     try {
                         await Order.findByIdAndUpdate(order._id, updateFields);
@@ -84,7 +86,7 @@ export const updateOrderStatuses = async (req, res) => {
                         console.error(`Error processing tracking data for order ${order._id}:`, innerError);
                     }
                 }));
-        
+
             } catch (error) {
                 console.error("Error updating PostEx orders:", error);
             }
@@ -102,7 +104,7 @@ export const updateOrderStatuses = async (req, res) => {
                     const trackingDetails = trackingResult.TrackingDetails || [];
                     const latestStatus = trackingDetails.length > 0 ? trackingDetails[trackingDetails.length - 1] : null;
 
-                    const status = latestStatus?.Status?.toLowerCase() || '';
+                    const status = latestStatus?.Status
                     const statusReason = latestStatus?.Status_Reason || '';
                     const date = latestStatus?.Date || null;
                     const remarks = latestStatus?.Rem || '';
@@ -116,8 +118,10 @@ export const updateOrderStatuses = async (req, res) => {
                         last_tracking_update: new Date(),
                     };
 
-                    if (status.includes("delivered")) updateFields.delivered_at = date;
-                    if (status.includes("return")) updateFields.returned_at = date;
+                    if (status.includes("Delivered")) {
+                        updateFields.delivered_at = date;
+                        updateFields.isDelivered = true;
+                    }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
@@ -192,7 +196,7 @@ export const updateOrderStatuses = async (req, res) => {
                     const latest = trackingHistory[0];
 
                     const product = details.order_information?.items?.[0] || {};
-                    const status = latest?.status?.toLowerCase() || order.status?.toLowerCase();
+                    const status = latest?.status
                     const timestamp = latest?.timestamp ? new Date(latest.timestamp * 1000) : new Date();
 
                     const updateFields = {
@@ -204,8 +208,10 @@ export const updateOrderStatuses = async (req, res) => {
                         invoicePayment: details.order_information?.amount || order.invoicePayment,
                     };
 
-                    if (status.includes('delivered')) updateFields.delivered_at = timestamp.toISOString();
-                    if (status.includes('return')) updateFields.returned_at = timestamp.toISOString();
+                    if (status.includes("Shipment - Delivered")) {
+                        updateFields.delivered_at = timestamp.toISOString();
+                        updateFields.isDelivered = true;
+                    }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
