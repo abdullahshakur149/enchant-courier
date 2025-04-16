@@ -1,7 +1,7 @@
 import { Order } from '../../models/order.js';
 import { formatDate } from '../../utils/helpers.js';
 
-
+// changes
 export const submitOrder = async (req, res) => {
     try {
         // console.log(req.body);
@@ -200,25 +200,25 @@ export const updateOrder = async (req, res) => {
         // Update status_record, productInfo, or rawJson if these fields are part of the update
         if (updateFields.status_record) {
             // Ensure status_record is an array
-            const newStatuses = Array.isArray(updateFields.status_record) 
-                ? updateFields.status_record 
+            const newStatuses = Array.isArray(updateFields.status_record)
+                ? updateFields.status_record
                 : [updateFields.status_record];
-            
+
             // Only add new statuses that don't already exist
-            const uniqueNewStatuses = newStatuses.filter(status => 
+            const uniqueNewStatuses = newStatuses.filter(status =>
                 status && !orderExists.status_record.includes(status)
             );
-            
+
             updateData.status_record = [...orderExists.status_record, ...uniqueNewStatuses];
         }
-        
+
         if (updateFields.productInfo) {
             updateData.productInfo = {
                 ...orderExists.productInfo,
                 ...updateFields.productInfo
             };
         }
-        
+
         if (updateFields.rawJson) {
             updateData.rawJson = {
                 ...orderExists.rawJson,
