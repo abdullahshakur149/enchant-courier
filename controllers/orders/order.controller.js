@@ -1,4 +1,4 @@
-import { Order } from '../../models/order.js';
+import { Order, ReturnedOrder } from '../../models/order.js';
 import { formatDate } from '../../utils/helpers.js';
 
 // ===================================== submit order ===============================================
@@ -293,21 +293,48 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
 
         const totalOrders = await Order.countDocuments({ isDelivered: true });
         const orders = await Order.find({ isDelivered: true })
+            .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment status_record productInfo rawJson')
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
 
-        // Map orders to include trackingResponse
-        const trackingData = orders.map(order => ({
-            ...order.toObject(),
-            trackingResponse: {
-                status_record: [{
-                    status: 'Delivered',
-                    date: order.updatedAt || order.createdAt
-                }]
-            },
-            latest_courier_status: 'Delivered'
-        }));
+        // Format the response
+        const trackingData = orders.map(order => {
+            // Initialize status_record if it doesn't exist
+            const statusRecord = Array.isArray(order.status_record) ? order.status_record : [];
+            const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
+
+            return {
+                _id: order._id,
+                trackingNumber: order.trackingNumber,
+                courierType: order.courierType,
+                flyerId: order.flyerId,
+                customer_name: order.customer_name,
+                address: order.address,
+                status: order.status,
+                delivered_at: order.delivered_at,
+                returned_at: order.returned_at,
+                last_tracking_update: order.last_tracking_update,
+                latest_courier_status: order.latest_courier_status,
+                invoicePayment: order.invoicePayment,
+                productInfo: order.productInfo || {
+                    OrderNumber: order.trackingNumber,
+                    date: new Date().toISOString(),
+                    CustomerName: order.customer_name || "Not Available",
+                    Address: order.address || "Not Available",
+                    OrderDetails: {
+                        ProductName: "Not Available",
+                        Quantity: "Not Available"
+                    }
+                },
+                trackingResponse: {
+                    status: latestStatus || order.status || "Not Available",
+                    status_record: statusRecord,
+                },
+                lastUpdated: order.last_tracking_update || null,
+                createdAt: order.createdAt
+            };
+        });
 
         const totalPages = Math.ceil(totalOrders / limit);
 
@@ -337,6 +364,135 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
 };
 
 
+// ===================================== get returned orders  ===============================================
+
+export const returnedOrder = async (page = 1, limit = 50) => {
+    try {
+        const skip = (page - 1) * limit;
+
+        // First get all verified returned orders
+        const verifiedReturns = await ReturnedOrder.find({ verified: true })
+            .populate('order')
+            .skip(skip)
+            .limit(limit)
+            .sort({ verification_date: -1 });
+
+        const totalOrders = await ReturnedOrder.countDocuments({ verified: true });
+
+        // Format the response using the populated order data
+        const trackingData = verifiedReturns.map(returned => {
+            const order = returned.order;
+            // Initialize status_record if it doesn't exist
+            const statusRecord = Array.isArray(order.status_record) ? order.status_record : [];
+            const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
+
+            return {
+                _id: order._id,
+                trackingNumber: order.trackingNumber,
+                courierType: order.courierType,
+                flyerId: order.flyerId,
+                customer_name: order.customer_name,
+                address: order.address,
+                status: order.status,
+                delivered_at: order.delivered_at,
+                returned_at: order.returned_at,
+                last_tracking_update: order.last_tracking_update,
+                latest_courier_status: order.latest_courier_status,
+                invoicePayment: order.invoicePayment,
+                productInfo: order.productInfo || {
+                    OrderNumber: order.trackingNumber,
+                    date: new Date().toISOString(),
+                    CustomerName: order.customer_name || "Not Available",
+                    Address: order.address || "Not Available",
+                    OrderDetails: {
+                        ProductName: "Not Available",
+                        Quantity: "Not Available"
+                    }
+                },
+                trackingResponse: {
+                    status: latestStatus || order.status || "Not Available",
+                    status_record: statusRecord,
+                },
+                lastUpdated: order.last_tracking_update || null,
+                createdAt: order.createdAt,
+                verified: returned.verified,
+                verification_date: returned.verification_date
+            };
+        });
+
+        const totalPages = Math.ceil(totalOrders / limit);
+
+        return {
+            trackingData,
+            pagination: {
+                totalOrders,
+                totalPages,
+                currentPage: page,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1,
+            },
+        };
+    } catch (error) {
+        console.error("Error in returnedOrder:", error);
+        return {
+            trackingData: [],
+            pagination: {
+                totalOrders: 0,
+                totalPages: 0,
+                currentPage: page,
+                hasNextPage: false,
+                hasPrevPage: false,
+            },
+        };
+    }
+};
+
+// ===================================== verify return ===============================================
+export const verifyReturn = async (req, res) => {
+    try {
+        const { trackingNumber, flyerId } = req.body;
+
+        // Validate input
+        if (!trackingNumber || !flyerId) {
+            return res.json({
+                success: false,
+                message: 'Tracking number and flyer ID are required'
+            });
+        }
+
+        // Check if order exists
+        const order = await Order.findOne({ trackingNumber, flyerId });
+        if (!order) {
+            return res.json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Create or update returned order record
+        const returnedOrder = await ReturnedOrder.findOneAndUpdate(
+            { order: order._id },
+            {
+                verified: true,
+                verification_date: new Date()
+            },
+            { upsert: true, new: true }
+        );
+
+        return res.json({
+            success: true,
+            message: 'Return verified successfully',
+            data: returnedOrder
+        });
+
+    } catch (error) {
+        console.error('Error verifying return:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error verifying return. Please try again later.'
+        });
+    }
+};
 
 
 

@@ -5,27 +5,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Returned Orders</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <link href="css/admin.css" rel="stylesheet">
+    <%- include('./components/helpers.ejs') %>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="/css/verification.css" />
 </head>
 
 <body class="page-order-details">
     <%- include('./components/navbar.ejs') %>
-        <%- include('./components/sidebar.ejs') %>
+    <%- include('./components/sidebar.ejs') %>
 
-            <main id="main" style="margin-right: 0px !important;" class="main">
-                <div class="container">
-                    <%- include('./components/TableLayout.ejs', { title: 'Returned Orders' ,
-                        exportFileName: 'returned_orders.csv' , trackingData: trackingData, pagination: pagination }) %>
+    <main id="main" style="margin-right: 0px !important;" class="main">
+        <div class="container">
+            <%- include('./components/TableLayout.ejs', { title: 'Returned Orders' ,
+                exportFileName: 'returned_orders.csv' , trackingData: trackingData, pagination: pagination }) %>
+        </div>
+    </main>
+
+    <!-- Return Verification Modal -->
+    <div class="modal fade" id="returnVerificationModal" tabindex="-1" aria-labelledby="returnVerificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Verify Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            </main>
+                <div class="modal-body">
+                    <div class="form-container">
+                        <form id="returnVerificationForm">
+                            <div class="mb-3">
+                                <label class="form-label">Tracking Number</label>
+                                <input type="text" class="form-control" id="verifyTrackingNumber" name="trackingNumber" 
+                                    autofocus autocomplete="off" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Flyer ID</label>
+                                <input type="text" class="form-control" id="verifyFlyerId" name="flyerId" 
+                                    autocomplete="off" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="verificationResult" class="mt-3 text-center"></div>
+                    <div id="success-animation" class="success-animation">
+                        <i class="bi bi-check-circle-fill"></i>
+                        <p class="mt-2 text-success">Return verified successfully!</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="verifyReturnBtn">Verify Return</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <script src="js/admin.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add verification button to the table header
+            const tableHeader = document.querySelector('.d-flex.justify-content-between.align-items-center.mb-3');
+            const verifyButton = document.createElement('button');
+            verifyButton.className = 'btn btn-success ms-2';
+            verifyButton.innerHTML = '<i class="bi bi-check-circle"></i> Verify Return';
+            verifyButton.setAttribute('data-bs-toggle', 'modal');
+            verifyButton.setAttribute('data-bs-target', '#returnVerificationModal');
+            tableHeader.querySelector('div').appendChild(verifyButton);
+
+            // Handle verification form submission
+            const verifyReturnBtn = document.getElementById('verifyReturnBtn');
+            const verificationForm = document.getElementById('returnVerificationForm');
+            const verificationResult = document.getElementById('verificationResult');
+            const formContainer = document.querySelector('.form-container');
+            const successAnimation = document.getElementById('success-animation');
+            const trackingNumberInput = document.getElementById('verifyTrackingNumber');
+
+            verifyReturnBtn.addEventListener('click', async function() {
+                const trackingNumber = trackingNumberInput.value.trim();
+                const flyerId = document.getElementById('verifyFlyerId').value.trim();
+
+                if (!trackingNumber || !flyerId) {
+                    verificationResult.innerHTML = '<span class="badge bg-danger">Please fill in all fields</span>';
+                    return;
+                }
+
+                try {
+                    const response = await axios.post('/order/verify-return', {
+                        trackingNumber,
+                        flyerId
+                    });
+
+                    if (response.data.success) {
+                        // Hide the form with animation
+                        formContainer.classList.add('hidden');
+                        verificationResult.innerHTML = '';
+                        
+                        // Show success animation
+                        successAnimation.style.display = 'block';
+
+                        // After 2 seconds, reset the form and show it again
+                        setTimeout(() => {
+                            formContainer.classList.remove('hidden');
+                            successAnimation.style.display = 'none';
+                            verificationForm.reset();
+                            trackingNumberInput.focus();
+                        }, 2000);
+                    } else {
+                        verificationResult.innerHTML = `<span class="badge bg-danger">${response.data.message}</span>`;
+                    }
+                } catch (error) {
+                    console.error(error);
+                    if (error.response && error.response.data && error.response.data.message) {
+                        verificationResult.innerHTML = `<span class="badge bg-danger">${error.response.data.message}</span>`;
+                    } else {
+                        verificationResult.innerHTML = '<span class="badge bg-danger">Server error. Please try again later.</span>';
+                    }
+                }
+            });
+
+            // Reset form when modal is closed
+            document.getElementById('returnVerificationModal').addEventListener('hidden.bs.modal', function () {
+                verificationForm.reset();
+                verificationResult.innerHTML = '';
+                formContainer.classList.remove('hidden');
+                successAnimation.style.display = 'none';
+            });
+
+            // Focus tracking number input when modal is shown
+            document.getElementById('returnVerificationModal').addEventListener('shown.bs.modal', function () {
+                trackingNumberInput.focus();
+            });
+        });
+    </script>
 </body>
 
 </html>

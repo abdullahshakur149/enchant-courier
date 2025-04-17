@@ -31,6 +31,18 @@ const orderSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const Order = mongoose.model('Order', orderSchema);
+const returnedOrderSchema = new mongoose.Schema({
+    order: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order',
+        required: true,
+        unique: true
+    },
+    verified: { type: Boolean, default: false },
+    verification_date: { type: Date, default: null }
+}, { timestamps: true });
 
-export { Order };
+const Order = mongoose.model('Order', orderSchema);
+const ReturnedOrder = mongoose.model('ReturnedOrder', returnedOrderSchema);
+
+export { Order, ReturnedOrder };
