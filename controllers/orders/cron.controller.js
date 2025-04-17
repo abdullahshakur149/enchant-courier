@@ -31,6 +31,11 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = data.transactionStatus;
                     const timestamp = new Date();
 
+                    // Get the current order with status_record
+                    const currentOrder = await Order.findById(order._id);
+                    const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
+                    
+                    // Only push if the status doesn't already exist
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
                         address: data.deliveryAddress || order.address,
@@ -38,6 +43,7 @@ export const updateOrderStatuses = async (req, res) => {
                         invoicePayment: data.invoicePayment || order.invoicePayment,
                         last_tracking_update: timestamp,
                         rawJson: data,
+                        ...(currentOrder.status_record.includes(statusRecord) ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: data.orderRefNumber || "Not Available",
                             date: formatDate(data.transactionDate) || "Not Available",
@@ -50,6 +56,7 @@ export const updateOrderStatuses = async (req, res) => {
                         },
                     };
 
+
                     if (status?.includes('Delivered')) {
                         updateFields.delivered_at = timestamp.toISOString();
                         updateFields.isDelivered = true;
@@ -60,15 +67,7 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                    // Initialize status_record if it doesn't exist
-                    if (!order.status_record) {
-                        order.status_record = [];
-                    }
-
-                    // Push status to record if not exists
-                    if (status && !order.status_record.includes(status)) {
-                        updateFields.status_record = [...order.status_record, status];
-                    }
+                   
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
                 }));
@@ -94,11 +93,16 @@ export const updateOrderStatuses = async (req, res) => {
                     const timestamp = new Date();
                     const date = latest?.Date;
 
+                    // Get the current order with status_record
+                    const currentOrder = await Order.findById(order._id);
+                    const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
+
                     const updateFields = {
                         status: status || order.status,
                         latest_courier_status: latest?.Status_Reason || order.latest_courier_status,
                         last_tracking_update: timestamp,
                         rawJson: latest,
+                        ...(currentOrder.status_record.includes(statusRecord) ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: order.trackingNumber,
                             date: date || "Not Available",
@@ -121,15 +125,7 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                    // Initialize status_record if it doesn't exist
-                    if (!order.status_record) {
-                        order.status_record = [];
-                    }
-
-                    // Push status to record if not exists
-                    if (status && !order.status_record.includes(status)) {
-                        updateFields.status_record = [...order.status_record, status];
-                    }
+                   
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
@@ -164,6 +160,10 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = latest?.status;
                     const timestamp = latest?.timestamp ? new Date(latest.timestamp * 1000) : new Date();
 
+                    // Get the current order with status_record
+                    const currentOrder = await Order.findById(order._id);
+                    const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
+
                     const updateFields = {
                         customer_name: details.consignee?.name || order.customer_name,
                         address: details.consignee?.address || order.address,
@@ -172,6 +172,7 @@ export const updateOrderStatuses = async (req, res) => {
                         last_tracking_update: timestamp,
                         invoicePayment: details.order_information?.amount || order.invoicePayment,
                         rawJson: data,
+                        ...(currentOrder.status_record.includes(statusRecord) ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: details.order_id || order.trackingNumber,
                             date: details.order_date || "Not Available",
@@ -194,15 +195,7 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                    // Initialize status_record if it doesn't exist
-                    if (!order.status_record) {
-                        order.status_record = [];
-                    }
-
-                    // Push status to record if not exists
-                    if (status && !order.status_record.includes(status)) {
-                        updateFields.status_record = [...order.status_record, status];
-                    }
+                   
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
