@@ -297,10 +297,22 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
             .limit(limit)
             .sort({ createdAt: -1 });
 
+        // Map orders to include trackingResponse
+        const trackingData = orders.map(order => ({
+            ...order.toObject(),
+            trackingResponse: {
+                status_record: [{
+                    status: 'Delivered',
+                    date: order.updatedAt || order.createdAt
+                }]
+            },
+            latest_courier_status: 'Delivered'
+        }));
+
         const totalPages = Math.ceil(totalOrders / limit);
 
         return {
-            trackingData: orders,
+            trackingData,
             pagination: {
                 totalOrders,
                 totalPages,
