@@ -1,7 +1,7 @@
 import { Order } from '../../models/order.js';
 import { formatDate } from '../../utils/helpers.js';
 
-// changes
+// ===================================== submit order ===============================================
 export const submitOrder = async (req, res) => {
     try {
         // console.log(req.body);
@@ -53,6 +53,7 @@ export const submitOrder = async (req, res) => {
 
 
 
+// ===================================== get order ===============================================
 
 export const getOrders = async (page = 1, limit = 50) => {
     try {
@@ -158,7 +159,7 @@ export const getOrders = async (page = 1, limit = 50) => {
 
 
 
-// update order 
+// ===================================== update order ===============================================
 export const updateOrder = async (req, res) => {
     try {
         const { _id, ...updateFields } = req.body;
@@ -243,7 +244,7 @@ export const updateOrder = async (req, res) => {
     }
 };
 
-// delete order
+// ===================================== delete order ===============================================
 export const deleteOrder = async (req, res) => {
     try {
         const { id } = req.params;
@@ -279,6 +280,47 @@ export const deleteOrder = async (req, res) => {
             success: false,
             message: 'Please try again later.'
         });
+    }
+};
+
+
+
+// ===================================== get delivered orders order ===============================================
+
+export const deliveredOrder = async (page = 1, limit = 50) => {
+    try {
+        const skip = (page - 1) * limit;
+
+        const totalOrders = await Order.countDocuments({ isDelivered: true });
+        const orders = await Order.find({ isDelivered: true })
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 });
+
+        const totalPages = Math.ceil(totalOrders / limit);
+
+        return {
+            trackingData: orders,
+            pagination: {
+                totalOrders,
+                totalPages,
+                currentPage: page,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1,
+            },
+        };
+    } catch (error) {
+        console.error("Error in deliveredOrder:", error);
+        return {
+            trackingData: [],
+            pagination: {
+                totalOrders: 0,
+                totalPages: 0,
+                currentPage: page,
+                hasNextPage: false,
+                hasPrevPage: false,
+            },
+        };
     }
 };
 

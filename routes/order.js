@@ -1,5 +1,5 @@
 import express from 'express';
-import { submitOrder, getOrders, updateOrder, deleteOrder } from "../controllers/orders/order.controller.js";
+import { submitOrder, getOrders, updateOrder, deleteOrder, deliveredOrder } from "../controllers/orders/order.controller.js";
 import { updateOrderStatuses } from '../controllers/orders/cron.controller.js';
 import { checkAuthenticated } from '../config/webAuth.js';
 
@@ -48,8 +48,28 @@ router.get('/orders', checkAuthenticated, async (req, res) => {
 });
 
 
+
 router.post('/update-order/:id', checkAuthenticated, updateOrder);
 
 router.delete('/delete-order/:id', checkAuthenticated, deleteOrder);
+
+router.get('/delivered-orders', checkAuthenticated, async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+
+        const { trackingData, pagination } = await deliveredOrder(page, limit);
+
+        if (!trackingData || trackingData.length === 0) {
+            console.warn("No delivered orders found.");
+        }
+
+        res.render('dashboard/delivered', { trackingData, pagination });
+    } catch (error) {
+        console.error("Error fetching delivered orders:", error);
+        res.status(500).send("Server error while fetching orders.");
+    }
+});
+
 
 export default router;
