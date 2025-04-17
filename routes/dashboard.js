@@ -18,8 +18,8 @@ const getOrderStatistics = async () => {
         const deliveredOrders = await Order.countDocuments({ isDelivered: true });
         const returnedOrders = await Order.countDocuments({ isReturned: true });
         const pendingOrders = totalOrders - deliveredOrders - returnedOrders;
-        const order = await Order.find({trackingNumber: '27124450427978'});
-        console.log(order);
+        // const order = await Order.find({trackingNumber: '27124450427978'});
+        // console.log(order);
 
         return {
             total: totalOrders,
@@ -51,12 +51,12 @@ router.get('/', async (req, res) => {
             if (!order.status_record) {
                 order.status_record = [];
             }
-            
+
             // Get latest status
-            const latestStatus = order.status_record.length > 0 
-                ? order.status_record[order.status_record.length - 1] 
+            const latestStatus = order.status_record.length > 0
+                ? order.status_record[order.status_record.length - 1]
                 : order.latest_courier_status || "Not Available";
-            
+
             order.latestStatus = latestStatus;
         }
 
@@ -69,7 +69,7 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error('Error in dashboard route:', error);
         req.flash('error', error.message || 'Please try again later.');
-        res.status(500).render('error', { 
+        res.status(500).render('error', {
             message: error.message || 'An unexpected error occurred. Please try again later.',
             error: process.env.NODE_ENV === 'development' ? error : {}
         });

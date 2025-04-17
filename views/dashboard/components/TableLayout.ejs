@@ -26,6 +26,7 @@
                 <th style="width: 200px">Address</th>
                 <th style="width: 200px">Product Name</th>
                 <th style="width: 100px">Quantity</th>
+                <th style="width: 100px">Price</th>
                 <th style="width: 150px">Latest Courier Status</th>
                 <th style="width: 100px">Actions</th>
             </tr>
@@ -67,9 +68,13 @@
                             <td>
                                 <%= order.productInfo?.OrderDetails?.Quantity || 'N/A' %>
                             </td>
+                            <td>
+                                <%= order.invoicePayment || 'N/A' %>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 cursor-pointer"
-                                      onclick="showStatusHistory('<%= order._id %>', '<%= JSON.stringify(order.trackingResponse.status_record) %>')">
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 cursor-pointer"
+                                    onclick="showStatusHistory('<%= order._id %>', '<%= JSON.stringify(order.trackingResponse.status_record) %>')">
                                     <%= order.latest_courier_status %>
                                 </span>
                             </td>
@@ -268,7 +273,8 @@
 </div>
 
 <!-- Status History Modal -->
-<div class="modal fade" id="statusHistoryModal" tabindex="-1" aria-labelledby="statusHistoryModalLabel" aria-hidden="true">
+<div class="modal fade" id="statusHistoryModal" tabindex="-1" aria-labelledby="statusHistoryModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -449,19 +455,19 @@
             },
             body: JSON.stringify({ status })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Status record updated successfully');
-                location.reload();
-            } else {
-                alert('Failed to update status record');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while updating status record');
-        });
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Status record updated successfully');
+                    location.reload();
+                } else {
+                    alert('Failed to update status record');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating status record');
+            });
     }
 
     function showStatusHistory(orderId, statusRecord) {
@@ -472,11 +478,11 @@
         statusHistory.forEach((status, index) => {
             const statusItem = document.createElement('div');
             statusItem.className = 'status-item';
-            
+
             const statusText = document.createElement('div');
             statusText.className = 'status-text';
             statusText.textContent = status;
-            
+
             statusItem.appendChild(statusText);
             statusHistoryList.appendChild(statusItem);
         });

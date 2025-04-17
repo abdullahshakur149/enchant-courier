@@ -374,7 +374,7 @@ h6 {
 @media (min-width: 1200px) {
   #main,
   #footer {
-    margin-left: 200px;
+    margin-left: 233px;
   }
 }
 
@@ -979,161 +979,161 @@ body {
 
 /* Settings Page Styles */
 .settings-container {
-    padding: 2rem;
+  padding: 2rem;
 }
 /* change */
 
 .settings-card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
 
 .settings-card .card-header {
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-    padding: 1rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
 }
 
 .settings-card .card-header h5 {
-    margin: 0;
-    color: #2c3e50;
-    font-weight: 600;
+  margin: 0;
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .settings-card .card-body {
-    padding: 1.5rem;
+  padding: 1.5rem;
 }
 
 /* User Table Styles */
 .user-table {
-    width: 100%;
-    margin-bottom: 0;
+  width: 100%;
+  margin-bottom: 0;
 }
 
 .user-table th {
-    background: #f8f9fa;
-    font-weight: 600;
-    color: #2c3e50;
-    border-bottom: 2px solid #dee2e6;
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #dee2e6;
 }
 
 .user-table td {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 .user-table tbody tr:hover {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 
 .user-role {
-    font-size: 0.875rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
 }
 
 .user-role.admin {
-    background-color: #dc3545;
-    color: white;
+  background-color: #dc3545;
+  color: white;
 }
 
 .user-role.user {
-    background-color: #28a745;
-    color: white;
+  background-color: #28a745;
+  color: white;
 }
 
 /* Action Buttons */
 .action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: flex-end;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 .action-buttons .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
 }
 
 /* Modal Styles */
 .modal-header {
-    background: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
 .modal-title {
-    color: #2c3e50;
-    font-weight: 600;
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .modal-footer {
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
 }
 
 /* Alert Styles */
 .alert {
-    margin-bottom: 1rem;
-    border: none;
-    border-radius: 4px;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 4px;
 }
 
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
+  background-color: #d4edda;
+  color: #155724;
 }
 
 .alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
+  background-color: #f8d7da;
+  color: #721c24;
 }
 
 /* Form Styles */
 .form-label {
-    font-weight: 500;
-    color: #2c3e50;
+  font-weight: 500;
+  color: #2c3e50;
 }
 
 .form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 /* Add User Button */
 .btn-add-user {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-weight: 500;
-    transition: background-color 0.2s;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .btn-add-user:hover {
-    background-color: #0056b3;
-    color: white;
+  background-color: #0056b3;
+  color: white;
 }
 
 /* Responsive Styles */
 @media (max-width: 768px) {
-    .settings-container {
-        padding: 1rem;
-    }
-    
-    .user-table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-    
-    .action-buttons {
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-    
-    .action-buttons .btn {
-        width: 100%;
-    }
+  .settings-container {
+    padding: 1rem;
+  }
+
+  .user-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+  }
 }
