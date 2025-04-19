@@ -35,7 +35,11 @@ export const updateOrderStatuses = async (req, res) => {
                     const currentOrder = await Order.findById(order._id);
                     const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
                     
-                    // Only push if the status doesn't already exist
+                    // Only push if the status doesn't already exist in the last record
+                    const lastStatus = currentOrder.status_record.length > 0 
+                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1] 
+                        : '';
+                    
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
                         address: data.deliveryAddress || order.address,
@@ -43,7 +47,7 @@ export const updateOrderStatuses = async (req, res) => {
                         invoicePayment: data.invoicePayment || order.invoicePayment,
                         last_tracking_update: timestamp,
                         rawJson: data,
-                        ...(currentOrder.status_record.includes(statusRecord) ? {} : { $push: { status_record: statusRecord } }),
+                        ...(lastStatus === status ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: data.orderRefNumber || "Not Available",
                             date: formatDate(data.transactionDate) || "Not Available",
@@ -96,13 +100,18 @@ export const updateOrderStatuses = async (req, res) => {
                     // Get the current order with status_record
                     const currentOrder = await Order.findById(order._id);
                     const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-
+                    
+                    // Only push if the status doesn't already exist in the last record
+                    const lastStatus = currentOrder.status_record.length > 0 
+                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1] 
+                        : '';
+                    
                     const updateFields = {
                         status: status || order.status,
                         latest_courier_status: latest?.Status_Reason || order.latest_courier_status,
                         last_tracking_update: timestamp,
                         rawJson: latest,
-                        ...(currentOrder.status_record.includes(statusRecord) ? {} : { $push: { status_record: statusRecord } }),
+                        ...(lastStatus === status ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: order.trackingNumber,
                             date: date || "Not Available",
@@ -163,7 +172,12 @@ export const updateOrderStatuses = async (req, res) => {
                     // Get the current order with status_record
                     const currentOrder = await Order.findById(order._id);
                     const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-
+                    
+                    // Only push if the status doesn't already exist in the last record
+                    const lastStatus = currentOrder.status_record.length > 0 
+                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1] 
+                        : '';
+                    
                     const updateFields = {
                         customer_name: details.consignee?.name || order.customer_name,
                         address: details.consignee?.address || order.address,
@@ -172,7 +186,7 @@ export const updateOrderStatuses = async (req, res) => {
                         last_tracking_update: timestamp,
                         invoicePayment: details.order_information?.amount || order.invoicePayment,
                         rawJson: data,
-                        ...(currentOrder.status_record.includes(statusRecord) ? {} : { $push: { status_record: statusRecord } }),
+                        ...(lastStatus === status ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: details.order_id || order.trackingNumber,
                             date: details.order_date || "Not Available",

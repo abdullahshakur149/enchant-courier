@@ -344,6 +344,7 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
                 totalOrders,
                 totalPages,
                 currentPage: page,
+                limit,
                 hasNextPage: page < totalPages,
                 hasPrevPage: page > 1,
             },
@@ -356,6 +357,7 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
                 totalOrders: 0,
                 totalPages: 0,
                 currentPage: page,
+                limit,
                 hasNextPage: false,
                 hasPrevPage: false,
             },
@@ -429,6 +431,7 @@ export const returnedOrder = async (page = 1, limit = 50) => {
             pagination: {
                 totalOrders,
                 totalPages,
+                limit,
                 currentPage: page,
                 hasNextPage: page < totalPages,
                 hasPrevPage: page > 1,
