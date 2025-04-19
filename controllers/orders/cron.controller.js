@@ -34,12 +34,12 @@ export const updateOrderStatuses = async (req, res) => {
                     // Get the current order with status_record
                     const currentOrder = await Order.findById(order._id);
                     const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-                    
+
                     // Only push if the status doesn't already exist in the last record
-                    const lastStatus = currentOrder.status_record.length > 0 
-                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1] 
+                    const lastStatus = currentOrder.status_record.length > 0
+                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1]
                         : '';
-                    
+
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
                         address: data.deliveryAddress || order.address,
@@ -71,7 +71,7 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                   
+
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
                 }));
@@ -100,12 +100,12 @@ export const updateOrderStatuses = async (req, res) => {
                     // Get the current order with status_record
                     const currentOrder = await Order.findById(order._id);
                     const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-                    
+
                     // Only push if the status doesn't already exist in the last record
-                    const lastStatus = currentOrder.status_record.length > 0 
-                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1] 
+                    const lastStatus = currentOrder.status_record.length > 0
+                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1]
                         : '';
-                    
+
                     const updateFields = {
                         status: status || order.status,
                         latest_courier_status: latest?.Status_Reason || order.latest_courier_status,
@@ -134,7 +134,9 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                   
+                    // pushed
+
+
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
@@ -172,12 +174,12 @@ export const updateOrderStatuses = async (req, res) => {
                     // Get the current order with status_record
                     const currentOrder = await Order.findById(order._id);
                     const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-                    
+
                     // Only push if the status doesn't already exist in the last record
-                    const lastStatus = currentOrder.status_record.length > 0 
-                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1] 
+                    const lastStatus = currentOrder.status_record.length > 0
+                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1]
                         : '';
-                    
+
                     const updateFields = {
                         customer_name: details.consignee?.name || order.customer_name,
                         address: details.consignee?.address || order.address,
@@ -209,7 +211,7 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.isReturned = true;
                     }
 
-                   
+
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
