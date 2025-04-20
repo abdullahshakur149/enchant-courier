@@ -66,7 +66,7 @@ export const getOrders = async (page = 1, limit = 50) => {
                 { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         })
-            .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment status_record productInfo rawJson')
+            .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
@@ -74,7 +74,6 @@ export const getOrders = async (page = 1, limit = 50) => {
         const totalOrders = await Order.countDocuments({
             $and: [
                 { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
-                { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         });
 
@@ -93,37 +92,51 @@ export const getOrders = async (page = 1, limit = 50) => {
 
         // Format the response
         const trackingData = orders.map(order => {
-            // Initialize status_record if it doesn't exist
-            const statusRecord = Array.isArray(order.status_record) ? order.status_record : [];
-            const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
+            // Get tracking history based on courier type
+            let trackingHistory = [];
+            let latestStatus = order.status;
+
+            if (order.courierType.toLowerCase() === 'trax' && order.rawJson?.details?.tracking_history) {
+                trackingHistory = order.rawJson.details.tracking_history.map(item => ({
+                    status: item.status,
+                    timestamp: new Date(item.timestamp * 1000).toISOString(),
+                    location: item.location || 'Not Available'
+                }));
+                latestStatus = trackingHistory[0]?.status || order.status;
+            } else if (order.courierType.toLowerCase() === 'postex' && order.rawJson?.transactionStatusHistory) {
+                trackingHistory = order.rawJson.transactionStatusHistory.map(item => ({
+                    status: item.status,
+                    timestamp: item.timestamp,
+                    location: item.location || 'Not Available'
+                }));
+                latestStatus = trackingHistory[0]?.status || order.status;
+            } else if (order.courierType.toLowerCase() === 'daewoo' && order.rawJson?.Status_Reason) {
+                latestStatus = order.rawJson.Status_Reason;
+            }
 
             return {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
                 flyerId: order.flyerId,
-                customer_name: order.customer_name,
-                address: order.address,
                 status: order.status,
+                invoicePayment: order.invoicePayment,
+                last_tracking_update: order.last_tracking_update,
+                isDelivered: order.isDelivered,
+                isReturned: order.isReturned,
                 delivered_at: order.delivered_at,
                 returned_at: order.returned_at,
-                last_tracking_update: order.last_tracking_update,
-                latest_courier_status: order.latest_courier_status,
-                invoicePayment: order.invoicePayment,
                 productInfo: order.productInfo || {
                     OrderNumber: order.trackingNumber,
                     date: new Date().toISOString(),
-                    CustomerName: order.customer_name || "Not Available",
-                    Address: order.address || "Not Available",
+                    CustomerName: "Not Available",
+                    Address: "Not Available",
                     OrderDetails: {
                         ProductName: "Not Available",
                         Quantity: "Not Available"
                     }
                 },
-                trackingResponse: {
-                    status: latestStatus || order.status || "Not Available",
-                    status_record: statusRecord,
-                },
+                rawJson: order.rawJson,
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt
             };
@@ -293,43 +306,61 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
 
         const totalOrders = await Order.countDocuments({ isDelivered: true });
         const orders = await Order.find({ isDelivered: true })
-            .select('trackingNumber courierType flyerId customer_name address status delivered_at returned_at last_tracking_update latest_courier_status invoicePayment status_record productInfo rawJson')
+            .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 });
 
         // Format the response
         const trackingData = orders.map(order => {
-            // Initialize status_record if it doesn't exist
-            const statusRecord = Array.isArray(order.status_record) ? order.status_record : [];
-            const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
+            // Get tracking history based on courier type
+            let trackingHistory = [];
+            let latestStatus = order.status;
+
+            if (order.courierType.toLowerCase() === 'trax' && order.rawJson?.details?.tracking_history) {
+                trackingHistory = order.rawJson.details.tracking_history.map(item => ({
+                    status: item.status,
+                    timestamp: new Date(item.timestamp * 1000).toISOString(),
+                    location: item.location || 'Not Available'
+                }));
+                latestStatus = trackingHistory[0]?.status || order.status;
+            } else if (order.courierType.toLowerCase() === 'postex' && order.rawJson?.transactionStatusHistory) {
+                trackingHistory = order.rawJson.transactionStatusHistory.map(item => ({
+                    status: item.status,
+                    timestamp: item.timestamp,
+                    location: item.location || 'Not Available'
+                }));
+                latestStatus = trackingHistory[0]?.status || order.status;
+            } else if (order.courierType.toLowerCase() === 'daewoo' && order.rawJson?.Status_Reason) {
+                // For Daewoo, we only have the latest status
+                latestStatus = order.rawJson.Status_Reason;
+            }
 
             return {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
                 flyerId: order.flyerId,
-                customer_name: order.customer_name,
-                address: order.address,
                 status: order.status,
+                invoicePayment: order.invoicePayment,
+                last_tracking_update: order.last_tracking_update,
+                isDelivered: order.isDelivered,
+                isReturned: order.isReturned,
                 delivered_at: order.delivered_at,
                 returned_at: order.returned_at,
-                last_tracking_update: order.last_tracking_update,
-                latest_courier_status: order.latest_courier_status,
-                invoicePayment: order.invoicePayment,
                 productInfo: order.productInfo || {
                     OrderNumber: order.trackingNumber,
                     date: new Date().toISOString(),
-                    CustomerName: order.customer_name || "Not Available",
-                    Address: order.address || "Not Available",
+                    CustomerName: "Not Available",
+                    Address: "Not Available",
                     OrderDetails: {
                         ProductName: "Not Available",
                         Quantity: "Not Available"
                     }
                 },
                 trackingResponse: {
-                    status: latestStatus || order.status || "Not Available",
-                    status_record: statusRecord,
+                    status: latestStatus,
+                    status_record: trackingHistory
                 },
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt
@@ -350,7 +381,6 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
             },
         };
     } catch (error) {
-        console.error("Error in deliveredOrder:", error);
         return {
             trackingData: [],
             pagination: {
@@ -374,7 +404,6 @@ export const returnedOrder = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        // First get all verified returned orders
         const verifiedReturns = await ReturnedOrder.find({ verified: true })
             .populate('order')
             .skip(skip)
@@ -383,39 +412,55 @@ export const returnedOrder = async (page = 1, limit = 50) => {
 
         const totalOrders = await ReturnedOrder.countDocuments({ verified: true });
 
-        // Format the response using the populated order data
         const trackingData = verifiedReturns.map(returned => {
             const order = returned.order;
-            // Initialize status_record if it doesn't exist
-            const statusRecord = Array.isArray(order.status_record) ? order.status_record : [];
-            const latestStatus = statusRecord.length > 0 ? statusRecord[statusRecord.length - 1] : null;
+            // Get tracking history based on courier type
+            let trackingHistory = [];
+            let latestStatus = order.status;
+
+            if (order.courierType.toLowerCase() === 'trax' && order.rawJson?.details?.tracking_history) {
+                trackingHistory = order.rawJson.details.tracking_history.map(item => ({
+                    status: item.status,
+                    timestamp: new Date(item.timestamp * 1000).toISOString(),
+                    location: item.location || 'Not Available'
+                }));
+                latestStatus = trackingHistory[0]?.status || order.status;
+            } else if (order.courierType.toLowerCase() === 'postex' && order.rawJson?.transactionStatusHistory) {
+                trackingHistory = order.rawJson.transactionStatusHistory.map(item => ({
+                    status: item.status,
+                    timestamp: item.timestamp,
+                    location: item.location || 'Not Available'
+                }));
+                latestStatus = trackingHistory[0]?.status || order.status;
+            } else if (order.courierType.toLowerCase() === 'daewoo' && order.rawJson?.Status_Reason) {
+                latestStatus = order.rawJson.Status_Reason;
+            }
 
             return {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
                 flyerId: order.flyerId,
-                customer_name: order.customer_name,
-                address: order.address,
                 status: order.status,
+                invoicePayment: order.invoicePayment,
+                last_tracking_update: order.last_tracking_update,
+                isDelivered: order.isDelivered,
+                isReturned: order.isReturned,
                 delivered_at: order.delivered_at,
                 returned_at: order.returned_at,
-                last_tracking_update: order.last_tracking_update,
-                latest_courier_status: order.latest_courier_status,
-                invoicePayment: order.invoicePayment,
                 productInfo: order.productInfo || {
                     OrderNumber: order.trackingNumber,
                     date: new Date().toISOString(),
-                    CustomerName: order.customer_name || "Not Available",
-                    Address: order.address || "Not Available",
+                    CustomerName: "Not Available",
+                    Address: "Not Available",
                     OrderDetails: {
                         ProductName: "Not Available",
                         Quantity: "Not Available"
                     }
                 },
                 trackingResponse: {
-                    status: latestStatus || order.status || "Not Available",
-                    status_record: statusRecord,
+                    status: latestStatus,
+                    status_record: trackingHistory
                 },
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt,
@@ -438,7 +483,6 @@ export const returnedOrder = async (page = 1, limit = 50) => {
             },
         };
     } catch (error) {
-        console.error("Error in returnedOrder:", error);
         return {
             trackingData: [],
             pagination: {

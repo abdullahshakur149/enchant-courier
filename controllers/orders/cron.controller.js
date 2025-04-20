@@ -31,28 +31,18 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = data.transactionStatus;
                     const timestamp = new Date();
 
-                    // Get the current order with status_record
-                    const currentOrder = await Order.findById(order._id);
-                    const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-
-                    // Only push if the status doesn't already exist in the last record
-                    const lastStatus = currentOrder.status_record.length > 0
-                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1]
-                        : '';
-
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
                         address: data.deliveryAddress || order.address,
-                        latest_courier_status: status || order.latest_courier_status,
+                        status: status || order.status,
                         invoicePayment: data.invoicePayment || order.invoicePayment,
                         last_tracking_update: timestamp,
                         rawJson: data,
-                        ...(lastStatus === status ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: data.orderRefNumber || "Not Available",
                             date: formatDate(data.transactionDate) || "Not Available",
-                            CustomerName: data.customerName || "Not Available",
-                            Address: data.deliveryAddress || "Not Available",
+                            CustomerName: data.customerName || order.productInfo?.CustomerName || "Not Available",
+                            Address: data.deliveryAddress || order.productInfo?.Address || "Not Available",
                             OrderDetails: {
                                 ProductName: data.orderDetail || "Not Available",
                                 Quantity: data.items?.toString() || "Not Available",
@@ -60,15 +50,9 @@ export const updateOrderStatuses = async (req, res) => {
                         },
                     };
 
-
                     if (status?.includes('Delivered')) {
                         updateFields.delivered_at = timestamp.toISOString();
                         updateFields.isDelivered = true;
-                    }
-
-                    if (status?.includes("RETURNED") || status?.includes("returned")) {
-                        updateFields.returned_at = timestamp.toISOString();
-                        updateFields.isReturned = true;
                     }
 
 
@@ -97,26 +81,31 @@ export const updateOrderStatuses = async (req, res) => {
                     const timestamp = new Date();
                     const date = latest?.Date;
 
-                    // Get the current order with status_record
-                    const currentOrder = await Order.findById(order._id);
-                    const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
+                    // Parse the date string into a proper Date object
+                    const parseDaewooDate = (dateStr) => {
+                        if (!dateStr) return null;
+                        const [datePart, timePart] = dateStr.split(' ');
+                        const [day, month, year] = datePart.split('/');
+                        const [time, period] = timePart.split(' ');
+                        const [hours, minutes, seconds] = time.split(':');
 
-                    // Only push if the status doesn't already exist in the last record
-                    const lastStatus = currentOrder.status_record.length > 0
-                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1]
-                        : '';
+                        let hour = parseInt(hours);
+                        if (period === 'PM' && hour !== 12) hour += 12;
+                        if (period === 'AM' && hour === 12) hour = 0;
+
+                        return new Date(year, month - 1, day, hour, minutes, seconds);
+                    };
 
                     const updateFields = {
                         status: status || order.status,
                         latest_courier_status: latest?.Status_Reason || order.latest_courier_status,
                         last_tracking_update: timestamp,
                         rawJson: latest,
-                        ...(lastStatus === status ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: order.trackingNumber,
                             date: date || "Not Available",
-                            CustomerName: order.customer_name || "Not Available",
-                            Address: order.address || "Not Available",
+                            CustomerName: order.productInfo?.CustomerName || "Not Available",
+                            Address: order.productInfo?.Address || "Not Available",
                             OrderDetails: {
                                 ProductName: "Not Available",
                                 Quantity: "Not Available"
@@ -124,18 +113,10 @@ export const updateOrderStatuses = async (req, res) => {
                         }
                     };
 
-                    if (status?.includes("DELIVERED") || status?.includes("OK - DELIVERED")) {
-                        updateFields.delivered_at = date;
+                    if (status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) {
+                        updateFields.delivered_at = parseDaewooDate(date);
                         updateFields.isDelivered = true;
                     }
-
-                    if (status?.includes("Return to Shipper")) {
-                        updateFields.returned_at = date;
-                        updateFields.isReturned = true;
-                    }
-
-                    // pushed
-
 
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -171,15 +152,6 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = latest?.status;
                     const timestamp = latest?.timestamp ? new Date(latest.timestamp * 1000) : new Date();
 
-                    // Get the current order with status_record
-                    const currentOrder = await Order.findById(order._id);
-                    const statusRecord = `${timestamp.toISOString()} - ${status || 'No Status'}`;
-
-                    // Only push if the status doesn't already exist in the last record
-                    const lastStatus = currentOrder.status_record.length > 0
-                        ? currentOrder.status_record[currentOrder.status_record.length - 1].split(' - ')[1]
-                        : '';
-
                     const updateFields = {
                         customer_name: details.consignee?.name || order.customer_name,
                         address: details.consignee?.address || order.address,
@@ -188,12 +160,11 @@ export const updateOrderStatuses = async (req, res) => {
                         last_tracking_update: timestamp,
                         invoicePayment: details.order_information?.amount || order.invoicePayment,
                         rawJson: data,
-                        ...(lastStatus === status ? {} : { $push: { status_record: statusRecord } }),
                         productInfo: {
                             OrderNumber: details.order_id || order.trackingNumber,
                             date: details.order_date || "Not Available",
-                            CustomerName: details.consignee?.name || "Not Available",
-                            Address: details.consignee?.address || "Not Available",
+                            CustomerName: details.consignee?.name || order.productInfo?.CustomerName || "Not Available",
+                            Address: details.consignee?.address || order.productInfo?.Address || "Not Available",
                             OrderDetails: {
                                 ProductName: product.description || "Not Available",
                                 Quantity: product.quantity?.toString() || "Not Available"
@@ -205,13 +176,6 @@ export const updateOrderStatuses = async (req, res) => {
                         updateFields.delivered_at = timestamp.toISOString();
                         updateFields.isDelivered = true;
                     }
-
-                    if (status?.includes("Return - Confirm") || status?.includes("Return - Delivered to Shipper")) {
-                        updateFields.returned_at = timestamp.toISOString();
-                        updateFields.isReturned = true;
-                    }
-
-
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
