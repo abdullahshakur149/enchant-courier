@@ -5,7 +5,7 @@ import { checkNotAuthenticated } from '../config/webAuth.js';
 const router = express.Router();
 
 router.get('/', checkNotAuthenticated, (req, res) => {
-    res.render('admin/login', { error: req.flash("error")[0] });
+    res.render('login', { error: req.flash("error")[0] });
 });
 
 router.post('/', passport.authenticate('local', {
