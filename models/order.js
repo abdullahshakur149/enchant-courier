@@ -52,9 +52,7 @@ const orderSchema = new mongoose.Schema({
 const returnedOrderSchema = new mongoose.Schema({
     order: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Order',
-        required: true,
-        unique: true
+        ref: 'Order'
     },
     verified: { type: Boolean, default: false },
     verification_date: { type: Date, default: null }
@@ -64,3 +62,5 @@ const Order = mongoose.model('Order', orderSchema);
 const ReturnedOrder = mongoose.model('ReturnedOrder', returnedOrderSchema);
 
 export { Order, ReturnedOrder };
+
+

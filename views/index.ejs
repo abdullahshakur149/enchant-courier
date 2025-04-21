@@ -3,87 +3,70 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Enchant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enchant Admin - Courier Handover</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .tracking-container {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 450px;
-            width: 100%;
-        }
-
-        .tracking-btn {
-            display: block;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            border: 1px solid transparent;
-        }
-
-        .tracking-btn:hover {
-            transform: translateY(-3px);
-        }
-
-        .fastex-btn {
-            background: #007bff;
-            color: white;
-        }
-
-        .fastex-btn:hover {
-            background: #0056b3;
-        }
-
-        .trax-btn {
-            background: #6c757d;
-            color: white;
-        }
-
-        .trax-btn:hover {
-            background: #545b62;
-        }
-
-        .postex-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .postex-btn:hover {
-            background: #1e7e34;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/index.css">
 </head>
 
 <body>
+    <%- include('./components/navbar.ejs') %>
 
-    <div class="tracking-container">
-        <h2 class="mb-3">Welcome to Enchant</h2>
-        <p class="mb-4 text-muted">Add your orders with ease.</p>
 
-        <div class="d-grid gap-3">
-            <a href="/track/daewoo" class="tracking-btn fastex-btn">Track daewoo</a>
-            <a href="/track/trax" class="tracking-btn trax-btn">Track Trax</a>
-            <a href="/track/postex" class="tracking-btn postex-btn">Track Postex</a>
-        </div>
-    </div>
+        <%- include('./components/herosection.ejs') %>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <div class="tracking-container">
+                <div class="tracking-header">
+                    <div class="logo">
+                        <i class="fas fa-truck-loading"></i>
+                    </div>
+                    <h2>Select Courier Service</h2>
+                    <p class="subtitle">Choose the courier service for shipment handover</p>
+                </div>
+
+                <div class="courier-buttons">
+                    <a href="/track/daewoo" class="tracking-btn fastex-btn">
+                        <i class="fas fa-shipping-fast"></i>
+                        <span>Daewoo Express</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                    <a href="/track/trax" class="tracking-btn trax-btn">
+                        <i class="fas fa-truck"></i>
+                        <span>Trax Logistics</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+
+                    <a href="/track/postex" class="tracking-btn postex-btn">
+                        <i class="fas fa-box"></i>
+                        <span>Postex Courier</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="features">
+                    <div class="feature">
+                        <i class="fas fa-qrcode"></i>
+                        <h3>Quick Scanning</h3>
+                        <p>Easily scan tracking numbers for fast handover process</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-history"></i>
+                        <h3>Real-time Updates</h3>
+                        <p>Track handover status and courier pickups instantly</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Secure Handover</h3>
+                        <p>Verified process with flyer ID confirmation</p>
+                    </div>
+                </div>
+            </div>
+
+            <%- include('./components/footer.ejs') %>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

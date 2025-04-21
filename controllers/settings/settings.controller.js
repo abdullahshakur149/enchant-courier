@@ -3,9 +3,7 @@ import User from '../../models/user.js'
 export const updateSystemSettings = async (req, res) => {
     try {
         const { systemName, timezone, language } = req.body;
-        
-        // Here you would typically save these settings to a configuration file or database
-        // For now, we'll just return a success message
+
         res.json({
             success: true,
             message: 'System settings updated successfully',
@@ -43,7 +41,7 @@ export const getUserSettings = async (req, res) => {
 export const addUser = async (req, res) => {
     try {
         const { username, email, role, password } = req.body;
-        
+
         // Check if user already exists
         const existingUser = await User.findOne({ $or: [{ username }, { email }] });
         if (existingUser) {
@@ -143,6 +141,51 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to delete user'
+        });
+    }
+};
+
+export const getSystemStatus = async (req, res) => {
+    try {
+        const { Order } = await import('../../models/order.js');
+
+        // Get order statistics
+        const totalOrders = await Order.countDocuments();
+        const deliveredOrders = await Order.countDocuments({ isDelivered: true });
+        const returnedOrders = await Order.countDocuments({ isReturned: true });
+        const pendingOrders = totalOrders - deliveredOrders - returnedOrders;
+
+        // Get system uptime
+        const uptime = process.uptime();
+        const uptimeHours = Math.floor(uptime / 3600);
+        const uptimeMinutes = Math.floor((uptime % 3600) / 60);
+
+        // Get memory usage
+        const memoryUsage = process.memoryUsage();
+        const memoryUsageMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+
+        res.json({
+            success: true,
+            data: {
+                orders: {
+                    total: totalOrders,
+                    delivered: deliveredOrders,
+                    returned: returnedOrders,
+                    pending: pendingOrders
+                },
+                system: {
+                    uptime: `${uptimeHours}h ${uptimeMinutes}m`,
+                    memoryUsage: `${memoryUsageMB}MB`,
+                    status: 'Operational',
+                    lastUpdate: new Date().toISOString()
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error getting system status:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to get system status'
         });
     }
 }; 

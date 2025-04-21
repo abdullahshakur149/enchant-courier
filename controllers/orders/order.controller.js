@@ -518,7 +518,12 @@ export const verifyReturn = async (req, res) => {
             });
         }
 
-        // Create or update returned order record
+        // Update order status
+        await Order.findByIdAndUpdate(order._id, {
+            isReturned: true,
+            returned_at: new Date()
+        });
+
         const returnedOrder = await ReturnedOrder.findOneAndUpdate(
             { order: order._id },
             {

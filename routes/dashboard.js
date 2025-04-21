@@ -8,7 +8,8 @@ import {
     getUserSettings,
     addUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getSystemStatus
 } from '../controllers/settings/settings.controller.js';
 
 // Function to get order statistics
@@ -101,5 +102,8 @@ router.post('/settings/delete-user/:id', deleteUser);
 
 // System settings route
 router.post('/settings/update-system', updateSystemSettings);
+
+// System status route
+router.get('/system-status', getSystemStatus);
 
 export default router;
