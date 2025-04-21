@@ -40,8 +40,8 @@ const orderSchema = new mongoose.Schema({
     productInfo: {
         OrderNumber: String,
         date: String,
-        CustomerName: { type: String, required: true },
-        Address: { type: String, required: true },
+        CustomerName: { type: String, },
+        Address: { type: String, },
         OrderDetails: {
             ProductName: String,
             Quantity: String
