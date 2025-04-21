@@ -63,7 +63,6 @@ export const getOrders = async (page = 1, limit = 50) => {
         const orders = await Order.find({
             $and: [
                 { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
-                { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         })
             .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
