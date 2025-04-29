@@ -18,8 +18,10 @@ const getOrderStatistics = async () => {
         const totalOrders = await Order.countDocuments();
         const deliveredOrders = await Order.countDocuments({ isDelivered: true });
         const returnedOrders = await Order.countDocuments({ isReturned: true });
-        const pendingOrders = totalOrders - deliveredOrders - returnedOrders;
-        // const order = await Order.find({trackingNumber: '27124450427978'});
+        const pendingOrders = await Order.countDocuments({
+            isDelivered: false,
+            isReturned: false
+        });        // const order = await Order.find({trackingNumber: '27124450427978'});
         // console.log(order);
 
         return {

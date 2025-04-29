@@ -61,9 +61,8 @@ export const getOrders = async (page = 1, limit = 50) => {
 
         // Find orders that are not delivered and not returned
         const orders = await Order.find({
-            $and: [
-                { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
-            ]
+            isDelivered: false,
+            isReturned: false
         })
             .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
@@ -71,10 +70,10 @@ export const getOrders = async (page = 1, limit = 50) => {
             .limit(limit);
 
         const totalOrders = await Order.countDocuments({
-            $and: [
-                { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
-            ]
+            isDelivered: false,
+            isReturned: false
         });
+        console.log(totalOrders);
 
         if (orders.length === 0) {
             return {
