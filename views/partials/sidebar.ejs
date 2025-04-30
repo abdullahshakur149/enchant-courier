@@ -1,0 +1,91 @@
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h3 class="mb-0 text-white fw-semibold">
+            <i class="fas fa-boxes-stacked text-primary me-2"></i>
+            Enchant Courier
+        </h3>
+    </div>
+
+    <div class="px-3 py-4">
+        <div class="sidebar-section mb-4">
+            <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Overview</h6>
+            <ul class="list-unstyled">
+                <li>
+                    <a href="/dashboard" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/dashboard' ? 'active' : '' %>">
+                        <i class="fas fa-chart-line me-3"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/dashboard/orders" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/orders' ? 'active' : '' %>">
+                        <i class="fas fa-box me-3"></i>
+                        <span>Orders</span>
+                        <span class="badge bg-primary rounded-pill ms-auto">12</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/dashboard/delivered-orders" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/delivered-orders' ? 'active' : '' %>">
+                        <i class="fas fa-truck-fast me-3"></i>
+                        <span>Delivered Orders</span>
+                        <span class="badge bg-success rounded-pill ms-auto">8</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/dashboard/returned-orders" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/returned-orders' ? 'active' : '' %>">
+                        <i class="fas fa-box-open me-3"></i>
+                        <span>Returned Orders</span>
+                        <span class="badge bg-danger rounded-pill ms-auto">4</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section mb-4">
+            <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Management</h6>
+            <ul class="list-unstyled">
+                <li>
+                    <a href="/dashboard/reports" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/reports' ? 'active' : '' %>">
+                        <i class="fas fa-chart-pie me-3"></i>
+                        <span>Reports</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/dashboard/analytics" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/analytics' ? 'active' : '' %>">
+                        <i class="fas fa-chart-simple me-3"></i>
+                        <span>Analytics</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section mb-4">
+            <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Support</h6>
+            <ul class="list-unstyled">
+                <li>
+                    <a href="/support" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/help' ? 'active' : '' %>">
+                        <i class="fas fa-circle-question me-3"></i>
+                        <span>Help Center</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="sidebar-section">
+            <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Settings</h6>
+            <ul class="list-unstyled">
+                <li>
+                    <a href="/dashboard/settings" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/settings' ? 'active' : '' %>">
+                        <i class="fas fa-sliders me-3"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/dashboard/profile" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/profile' ? 'active' : '' %>">
+                        <i class="fas fa-user-gear me-3"></i>
+                        <span>Profile</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav> 

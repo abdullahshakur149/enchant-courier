@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-box-open me-2"></i>
+            Enchant Admin
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul style="gap: 3rem;" class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link <%= (typeof path !== 'undefined' && path === '/courier/form?type=Daewoo') ? 'active' : '' %>" href="/courier/form?type=Daewoo">
+                        <i class="fas fa-truck me-1"></i>
+                        Daewoo Express
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link <%= (typeof path !== 'undefined' && path === '/courier/form?type=Trax') ? 'active' : '' %>" href="/courier/form?type=Trax">
+                        <i class="fas fa-truck-loading me-1"></i>
+                        Trax Logistics
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link <%= (typeof path !== 'undefined' && path === '/courier/form?type=PostEx') ? 'active' : '' %>" href="/courier/form?type=PostEx">
+                        <i class="fas fa-box me-1"></i>
+                        Postex Courier
+                    </a>
+                </li>
+                
+                
+                <li class="nav-item">
+                    <a class="nav-link <%= (typeof path !== 'undefined' && path === '/dashboard') ? 'active' : '' %>" href="/dashboard">
+                        <i class="fas fa-tachometer-alt me-1"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <%= (typeof path !== 'undefined' && path === '/admin/guide') ? 'active' : '' %>" href="/admin/guide">
+                        <i class="fas fa-book me-1"></i>
+                        Developer Guide
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

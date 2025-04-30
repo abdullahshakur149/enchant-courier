@@ -1,0 +1,41 @@
+<div class="container-fluid py-4">
+    <h2 class="mb-4 fw-bold">Delivered Orders</h2>
+    <div id="orders-table-container"></div>
+    <div id="pagination-container" class="pagination-container"></div>
+</div>
+
+<!-- Tracking History Modal -->
+<div class="modal fade" id="trackingHistoryModal" tabindex="-1" aria-labelledby="trackingHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trackingHistoryModalLabel">Tracking History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Status</th>
+                                <th>Status Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trackingHistoryBody">
+                            <!-- Tracking history will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/orders.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    OrderManager.init('delivered');
+});
+</script> 

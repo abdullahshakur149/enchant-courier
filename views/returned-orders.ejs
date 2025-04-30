@@ -1,0 +1,140 @@
+<div class="container-fluid py-4">
+    <h2 class="mb-4 fw-bold">Returned Orders</h2>
+    <div id="orders-table-container"></div>
+    <div id="pagination-container" class="pagination-container"></div>
+</div>
+
+<!-- Tracking History Modal -->
+<div class="modal fade" id="trackingHistoryModal" tabindex="-1" aria-labelledby="trackingHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="trackingHistoryModalLabel">Tracking History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Status</th>
+                                <th>Status Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trackingHistoryBody">
+                            <!-- Tracking history will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verify Return Modal -->
+<div class="modal fade" id="verifyReturnModal" tabindex="-1" aria-labelledby="verifyReturnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="verifyReturnModalLabel">Verify Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Please scan the returned order's tracking number and flyer ID
+                </div>
+                <form id="verifyReturnForm">
+                    <div class="mb-3">
+                        <label for="trackingNumber" class="form-label">Tracking Number</label>
+                        <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="flyerId" class="form-label">Flyer ID</label>
+                        <input type="text" class="form-control" id="flyerId" name="flyerId" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="verifyReturnBtn">Verify Return</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="/js/orders.js"></script>
+<script type="module">
+    import { showSuccessAnimation } from '/js/modules/successAnimation.js';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        OrderManager.init('returned');
+        
+        // Initialize verify return modal
+        const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
+        const verifyReturnForm = document.getElementById('verifyReturnForm');
+        const verifyReturnBtn = document.getElementById('verifyReturnBtn');
+        const trackingNumberInput = document.getElementById('trackingNumber');
+        const flyerIdInput = document.getElementById('flyerId');
+        console.log(trackingNumberInput)
+        console.log(flyerIdInput)
+        // Focus on tracking number input when modal opens
+        document.getElementById('verifyReturnModal').addEventListener('shown.bs.modal', function () {
+            trackingNumberInput.focus();
+        });
+
+        // Press Enter on tracking number -> move to flyer ID
+        trackingNumberInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                flyerIdInput.focus();
+            }
+        });
+
+        // Press Enter on flyer ID -> trigger verification
+        flyerIdInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyReturnBtn.click();
+            }
+        });
+
+        // Handle Verify Return button click
+        verifyReturnBtn.addEventListener('click', async function () {
+            const trackingNumber = trackingNumberInput.value.trim();
+            const flyerId = flyerIdInput.value.trim();
+
+            if (!trackingNumber || !flyerId) {
+                alert('Both Tracking Number and Flyer ID are required');
+                return;
+            }
+
+            const data = {
+                trackingNumber,
+                flyerId
+            };
+
+            try {
+                const response = await axios.post('/api/orders/verify-return', data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.data.success) {
+                    showSuccessAnimation();
+                    verifyReturnModal.hide();
+                    verifyReturnForm.reset();
+                    OrderManager.fetchOrders();
+                } else {
+                    alert(response.data.message || 'Failed to verify return');
+                }
+            } catch (error) {
+                console.error('Error verifying return:', error);
+                alert('Error verifying return. Please try again later.');
+            }
+        });
+    });
+</script>

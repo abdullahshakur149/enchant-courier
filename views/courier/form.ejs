@@ -1,0 +1,71 @@
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-clipboard-list fa-3x text-primary mb-3"></i>
+                    <h2 class="card-title">Submit Tracking Information</h2>
+                    <p class="text-muted">Please enter the tracking details for <%= courierType %></p>
+                </div>
+                
+                <form id="courierForm" class="needs-validation" novalidate>
+                    <input type="hidden" name="courierType" value="<%= courierType %>">
+                    
+                    <div class="mb-4">
+                        <label for="trackingNumber" class="form-label">Tracking Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-barcode"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="trackingNumber" 
+                                   name="trackingNumber" 
+                                   placeholder="Enter tracking number" 
+                                   required
+                                   autofocus
+                                   autocomplete="off"
+                                   onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.getElementById('flyerId').focus(); }">
+                        </div>
+                        <div class="invalid-feedback">
+                            Please enter a valid tracking number.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="flyerId" class="form-label">Flyer Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-id-card"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="flyerId" 
+                                   name="flyerId" 
+                                   placeholder="Enter flyer number" 
+                                   required
+                                   autocomplete="off"
+                                   onkeydown="if(event.key === 'Enter') { event.preventDefault(); document.querySelector('button[type=submit]').focus(); }">
+                        </div>
+                        <div class="invalid-feedback">
+                            Please enter a valid flyer number.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Submit Tracking
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Back to Home
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/main.js" type="module"></script>

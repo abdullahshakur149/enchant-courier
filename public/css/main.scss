@@ -1,0 +1,207 @@
+// Color System
+:root {
+  // Primary Colors
+  --primary: #2563eb;
+  --primary-light: #3b82f6;
+  --primary-dark: #1d4ed8;
+  
+  // Service Colors
+  --daewoo: #2563eb;
+  --trax: #64748b;
+  --postex: #059669;
+  
+  // Neutral Colors
+  --white: #ffffff;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --black: #000000;
+}
+
+// Typography
+$font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+$font-size-base: 1rem;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+// Import Bootstrap
+@import "../../node_modules/bootstrap/scss/bootstrap";
+
+// Custom Styles
+body {
+  font-family: $font-family-base;
+  color: var(--gray-800);
+  background-color: var(--gray-50);
+}
+
+// Header Styles
+.navbar {
+  background-color: var(--white);
+  box-shadow: $shadow;
+  padding: 1rem 0;
+  
+  .navbar-brand {
+    color: var(--gray-900);
+    font-weight: 600;
+    font-size: 1.25rem;
+    
+    i {
+      color: var(--primary);
+    }
+  }
+
+  
+  .nav-link {
+    color: var(--gray-600);
+    font-weight: 500;
+    
+    &:hover, &.active {
+      color: var(--primary);
+    }
+  }
+}
+
+// Hero Section
+.hero-section {
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 4rem 0;
+  text-align: center;
+  
+  h1 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.125rem;
+  }
+}
+
+// Service Selection
+.service-selection {
+  margin-top: -3rem;
+  padding: 0 1rem;
+  
+  .card {
+    background: var(--white);
+    border: none;
+    border-radius: 1rem;
+    box-shadow: $shadow-lg;
+    padding: 2rem;
+    
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1.5rem;
+    }
+  }
+}
+
+// Courier Service Cards
+.courier-card {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  transition: transform 0.2s;
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-4px);
+  }
+  
+  &.daewoo {
+    background-color: var(--daewoo);
+    color: var(--white);
+  }
+  
+  &.trax {
+    background-color: var(--trax);
+    color: var(--white);
+  }
+  
+  &.postex {
+    background-color: var(--postex);
+    color: var(--white);
+  }
+  
+  .icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+}
+
+// Feature Cards
+.feature-card {
+  text-align: center;
+  padding: 2rem;
+  
+  .feature-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    color: var(--primary);
+  }
+  
+  h4 {
+    color: var(--gray-900);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+  }
+}
+
+// Footer
+.footer {
+  background-color: var(--white);
+  border-top: 1px solid var(--gray-200);
+  padding: 2rem 0;
+  margin-top: 4rem;
+  
+  .footer-brand {
+    color: var(--gray-900);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    i {
+      color: var(--primary);
+    }
+  }
+  
+  .footer-links {
+    a {
+      color: var(--gray-600);
+      text-decoration: none;
+      font-weight: 500;
+      
+      &:hover {
+        color: var(--primary);
+      }
+    }
+  }
+  
+  .copyright {
+    color: var(--gray-500);
+    font-size: 0.875rem;
+    text-align: center;
+    margin-top: 2rem;
+  }
+} 

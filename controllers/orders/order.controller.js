@@ -4,46 +4,55 @@ import { formatDate } from '../../utils/helpers.js';
 // ===================================== submit order ===============================================
 export const submitOrder = async (req, res) => {
     try {
-        // console.log(req.body);
-        const { trackingNumber, flyerNumber, courierType } = req.body;
+        console.log('Received order data:', req.body);
+        const { trackingNumber, flyerId, courierType } = req.body;
 
-        // Validate form data
-        if (!trackingNumber || !flyerNumber || !courierType) {
-            return res.json({
+        // Validate required fields
+        if (!trackingNumber || !flyerId || !courierType) {
+            console.log('Missing required fields:', { trackingNumber, flyerId, courierType });
+            return res.status(400).json({
                 success: false,
-                message: 'Fill the form properly'
+                message: 'Please fill all required fields'
             });
         }
-        // test
 
         // Check if order already exists
-        const orderExists = await Order.findOne({ trackingNumber, flyerId: flyerNumber });
-        if (orderExists) {
-            return res.json({
+        const existingOrder = await Order.findOne({
+            $or: [
+                { trackingNumber: trackingNumber },
+                { flyerId: flyerId }
+            ]
+        });
+
+        if (existingOrder) {
+            return res.status(400).json({
                 success: false,
-                message: 'Order already exists'
+                message: 'An order with this tracking number or flyer number already exists'
             });
         }
 
-        // Save new order
+        // Create new order
         const newOrder = new Order({
-            trackingNumber,
-            flyerId: flyerNumber,
-            courierType
+            trackingNumber: trackingNumber.trim(),
+            flyerId: flyerId.trim(),
+            courierType: courierType,
+            status: 'pending',
+            createdAt: new Date()
         });
 
         await newOrder.save();
 
-        return res.json({
+        return res.status(201).json({
             success: true,
-            message: 'Order submitted successfully'
+            message: 'Order submitted successfully',
+            order: newOrder
         });
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error submitting order:', error);
         return res.status(500).json({
             success: false,
-            message: 'Please try again later.'
+            message: 'Server error while submitting order'
         });
     }
 };
@@ -59,10 +68,11 @@ export const getOrders = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        // Find orders that are not delivered and not returned
+        // Find orders that are neither delivered nor returned
         const orders = await Order.find({
             $and: [
                 { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
+                { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         })
             .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
@@ -73,6 +83,7 @@ export const getOrders = async (page = 1, limit = 50) => {
         const totalOrders = await Order.countDocuments({
             $and: [
                 { $or: [{ isDelivered: { $exists: false } }, { isDelivered: false }] },
+                { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         });
 
@@ -88,7 +99,6 @@ export const getOrders = async (page = 1, limit = 50) => {
                 }
             };
         }
-        // change
 
         // Format the response
         const trackingData = orders.map(order => {
@@ -260,10 +270,11 @@ export const updateOrder = async (req, res) => {
 // ===================================== delete order ===============================================
 export const deleteOrder = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { orderId  } = req.params;
+        console.log(orderId )
 
         // Validate form data
-        if (!id) {
+        if (!orderId) {
             return res.json({
                 success: false,
                 message: 'Order ID is required'
@@ -271,7 +282,7 @@ export const deleteOrder = async (req, res) => {
         }
 
         // Check if order exists
-        const orderExists = await Order.findById(id);
+        const orderExists = await Order.findById(orderId);
         if (!orderExists) {
             return res.json({
                 success: false,
@@ -280,7 +291,7 @@ export const deleteOrder = async (req, res) => {
         }
 
         // Delete the order
-        await Order.deleteOne({ _id: id });
+        await Order.deleteOne({ _id: orderId });
 
         return res.json({
             success: true,
@@ -304,12 +315,27 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        const totalOrders = await Order.countDocuments({ isDelivered: true });
+        // Find orders that are delivered
         const orders = await Order.find({ isDelivered: true })
             .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
+            .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit)
-            .sort({ createdAt: -1 });
+            .limit(limit);
+
+        const totalOrders = await Order.countDocuments({ isDelivered: true });
+
+        if (orders.length === 0) {
+            return {
+                trackingData: [],
+                message: "No delivered orders found.",
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(totalOrders / limit),
+                    totalOrders,
+                    limit
+                }
+            };
+        }
 
         // Format the response
         const trackingData = orders.map(order => {
@@ -332,7 +358,6 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
                 }));
                 latestStatus = trackingHistory[0]?.status || order.status;
             } else if (order.courierType.toLowerCase() === 'daewoo' && order.rawJson?.Status_Reason) {
-                // For Daewoo, we only have the latest status
                 latestStatus = order.rawJson.Status_Reason;
             }
 
@@ -358,39 +383,34 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
                         Quantity: "Not Available"
                     }
                 },
-                trackingResponse: {
-                    status: latestStatus,
-                    status_record: trackingHistory
-                },
+                rawJson: order.rawJson,
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt
             };
         });
 
-        const totalPages = Math.ceil(totalOrders / limit);
-
         return {
             trackingData,
+            message: "Delivered orders retrieved successfully.",
             pagination: {
-                totalOrders,
-                totalPages,
                 currentPage: page,
-                limit,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1,
-            },
+                totalPages: Math.ceil(totalOrders / limit),
+                totalOrders,
+                limit
+            }
         };
+
     } catch (error) {
+        console.error("Error fetching delivered orders:", error.message);
         return {
             trackingData: [],
+            message: "Error fetching delivered orders.",
             pagination: {
+                currentPage: 1,
+                totalPages: 1,
                 totalOrders: 0,
-                totalPages: 0,
-                currentPage: page,
-                limit,
-                hasNextPage: false,
-                hasPrevPage: false,
-            },
+                limit
+            }
         };
     }
 };
@@ -404,35 +424,32 @@ export const returnedOrder = async (page = 1, limit = 50) => {
     try {
         const skip = (page - 1) * limit;
 
-        const verifiedReturns = await ReturnedOrder.find({ verified: true })
-            .populate('order')
+        const returnedOrders = await Order.find({ isReturned: true })
             .skip(skip)
             .limit(limit)
-            .sort({ verification_date: -1 });
+            .sort({ returned_at: -1 }); // Or use any other field like `createdAt`
 
-        const totalOrders = await ReturnedOrder.countDocuments({ verified: true });
+        const totalOrders = await Order.countDocuments({ isReturned: true });
 
-        const trackingData = verifiedReturns.map(returned => {
-            const order = returned.order;
-            // Get tracking history based on courier type
+        const trackingData = returnedOrders.map(order => {
             let trackingHistory = [];
             let latestStatus = order.status;
 
-            if (order.courierType.toLowerCase() === 'trax' && order.rawJson?.details?.tracking_history) {
+            if (order.courierType?.toLowerCase() === 'trax' && order.rawJson?.details?.tracking_history) {
                 trackingHistory = order.rawJson.details.tracking_history.map(item => ({
                     status: item.status,
                     timestamp: new Date(item.timestamp * 1000).toISOString(),
                     location: item.location || 'Not Available'
                 }));
                 latestStatus = trackingHistory[0]?.status || order.status;
-            } else if (order.courierType.toLowerCase() === 'postex' && order.rawJson?.transactionStatusHistory) {
+            } else if (order.courierType?.toLowerCase() === 'postex' && order.rawJson?.transactionStatusHistory) {
                 trackingHistory = order.rawJson.transactionStatusHistory.map(item => ({
                     status: item.status,
                     timestamp: item.timestamp,
                     location: item.location || 'Not Available'
                 }));
                 latestStatus = trackingHistory[0]?.status || order.status;
-            } else if (order.courierType.toLowerCase() === 'daewoo' && order.rawJson?.Status_Reason) {
+            } else if (order.courierType?.toLowerCase() === 'daewoo' && order.rawJson?.Status_Reason) {
                 latestStatus = order.rawJson.Status_Reason;
             }
 
@@ -464,8 +481,8 @@ export const returnedOrder = async (page = 1, limit = 50) => {
                 },
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt,
-                verified: returned.verified,
-                verification_date: returned.verification_date
+                verification_date: order.verification_date || null,
+                verified: order.verified || false
             };
         });
 
@@ -483,11 +500,13 @@ export const returnedOrder = async (page = 1, limit = 50) => {
             },
         };
     } catch (error) {
+        console.error('Error in returnedOrder:', error);
         return {
             trackingData: [],
             pagination: {
                 totalOrders: 0,
                 totalPages: 0,
+                limit,
                 currentPage: page,
                 hasNextPage: false,
                 hasPrevPage: false,
@@ -495,6 +514,7 @@ export const returnedOrder = async (page = 1, limit = 50) => {
         };
     }
 };
+
 
 // ===================================== verify return ===============================================
 export const verifyReturn = async (req, res) => {
@@ -518,25 +538,28 @@ export const verifyReturn = async (req, res) => {
             });
         }
 
-        // Update order status
-        await Order.findByIdAndUpdate(order._id, {
-            isReturned: true,
-            returned_at: new Date()
-        });
+        // Check if order is already returned
+        if (order.isReturned) {
+            return res.json({
+                success: false,
+                message: 'This order has already been marked as returned'
+            });
+        }
 
-        const returnedOrder = await ReturnedOrder.findOneAndUpdate(
-            { order: order._id },
+        // Update order status
+        const updatedOrder = await Order.findByIdAndUpdate(
+            order._id,
             {
-                verified: true,
-                verification_date: new Date()
+                isReturned: true,
+                returned_at: new Date(),
             },
-            { upsert: true, new: true }
+            { new: true }
         );
 
         return res.json({
             success: true,
             message: 'Return verified successfully',
-            data: returnedOrder
+            order: updatedOrder
         });
 
     } catch (error) {

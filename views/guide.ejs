@@ -1,0 +1,117 @@
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Enchant Courier Admin Guide</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">System Overview</h2>
+                    <p>Enchant Courier is a Node.js-based courier management system developed by Abdullah Shakur. This guide provides technical documentation for administrators and developers.</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Technical Stack</h2>
+                    <ul class="list-unstyled">
+                        <li><strong>Backend:</strong> Node.js, Express.js</li>
+                        <li><strong>Database:</strong> MongoDB with Mongoose ODM</li>
+                        <li><strong>Authentication:</strong> Passport.js with Local Strategy</li>
+                        <li><strong>Frontend:</strong> EJS Templates, Bootstrap 5</li>
+                        <li><strong>Styling:</strong> SASS/SCSS</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Project Structure</h2>
+                    <pre class="bg-light p-3 rounded">
+├── config/           # Configuration files
+├── controllers/      # Route controllers
+├── models/          # Database models
+├── public/          # Static assets
+│   ├── css/        # Compiled CSS
+│   ├── js/         # Client-side JavaScript
+│   └── images/     # Image assets
+├── routes/          # Route definitions
+├── utils/           # Utility functions
+└── views/           # EJS templates
+    ├── layouts/    # Layout templates
+    ├── partials/   # Reusable components
+    └── [feature]/  # Feature-specific views
+                    </pre>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Authentication Flow</h2>
+                    <ol>
+                        <li>User submits login credentials</li>
+                        <li>Passport.js validates credentials against MongoDB</li>
+                        <li>Session is created and stored in MongoDB</li>
+                        <li>User is redirected to appropriate dashboard</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Order Management</h2>
+                    <p>The system handles three types of orders:</p>
+                    <ul>
+                        <li><strong>All Orders:</strong> Complete order listing</li>
+                        <li><strong>Delivered Orders:</strong> Successfully delivered shipments</li>
+                        <li><strong>Returned Orders:</strong> Returned or failed deliveries</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Development Guidelines</h2>
+                    <h3 class="h5 mt-3">Code Style</h3>
+                    <ul>
+                        <li>Use ES6+ JavaScript features</li>
+                        <li>Follow MVC architecture pattern</li>
+                        <li>Implement proper error handling</li>
+                        <li>Write meaningful comments</li>
+                    </ul>
+
+                    <h3 class="h5 mt-3">Security Best Practices</h3>
+                    <ul>
+                        <li>Always validate user input</li>
+                        <li>Use environment variables for sensitive data</li>
+                        <li>Implement proper session management</li>
+                        <li>Follow the principle of least privilege</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Troubleshooting</h2>
+                    <h3 class="h5 mt-3">Common Issues</h3>
+                    <ul>
+                        <li><strong>Authentication Failures:</strong> Check MongoDB connection and user credentials</li>
+                        <li><strong>Form Submission Errors:</strong> Verify client-side validation and server-side processing</li>
+                        <li><strong>Database Issues:</strong> Monitor MongoDB connection and query performance</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h4 mb-3">Contact & Support</h2>
+                    <p>For technical support or development inquiries, contact:</p>
+                    <ul class="list-unstyled">
+                        <li><strong>Developer:</strong> Abdullah Shakur</li>
+                        <li><strong>Role:</strong> Full Stack Developer</li>
+                        <li><strong>Email:</strong> abdullahshakur95@gmail.com</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

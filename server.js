@@ -7,10 +7,23 @@ import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import flash from 'express-flash';
 import initializePassport from './config/passportConfig.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import expressLayouts from 'express-ejs-layouts';
+import bodyParser from 'body-parser';
+import courierRoutes from './routes/courier.js';
+import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
+import dashboardRoutes from './routes/dashboard.js';
+import apiOrdersRoutes from './routes/api/orders.js';
+
+// Get the directory path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 dotenv.config();
 
-
-// Initialize DB Connection updaates
+// Initialize DB Connection
 connectDB();
 
 const app = express();
@@ -18,50 +31,74 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
-app.set('view engine', 'ejs');
 
+// Serve static files
+app.use(express.static(join(__dirname, 'public')));
+app.use('/css', express.static(join(__dirname, 'public/css')));
+app.use('/js', express.static(join(__dirname, 'public/js')));
+app.use('/images', express.static(join(__dirname, 'public/images')));
+
+// View engine setup
+app.set('view engine', 'ejs');
+app.set('views', join(__dirname, 'views'));
+
+app.use(expressLayouts);
+app.set('layout', 'layouts/main');
+
+// Session configuration
 app.use(session({
-    secret: process.env.SECRET_KEY,
+    secret: process.env.SECRET_KEY || 'your-secret-key',
     saveUninitialized: false,
     resave: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
         ttl: 4 * 24 * 60 * 60,
-        autoRemove: 'native'
     }),
     cookie: {
-        secure: false,
+        maxAge: 4 * 24 * 60 * 60 * 1000, 
+        secure: process.env.NODE_ENV === 'production',
         httpOnly: true
     }
 }));
 
+// Flash messages
+app.use(flash());
+
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
 
 // Initialize Passport
 initializePassport(passport);
 
-// Routes
-import indexRoute from './routes/index.js';
-import orderRouter from './routes/order.js';
-import loginRoute from './routes/login.js';
-import dashboardRoute from './routes/dashboard.js'
-import trackRoute from './routes/track.js'
+// Global variables middleware
+app.use((req, res, next) => {
+    res.locals.user = req.user || null;
+    res.locals.error = req.flash('error');
+    res.locals.success = req.flash('success');
+    next();
+});
 
-app.use('/', indexRoute);
-app.use('/order', orderRouter);
-app.use('/login', loginRoute);
-app.use('/logout', loginRoute);
-app.use('/dashboard', dashboardRoute)
-app.use('/', orderRouter)
-app.use('/track', trackRoute)
-// Start Server
-const PORT = process.env.PORT || 3001;
+// Routes
+app.use('/', courierRoutes);
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/api/orders', apiOrdersRoutes);
+
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).render('error', {
+        title: 'Error',
+        message: 'Something went wrong!'
+    });
+});
+
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Your Server is listening on PORT ${PORT}`.bold.red);
-    console.log('Server url:', `http://localhost:${PORT}`.green);
+    console.log(`Server running on port ${PORT}`.yellow.bold);
 });
 
 // fixed
