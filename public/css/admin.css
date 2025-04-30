@@ -697,11 +697,11 @@ h6 {
   margin-right: 0;
 }
 
-@media (min-width: 1200px) {
+/* @media (min-width: 1200px) {
   body.page-order-details #main {
     margin-left: 0 !important;
   }
-}
+} */
 
 /* General Styles */
 body {

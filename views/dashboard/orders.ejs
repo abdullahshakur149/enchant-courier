@@ -2,25 +2,25 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Details</title>
-    <%- include('./components/helpers.ejs') %>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Details</title>
+  <%- include('./components/helpers.ejs') %>
 
 </head>
 
 <body class="page-order-details">
-    <%- include('./components/navbar.ejs') %>
-        <%- include('./components/sidebar.ejs') %>
+  <%- include('./components/navbar.ejs') %>
+  <%- include('./components/sidebar.ejs') %>
 
-            <main id="main" style="margin-right: 0px !important;" class="main">
-                <div class="container">
-                    <%- include('./components/TableLayout.ejs', { title: 'Order Details' , exportFileName: 'orders.csv'
+  <main id="main" style="margin-right: 0px !important;" class="main">
+    <div class="container-fluid">
+      <%- include('./components/TableLayout.ejs', { title: 'Order Details' , exportFileName: 'orders.csv'
                         , trackingData: trackingData, pagination: pagination }) %>
-                </div>
-            </main>
+    </div>
+  </main>
 
-            <script src="/js/admin.js"></script>
+  <script src="/js/admin.js"></script>
 </body>
 
 </html>
