@@ -6,14 +6,14 @@ const OrderManager = {
     trackingHistoryModal: null,
     orderType: null, // 'all', 'delivered', or 'returned'
 
-    init: function(orderType) {
+    init: function (orderType) {
         this.orderType = orderType;
         this.trackingHistoryModal = new bootstrap.Modal(document.getElementById('trackingHistoryModal'));
         this.fetchOrders();
     },
 
-    getStatusClass: function(status) {
-        switch(status.toLowerCase()) {
+    getStatusClass: function (status) {
+        switch (status.toLowerCase()) {
             case 'delivered':
                 return 'status-delivered';
             case 'returned':
@@ -23,9 +23,9 @@ const OrderManager = {
         }
     },
 
-    showTrackingHistory: function(trackingHistory) {
+    showTrackingHistory: function (trackingHistory) {
         // console.log('Raw Tracking History:', trackingHistory);
-        
+
         const historyArray = Array.isArray(trackingHistory) ? trackingHistory : [];
         // console.log('Processed Tracking History:', historyArray);
 
@@ -37,7 +37,7 @@ const OrderManager = {
         const tbody = document.getElementById('trackingHistoryBody');
         tbody.innerHTML = historyArray.map(entry => {
             // console.log('Processing entry:', entry);
-            
+
             return `
                 <tr>
                     <td>${entry.date_time || 'N/A'}</td>
@@ -46,7 +46,7 @@ const OrderManager = {
                 </tr>
             `;
         }).join('');
-        
+
         if (this.trackingHistoryModal) {
             this.trackingHistoryModal.show();
         } else {
@@ -54,7 +54,7 @@ const OrderManager = {
         }
     },
 
-    renderTable: function({ columns, rows }) {
+    renderTable: function ({ columns, rows }) {
         let html = `
         <div class="table-container">
             <table class="table table-hover">
@@ -67,19 +67,19 @@ const OrderManager = {
                 </thead>
                 <tbody>
                     ${rows.length ? rows.map((row, index) => {
-                        // console.log('Row data with tracking history:', row);
-                        return `
+            // console.log('Row data with tracking history:', row);
+            return `
                         <tr>
                             <td>${(this.currentPage - 1) * this.limit + index + 1}</td>
                             ${columns.map(colKey => {
-                                const value = row[colKey];
-                                if (colKey === 'Status') {
-                                    const trackingHistory = row.tracking_history || [];
-                                    // console.log('Setting tracking history for status badge:', trackingHistory);
-                                    return `<td><span class="status-badge ${this.getStatusClass(value)}" style="cursor: pointer;" data-tracking-history='${JSON.stringify(trackingHistory)}'>${value}</span></td>`;
-                                }
-                                return `<td class="text-truncate" title="${value}">${value}</td>`;
-                            }).join('')}
+                const value = row[colKey];
+                if (colKey === 'Status') {
+                    const trackingHistory = row.tracking_history || [];
+                    // console.log('Setting tracking history for status badge:', trackingHistory);
+                    return `<td><span class="status-badge ${this.getStatusClass(value)}" style="cursor: pointer;" data-tracking-history='${JSON.stringify(trackingHistory)}'>${value}</span></td>`;
+                }
+                return `<td class="text-truncate" title="${value}">${value}</td>`;
+            }).join('')}
                             <td class="action-buttons">
                                 <a href="/orders/${row.id}" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
                                 <a href="/orders/${row.id}/edit" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a>
@@ -128,7 +128,7 @@ const OrderManager = {
         this.attachDeleteListeners();
     },
 
-    attachDeleteListeners: function() {
+    attachDeleteListeners: function () {
         document.getElementById('orders-table-container').addEventListener('click', (e) => {
             const target = e.target.closest('.delete-btn');
             if (target) {
@@ -138,7 +138,7 @@ const OrderManager = {
         });
     },
 
-    renderPagination: function() {
+    renderPagination: function () {
         let html = `
         <nav aria-label="Page navigation">
             <ul class="pagination">
@@ -184,19 +184,19 @@ const OrderManager = {
         });
     },
 
-    fetchOrders: function() {
+    fetchOrders: function () {
         // console.log('Fetching orders for page:', this.currentPage);
-        const endpoint = this.orderType === 'all' ? '/api/orders' : 
-                        this.orderType === 'delivered' ? '/api/orders/delivered' : 
-                        '/api/orders/returned';
+        const endpoint = this.orderType === 'all' ? '/api/orders' :
+            this.orderType === 'delivered' ? '/api/orders/delivered' :
+                '/api/orders/returned';
 
         // console.log('Using endpoint:', endpoint);
         axios.get(`${endpoint}?page=${this.currentPage}&limit=${this.limit}`)
             .then(res => {
                 // console.log('Full API Response:', res.data);
                 const { trackingData, pagination } = res.data;
-                // console.log('Tracking Data:', trackingData);
-                
+                console.log('Tracking Data:', trackingData);
+
                 if (!trackingData || !pagination) {
                     console.error('Invalid response format:', res.data);
                     return;
@@ -211,6 +211,8 @@ const OrderManager = {
                     'Customer Name',
                     'Product Name',
                     'Quantity',
+                    'Product Price',
+                    'Date',
                     'Status',
                     'Last Tracking Update'
                 ];
@@ -225,7 +227,9 @@ const OrderManager = {
                         'Courier Type': order.courierType,
                         'Customer Name': order.productInfo?.CustomerName || 'N/A',
                         'Product Name': order.productInfo?.OrderDetails?.ProductName || 'N/A',
+                        'Date': order.productInfo?.date.toLocaleString() || 'N/A',
                         'Quantity': order.productInfo?.OrderDetails?.Quantity || 'N/A',
+                        'Product Price': order.invoicePayment || 'N/A',
                         'Status': order.status,
                         'Last Tracking Update': order.last_tracking_update ? new Date(order.last_tracking_update).toLocaleString() : 'N/A',
                         tracking_history: trackingHistory
@@ -245,7 +249,7 @@ const OrderManager = {
             });
     },
 
-    deleteOrder: function(orderId) {
+    deleteOrder: function (orderId) {
         if (confirm('Are you sure you want to delete this order?')) {
             console.log('Deleting order with ID:', orderId);
             axios.delete(`/api/orders/${orderId}`)
@@ -259,5 +263,5 @@ const OrderManager = {
                 });
         }
     }
-    
+
 };
