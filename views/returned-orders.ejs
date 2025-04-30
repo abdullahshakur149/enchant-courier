@@ -5,7 +5,8 @@
 </div>
 
 <!-- Tracking History Modal -->
-<div class="modal fade" id="trackingHistoryModal" tabindex="-1" aria-labelledby="trackingHistoryModalLabel" aria-hidden="true">
+<div class="modal fade" id="trackingHistoryModal" tabindex="-1" aria-labelledby="trackingHistoryModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -33,7 +34,8 @@
 </div>
 
 <!-- Verify Return Modal -->
-<div class="modal fade" id="verifyReturnModal" tabindex="-1" aria-labelledby="verifyReturnModalLabel" aria-hidden="true">
+<div class="modal fade" id="verifyReturnModal" tabindex="-1" aria-labelledby="verifyReturnModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -48,7 +50,8 @@
                 <form id="verifyReturnForm">
                     <div class="mb-3">
                         <label for="trackingNumber" class="form-label">Tracking Number</label>
-                        <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" required autofocus>
+                        <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" required
+                            autofocus>
                     </div>
                     <div class="mb-3">
                         <label for="flyerId" class="form-label">Flyer ID</label>
@@ -69,9 +72,9 @@
 <script type="module">
     import { showSuccessAnimation } from '/js/modules/successAnimation.js';
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         OrderManager.init('returned');
-        
+
         // Initialize verify return modal
         const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
         const verifyReturnForm = document.getElementById('verifyReturnForm');
@@ -86,7 +89,7 @@
         });
 
         // Press Enter on tracking number -> move to flyer ID
-        trackingNumberInput.addEventListener('keypress', function(e) {
+        trackingNumberInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 flyerIdInput.focus();
@@ -94,7 +97,7 @@
         });
 
         // Press Enter on flyer ID -> trigger verification
-        flyerIdInput.addEventListener('keypress', function(e) {
+        flyerIdInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 verifyReturnBtn.click();
@@ -115,7 +118,7 @@
                 trackingNumber,
                 flyerId
             };
-
+            // changes
             try {
                 const response = await axios.post('/api/orders/verify-return', data, {
                     headers: {
