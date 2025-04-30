@@ -100,7 +100,6 @@ export const getOrders = async (page = 1, limit = 50) => {
             };
         }
 
-        // Format the response
         const trackingData = orders.map(order => {
             // Get tracking history based on courier type
             let trackingHistory = [];
