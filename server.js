@@ -60,7 +60,6 @@ app.use(session({
         httpOnly: true
     }
 }));
-// change
 
 // Flash messages
 app.use(flash());
