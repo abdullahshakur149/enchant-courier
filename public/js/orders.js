@@ -129,6 +129,9 @@ const OrderManager = {
                                     trackingHistory
                                   )}'>${value}</span></td>`;
                                 }
+                                if (colKey === "Address") {
+                                  return `<td title="${value}">${value}</td>`;
+                                }
                                 if (colKey === "Tracking Number") {
                                   const courier = (
                                     row["Courier Type"] || ""
@@ -291,6 +294,7 @@ const OrderManager = {
         "Tracking Number",
         "Status",
         "Date",
+        "Address",
         "Customer Name",
         "Product Name",
         "Courier Type",
@@ -308,6 +312,7 @@ const OrderManager = {
           Status: order.status,
           "Flyer ID": order.flyerId,
           "Courier Type": order.courierType,
+          Address: order.productInfo?.Address || "N/A",
           "Customer Name": order.productInfo?.CustomerName || "N/A",
           "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
           Date: this.formatDate(order.productInfo?.date),
