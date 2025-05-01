@@ -183,94 +183,52 @@ export const getOrders = async (page = 1, limit = 50) => {
 
 // ===================================== update order ===============================================
 export const updateOrder = async (req, res) => {
+    const { trackingNumber, flyerId, courierType } = req.body;
+
+    // Log the order ID for debugging
+    const { orderId } = req.params;
+    // console.log('Order ID:', orderId);
+
     try {
-        const { _id, ...updateFields } = req.body;
+        // Find the order by ID
+        const order = await Order.findById(orderId);
+        // console.log('Order found:', order);
 
-        // Validate _id
-        if (!_id) {
-            return res.json({
-                success: false,
-                message: 'Order ID is required'
-            });
+        // If the order is not found, return a 404 error
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found.' });
         }
 
-        // Check if order exists by _id
-        const orderExists = await Order.findById(_id);
-        if (!orderExists) {
-            return res.json({
-                success: false,
-                message: 'Order does not exist'
-            });
+        // Update the order fields if the respective field is provided in the request body
+        if (trackingNumber) {
+            order.trackingNumber = trackingNumber;
+        }
+        if (flyerId) {
+            order.flyerId = flyerId;
+        }
+        if (courierType) {
+            order.courierType = courierType;
         }
 
-        // Initialize status_record if it doesn't exist
-        if (!orderExists.status_record) {
-            orderExists.status_record = [];
-        }
+        // Save the updated order
+        const updatedOrder = await order.save();
 
-        // Only update fields that are provided
-        const updateData = {};
-        if (updateFields.trackingNumber) updateData.trackingNumber = updateFields.trackingNumber;
-        if (updateFields.flyerId) updateData.flyerId = updateFields.flyerId;
-        if (updateFields.courierType) updateData.courierType = updateFields.courierType;
-        if (updateFields.status) updateData.status = updateFields.status;
-        if (updateFields.delivered_at) updateData.delivered_at = updateFields.delivered_at;
-        if (updateFields.returned_at) updateData.returned_at = updateFields.returned_at;
-        if (updateFields.last_tracking_update) updateData.last_tracking_update = updateFields.last_tracking_update;
-        if (updateFields.latest_courier_status) updateData.latest_courier_status = updateFields.latest_courier_status;
-        if (updateFields.invoicePayment) updateData.invoicePayment = updateFields.invoicePayment;
+        // console.log('Updated Order:', updatedOrder);
 
-        // Update status_record, productInfo, or rawJson if these fields are part of the update
-        if (updateFields.status_record) {
-            // Ensure status_record is an array
-            const newStatuses = Array.isArray(updateFields.status_record)
-                ? updateFields.status_record
-                : [updateFields.status_record];
-
-            // Only add new statuses that don't already exist
-            const uniqueNewStatuses = newStatuses.filter(status =>
-                status && !orderExists.status_record.includes(status)
-            );
-
-            updateData.status_record = [...orderExists.status_record, ...uniqueNewStatuses];
-        }
-
-        if (updateFields.productInfo) {
-            updateData.productInfo = {
-                ...orderExists.productInfo,
-                ...updateFields.productInfo
-            };
-        }
-
-        if (updateFields.rawJson) {
-            updateData.rawJson = {
-                ...orderExists.rawJson,
-                ...updateFields.rawJson
-            };
-        }
-
-        // Update order using _id with the gathered data
-        await Order.findByIdAndUpdate(_id, updateData);
-
-        return res.json({
-            success: true,
-            message: 'Order updated successfully'
-        });
-
+        res.json({ message: 'Tracking history updated successfully.', data: updatedOrder });
     } catch (error) {
-        console.error('Error:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Please try again later.'
-        });
+        console.error('Update Error:', error);
+        res.status(500).json({ error: 'Server error while updating tracking history.' });
     }
 };
+
+
 
 // ===================================== delete order ===============================================
 export const deleteOrder = async (req, res) => {
     try {
-        const { orderId  } = req.params;
-        console.log(orderId )
+        const { orderId } = req.params;
+        console.log(orderId)
 
         // Validate form data
         if (!orderId) {

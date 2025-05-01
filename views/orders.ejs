@@ -1,43 +1,97 @@
-<% if (title && title.trim() !== "") { %>
-<h2 class="mb-4 fw-bold"><%= title %></h2>
-<% } %>
-<div id="orders-table-container" class="ss-orders-container"></div>
-<div id="pagination-container" class="pagination-container"></div>
+<% if (title && title.trim() !=="" ) { %>
+  <h2 class="mb-4 fw-bold">
+    <%= title %>
+  </h2>
+  <% } %>
+    <div id="orders-table-container" class="ss-orders-container"></div>
+    <div id="pagination-container" class="pagination-container"></div>
 
 
-<!-- Tracking History Modal -->
-<div class="modal fade" id="trackingHistoryModal" tabindex="-1" aria-labelledby="trackingHistoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="trackingHistoryModalLabel">Tracking History</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>Status</th>
-                <th>Status Reason</th>
-              </tr>
-            </thead>
-            <tbody id="trackingHistoryBody">
-              <!-- Tracking history will be populated here -->
-            </tbody>
-          </table>
+    <!-- Tracking History Modal -->
+    <div class="modal fade" id="trackingHistoryModal" tabindex="-1" aria-labelledby="trackingHistoryModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="trackingHistoryModalLabel">Tracking History</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                    <th>Status Reason</th>
+                  </tr>
+                </thead>
+                <tbody id="trackingHistoryBody">
+                  <!-- Tracking history will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="/js/orders.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const orderType = '<%= path %>' === '/delivered-orders' ? 'delivered' : 'all';
-    OrderManager.init(orderType);
-  });
-</script>
+    <div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="editOrderModalLabel">Edit Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="editOrderForm">
+
+              <!-- Tracking Number -->
+              <div class="mb-3">
+                <label for="trackingNumber" class="form-label">Tracking Number</label>
+                <input type="text" class="form-control" id="trackingNumber" required>
+              </div>
+
+              <!-- Flyer ID -->
+              <div class="mb-3">
+                <label for="flyerId" class="form-label">Flyer ID</label>
+                <input type="text" class="form-control" id="flyerId" required>
+              </div>
+
+              <!-- Courier Type -->
+              <div class="mb-3">
+                <label for="courierType" class="form-label">Courier Type</label>
+                <select class="form-control" id="courierType" required>
+                  <option value="postex">Postex</option>
+                  <option value="daewoo">Daewoo</option>
+                  <option value="trax">Trax</option>
+                </select>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="text-end">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/orders.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const orderType = '<%= path %>' === '/delivered-orders' ? 'delivered' : 'all';
+        OrderManager.init(orderType);
+      });
+    </script>

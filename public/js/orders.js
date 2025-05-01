@@ -1,4 +1,3 @@
-// Shared order handling functionality
 const OrderManager = {
   currentPage: parseInt(sessionStorage.getItem("currentPage")) || 1,
   limit: 50,
@@ -108,68 +107,74 @@ const OrderManager = {
                     </tr>
                 </thead>
                 <tbody>
-                    ${
-                      rows.length
-                        ? rows
-                            .map(
-                              (row, index) => `
+                    ${rows.length
+        ? rows
+          .map(
+            (row, index) => `
                         <tr>
-                            <td>${
-                              (this.currentPage - 1) * this.limit + index + 1
-                            }</td>
+                            <td>${(this.currentPage - 1) * this.limit + index + 1
+              }</td>
                             ${columns
-                              .map((colKey) => {
-                                const value = row[colKey];
-                                if (colKey === "Status") {
-                                  const trackingHistory =
-                                    row.tracking_history || [];
-                                  return `<td><span class="status-badge ${this.getStatusClass(
-                                    value
-                                  )}" style="cursor: pointer;" data-tracking-history='${JSON.stringify(
-                                    trackingHistory
-                                  )}'>${value}</span></td>`;
-                                }
-                                if (colKey === "Address") {
-                                  return `<td title="${value}">${value}</td>`;
-                                }
-                                if (colKey === "Tracking Number") {
-                                  const courier = (
-                                    row["Courier Type"] || ""
-                                  ).toLowerCase();
-                                  let trackingUrl = "#";
+                .map((colKey) => {
+                  const value = row[colKey];
+                  if (colKey === "Status") {
+                    const trackingHistory =
+                      row.tracking_history || [];
+                    return `<td><span class="status-badge ${this.getStatusClass(
+                      value
+                    )}" style="cursor: pointer;" data-tracking-history='${JSON.stringify(
+                      trackingHistory
+                    )}'>${value}</span></td>`;
+                  }
+                  if (colKey === "Address") {
+                    return `<td title="${value}">${value}</td>`;
+                  }
+                  if (colKey === "Tracking Number") {
+                    const courier = (
+                      row["Courier Type"] || ""
+                    ).toLowerCase();
+                    let trackingUrl = "#";
 
-                                  if (courier === "trax") {
-                                    trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
-                                  } else if (courier === "postex") {
-                                    trackingUrl = `https://postex.pk/tracking?cn=${value}`;
-                                  } else if (courier === "daewoo") {
-                                    trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
-                                  }
+                    if (courier === "trax") {
+                      trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
+                    } else if (courier === "postex") {
+                      trackingUrl = `https://postex.pk/tracking?cn=${value}`;
+                    } else if (courier === "daewoo") {
+                      trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
+                    }
 
-                                  return `<td><a href="${trackingUrl}" target="_blank">${value}</a></td>`;
-                                }
-                                return `<td class="text-truncate" title="${value}">${value}</td>`;
-                              })
-                              .join("")}
+                    return `<td><a href="${trackingUrl}" target="_blank">${value}</a></td>`;
+                  }
+                  return `<td class="text-truncate" title="${value}">${value}</td>`;
+                })
+                .join("")}
                             <td class="action-buttons">
-                                <a href="/orders/${
-                                  row.id
-                                }" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
-                                <a href="/orders/${
-                                  row.id
-                                }/edit" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a>
-                                <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete" data-id="${
-                                  row.id
-                                }"><i class="fas fa-trash"></i></button>
+          
+                             <button 
+    class="btn btn-sm btn-outline-secondary edit-btn" 
+    title="Edit" 
+    data-id="${row.id}"
+    data-tracking-number="${row['Tracking Number'] || ''}"
+    data-flyer-id="${row['Flyer ID'] || ''}"
+    data-courier-type="${row['Courier Type'] || ''}"
+    data-bs-toggle="modal" 
+    data-bs-target="#editOrderModal"
+>
+    <i class="fas fa-edit"></i>
+</button>
+
+
+
+                                <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete" data-id="${row.id
+              }"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     `
-                            )
-                            .join("")
-                        : `<tr><td colspan="${
-                            columns.length + 2
-                          }" class="text-center text-muted">No data found.</td></tr>`
-                    }
+          )
+          .join("")
+        : `<tr><td colspan="${columns.length + 2
+        }" class="text-center text-muted">No data found.</td></tr>`
+      }
                 </tbody>
             </table>
         </div>
@@ -224,12 +229,10 @@ const OrderManager = {
     let html = `
         <nav aria-label="Page navigation">
             <ul class="pagination">
-                <li class="page-item ${
-                  this.currentPage === 1 ? "disabled" : ""
-                }">
-                    <a class="page-link" href="#" data-page="${
-                      this.currentPage - 1
-                    }">Previous</a>
+                <li class="page-item ${this.currentPage === 1 ? "disabled" : ""
+      }">
+                    <a class="page-link" href="#" data-page="${this.currentPage - 1
+      }">Previous</a>
                 </li>
         `;
 
@@ -242,12 +245,10 @@ const OrderManager = {
     }
 
     html += `
-                <li class="page-item ${
-                  this.currentPage === this.totalPages ? "disabled" : ""
-                }">
-                    <a class="page-link" href="#" data-page="${
-                      this.currentPage + 1
-                    }">Next</a>
+                <li class="page-item ${this.currentPage === this.totalPages ? "disabled" : ""
+      }">
+                    <a class="page-link" href="#" data-page="${this.currentPage + 1
+      }">Next</a>
                 </li>
             </ul>
         </nav>
@@ -274,8 +275,8 @@ const OrderManager = {
       this.orderType === "all"
         ? "/api/orders"
         : this.orderType === "delivered"
-        ? "/api/orders/delivered"
-        : "/api/orders/returned";
+          ? "/api/orders/delivered"
+          : "/api/orders/returned";
 
     try {
       const res = await axios.get(
@@ -351,3 +352,62 @@ const OrderManager = {
     }
   },
 };
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  let orderId = null;
+
+  // Fill form when edit button is clicked
+  document.addEventListener('click', function (e) {
+    const editBtn = e.target.closest('.edit-btn');
+    if (editBtn) {
+      orderId = editBtn.getAttribute('data-id'); // Store the ID for API call
+      console.log('Order ID:', orderId);
+      const trackingNumber = editBtn.getAttribute('data-tracking-number') || '';
+      const flyerId = editBtn.getAttribute('data-flyer-id') || '';
+      const courierType = editBtn.getAttribute('data-courier-type') || '';
+
+      document.getElementById('trackingNumber').value = trackingNumber;
+      document.getElementById('flyerId').value = flyerId;
+      document.getElementById('courierType').value = courierType;
+    }
+  });
+
+  // Submit updated tracking info
+  const form = document.getElementById('editOrderForm');
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    // Validate form fields
+    const trackingNumber = document.getElementById('trackingNumber').value;
+    const flyerId = document.getElementById('flyerId').value;
+    const courierType = document.getElementById('courierType').value;
+
+    if (!trackingNumber || !flyerId || !courierType) {
+      alert('Please fill in all fields.');
+      return; // Prevent submission if any field is missing
+    }
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ trackingNumber, flyerId, courierType })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Tracking updated successfully!');
+        location.reload(); // Reload page or handle UI updates accordingly
+      } else {
+        alert('Failed to update: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Request failed:', error);
+      alert('An error occurred while updating.');
+    }
+  });
+});
