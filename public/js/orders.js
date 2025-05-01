@@ -1,234 +1,348 @@
 // Shared order handling functionality
 const OrderManager = {
-    currentPage: parseInt(sessionStorage.getItem('currentPage')) || 1,
-    limit: 50,
-    totalPages: 1,
-    trackingHistoryModal: null,
-    orderType: null, // 'all', 'delivered', or 'returned'
+  currentPage: parseInt(sessionStorage.getItem("currentPage")) || 1,
+  limit: 50,
+  totalPages: 1,
+  trackingHistoryModal: null,
+  orderType: null, // 'all', 'delivered', or 'returned'
 
-    init: function (orderType) {
-        this.orderType = orderType;
-        this.trackingHistoryModal = new bootstrap.Modal(document.getElementById('trackingHistoryModal'));
-        this.fetchOrders();
-    },
+  init: function (orderType) {
+    this.orderType = orderType;
+    this.trackingHistoryModal = new bootstrap.Modal(
+      document.getElementById("trackingHistoryModal")
+    );
+    this.fetchOrders();
+  },
 
-    getStatusClass: function (status) {
-        switch (status.toLowerCase()) {
-            case 'delivered': return 'status-delivered';
-            case 'returned': return 'status-returned';
-            default: return 'status-pending';
-        }
-    },
+  formatDate: function (dateStr) {
+    if (!dateStr) return "N/A";
 
-    showTrackingHistory: function (trackingHistory) {
-        const historyArray = Array.isArray(trackingHistory) ? trackingHistory : [];
-        if (historyArray.length === 0) return;
+    let date;
 
-        const tbody = document.getElementById('trackingHistoryBody');
-        tbody.innerHTML = historyArray.map(entry => `
+    // Try parsing ISO-like format first
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      date = new Date(dateStr);
+    } else if (/^\d{2}\/\d{2}\/\d{4}/.test(dateStr)) {
+      // Handle DD/MM/YYYY format
+      const [day, month, year] = dateStr.split(/[\/\s:]/);
+      date = new Date(`${year}-${month}-${day}`);
+    } else {
+      return "Invalid Date";
+    }
+
+    const day = date.getDate();
+    const monthShort = date.toLocaleString("en-US", { month: "short" });
+    const year = date.getFullYear();
+
+    const getOrdinal = (n) => {
+      if (n > 3 && n < 21) return "th";
+      switch (n % 10) {
+        case 1:
+          return "st";
+        case 2:
+          return "nd";
+        case 3:
+          return "rd";
+        default:
+          return "th";
+      }
+    };
+
+    return `${day}${getOrdinal(day)} ${monthShort} ${year}`;
+  },
+
+  getStatusClass: function (status) {
+    switch (status.toLowerCase()) {
+      case "delivered":
+        return "status-delivered";
+      case "returned":
+        return "status-returned";
+      default:
+        return "status-pending";
+    }
+  },
+
+  showTrackingHistory: function (trackingHistory) {
+    const historyArray = Array.isArray(trackingHistory) ? trackingHistory : [];
+    if (historyArray.length === 0) return;
+
+    const tbody = document.getElementById("trackingHistoryBody");
+    tbody.innerHTML = historyArray
+      .map(
+        (entry) => `
             <tr>
-                <td>${entry.date_time || 'N/A'}</td>
-                <td>${entry.status || 'N/A'}</td>
-                <td>${entry.status_reason || 'N/A'}</td>
+                <td>${entry.date_time || "N/A"}</td>
+                <td>${entry.status || "N/A"}</td>
+                <td>${entry.status_reason || "N/A"}</td>
             </tr>
-        `).join('');
+        `
+      )
+      .join("");
 
-        this.trackingHistoryModal ? this.trackingHistoryModal.show() : console.error('Modal not initialized');
-    },
+    this.trackingHistoryModal
+      ? this.trackingHistoryModal.show()
+      : console.error("Modal not initialized");
+  },
 
-    renderTable: function ({ columns, rows }) {
-        let verifyBtnHtml = this.orderType === 'returned' ? `
+  renderTable: function ({ columns, rows }) {
+    let verifyBtnHtml =
+      this.orderType === "returned"
+        ? `
             <div class="mb-2 text-end">
                 <button class="btn btn-success" id="verifyReturnsBtn">
                     <i class="fas fa-check-circle"></i> Verify Returns
                 </button>
             </div>
-        ` : '';
+        `
+        : "";
 
-        let tableHtml = `
+    let tableHtml = `
         ${verifyBtnHtml}
         <div class="table-container">
             <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>#</th>
-                        ${columns.map(col => `<th>${col}</th>`).join('')}
+                        ${columns.map((col) => `<th>${col}</th>`).join("")}
                         <th class="action-buttons">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${rows.length ? rows.map((row, index) => `
+                    ${
+                      rows.length
+                        ? rows
+                            .map(
+                              (row, index) => `
                         <tr>
-                            <td>${(this.currentPage - 1) * this.limit + index + 1}</td>
-                            ${columns.map(colKey => {
-            const value = row[colKey];
-            if (colKey === 'Status') {
-                const trackingHistory = row.tracking_history || [];
-                return `<td><span class="status-badge ${this.getStatusClass(value)}" style="cursor: pointer;" data-tracking-history='${JSON.stringify(trackingHistory)}'>${value}</span></td>`;
-            }
-            return `<td class="text-truncate" title="${value}">${value}</td>`;
-        }).join('')}
+                            <td>${
+                              (this.currentPage - 1) * this.limit + index + 1
+                            }</td>
+                            ${columns
+                              .map((colKey) => {
+                                const value = row[colKey];
+                                if (colKey === "Status") {
+                                  const trackingHistory =
+                                    row.tracking_history || [];
+                                  return `<td><span class="status-badge ${this.getStatusClass(
+                                    value
+                                  )}" style="cursor: pointer;" data-tracking-history='${JSON.stringify(
+                                    trackingHistory
+                                  )}'>${value}</span></td>`;
+                                }
+                                if (colKey === "Tracking Number") {
+                                  const courier = (
+                                    row["Courier Type"] || ""
+                                  ).toLowerCase();
+                                  let trackingUrl = "#";
+
+                                  if (courier === "trax") {
+                                    trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
+                                  } else if (courier === "postex") {
+                                    trackingUrl = `https://postex.pk/tracking?cn=${value}`;
+                                  } else if (courier === "daewoo") {
+                                    trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
+                                  }
+
+                                  return `<td><a href="${trackingUrl}" target="_blank">${value}</a></td>`;
+                                }
+                                return `<td class="text-truncate" title="${value}">${value}</td>`;
+                              })
+                              .join("")}
                             <td class="action-buttons">
-                                <a href="/orders/${row.id}" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
-                                <a href="/orders/${row.id}/edit" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a>
-                                <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete" data-id="${row.id}"><i class="fas fa-trash"></i></button>
+                                <a href="/orders/${
+                                  row.id
+                                }" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
+                                <a href="/orders/${
+                                  row.id
+                                }/edit" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fas fa-edit"></i></a>
+                                <button class="btn btn-sm btn-outline-danger delete-btn" title="Delete" data-id="${
+                                  row.id
+                                }"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
-                    `).join('') : `<tr><td colspan="${columns.length + 2}" class="text-center text-muted">No data found.</td></tr>`}
+                    `
+                            )
+                            .join("")
+                        : `<tr><td colspan="${
+                            columns.length + 2
+                          }" class="text-center text-muted">No data found.</td></tr>`
+                    }
                 </tbody>
             </table>
         </div>
         `;
 
-        document.getElementById('orders-table-container').innerHTML = tableHtml;
+    document.getElementById("orders-table-container").innerHTML = tableHtml;
 
-        // Status badge click handler
-        document.querySelectorAll('.status-badge').forEach(badge => {
-            badge.addEventListener('click', (e) => {
-                try {
-                    const trackingHistory = JSON.parse(e.currentTarget.dataset.trackingHistory);
-                    this.showTrackingHistory(trackingHistory);
-                } catch (error) {
-                    console.error('Error parsing tracking history:', error);
-                }
-            });
-        });
-
-        // Verify Returns button event
-        if (this.orderType === 'returned') {
-            const verifyReturnsBtn = document.getElementById('verifyReturnsBtn');
-            if (verifyReturnsBtn) {
-                verifyReturnsBtn.addEventListener('click', () => {
-                    const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
-                    verifyReturnModal.show();
-                });
-            }
+    // Status badge click handler
+    document.querySelectorAll(".status-badge").forEach((badge) => {
+      badge.addEventListener("click", (e) => {
+        try {
+          const trackingHistory = JSON.parse(
+            e.currentTarget.dataset.trackingHistory
+          );
+          this.showTrackingHistory(trackingHistory);
+        } catch (error) {
+          console.error("Error parsing tracking history:", error);
         }
+      });
+    });
 
-        // Attach delete listeners
-        this.attachDeleteListeners();
-    },
-
-    attachDeleteListeners: function () {
-        document.getElementById('orders-table-container').addEventListener('click', (e) => {
-            const target = e.target.closest('.delete-btn');
-            if (target) {
-                const orderId = target.dataset.id;
-                this.deleteOrder(orderId);
-            }
+    // Verify Returns button event
+    if (this.orderType === "returned") {
+      const verifyReturnsBtn = document.getElementById("verifyReturnsBtn");
+      if (verifyReturnsBtn) {
+        verifyReturnsBtn.addEventListener("click", () => {
+          const verifyReturnModal = new bootstrap.Modal(
+            document.getElementById("verifyReturnModal")
+          );
+          verifyReturnModal.show();
         });
-    },
+      }
+    }
 
-    renderPagination: function () {
-        let html = `
+    // Attach delete listeners
+    this.attachDeleteListeners();
+  },
+
+  attachDeleteListeners: function () {
+    document
+      .getElementById("orders-table-container")
+      .addEventListener("click", (e) => {
+        const target = e.target.closest(".delete-btn");
+        if (target) {
+          const orderId = target.dataset.id;
+          this.deleteOrder(orderId);
+        }
+      });
+  },
+
+  renderPagination: function () {
+    let html = `
         <nav aria-label="Page navigation">
             <ul class="pagination">
-                <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="#" data-page="${this.currentPage - 1}">Previous</a>
+                <li class="page-item ${
+                  this.currentPage === 1 ? "disabled" : ""
+                }">
+                    <a class="page-link" href="#" data-page="${
+                      this.currentPage - 1
+                    }">Previous</a>
                 </li>
         `;
 
-        for (let i = 1; i <= this.totalPages; i++) {
-            html += `
-                <li class="page-item ${i === this.currentPage ? 'active' : ''}">
+    for (let i = 1; i <= this.totalPages; i++) {
+      html += `
+                <li class="page-item ${i === this.currentPage ? "active" : ""}">
                     <a class="page-link" href="#" data-page="${i}">${i}</a>
                 </li>
             `;
-        }
+    }
 
-        html += `
-                <li class="page-item ${this.currentPage === this.totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="#" data-page="${this.currentPage + 1}">Next</a>
+    html += `
+                <li class="page-item ${
+                  this.currentPage === this.totalPages ? "disabled" : ""
+                }">
+                    <a class="page-link" href="#" data-page="${
+                      this.currentPage + 1
+                    }">Next</a>
                 </li>
             </ul>
         </nav>
         `;
-        document.getElementById('pagination-container').innerHTML = html;
+    document.getElementById("pagination-container").innerHTML = html;
 
-        // Rebind pagination click handlers
-        document.querySelectorAll('.page-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = parseInt(e.currentTarget.dataset.page);
-                if (page >= 1 && page <= this.totalPages) {
-                    this.currentPage = page;
-                    sessionStorage.setItem('currentPage', this.currentPage);
-                    this.fetchOrders();
-                }
-            });
-        });
-    },
-
-    fetchOrders: function () {
-        const endpoint = this.orderType === 'all' ? '/api/orders' :
-            this.orderType === 'delivered' ? '/api/orders/delivered' :
-                '/api/orders/returned';
-
-        axios.get(`${endpoint}?page=${this.currentPage}&limit=${this.limit}`)
-            .then(res => {
-                const { trackingData, pagination } = res.data;
-
-                if (!trackingData || !pagination) {
-                    console.error('Invalid response format:', res.data);
-                    return;
-                }
-
-                this.totalPages = pagination.totalPages;
-
-                const columns = [
-                    'Tracking Number',
-                    'Flyer ID',
-                    'Courier Type',
-                    'Customer Name',
-                    'Product Name',
-                    'Quantity',
-                    'Product Price',
-                    'Date',
-                    'Status',
-                    'Last Tracking Update'
-                ];
-
-                const rows = trackingData.map(order => {
-                    const trackingHistory = order.rawJson?.details?.tracking_history || [];
-                    return {
-                        id: order._id,
-                        'Tracking Number': order.trackingNumber,
-                        'Flyer ID': order.flyerId,
-                        'Courier Type': order.courierType,
-                        'Customer Name': order.productInfo?.CustomerName || 'N/A',
-                        'Product Name': order.productInfo?.OrderDetails?.ProductName || 'N/A',
-                        'Date': order.productInfo?.date?.toLocaleString() || 'N/A',
-                        'Quantity': order.productInfo?.OrderDetails?.Quantity || 'N/A',
-                        'Product Price': order.invoicePayment || 'N/A',
-                        'Status': order.status,
-                        'Last Tracking Update': order.last_tracking_update ? new Date(order.last_tracking_update).toLocaleString() : 'N/A',
-                        tracking_history: trackingHistory
-                    };
-                });
-
-                this.renderTable({ columns, rows });
-                this.renderPagination();
-            })
-            .catch(error => {
-                console.error('Error fetching orders:', error);
-                document.getElementById('orders-table-container').innerHTML = `
-                    <div class="alert alert-danger" role="alert">
-                        Error fetching orders. Please try again later.
-                    </div>
-                `;
-            });
-    },
-
-    deleteOrder: function (orderId) {
-        if (confirm('Are you sure you want to delete this order?')) {
-            axios.delete(`/api/orders/${orderId}`)
-                .then(() => {
-                    this.fetchOrders();
-                })
-                .catch(error => {
-                    console.error('Error deleting order:', error);
-                    alert('An error occurred while deleting the order.');
-                });
+    // Rebind pagination click handlers
+    document.querySelectorAll(".page-link").forEach((link) => {
+      link.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const page = parseInt(e.currentTarget.dataset.page);
+        if (page >= 1 && page <= this.totalPages) {
+          this.currentPage = page;
+          sessionStorage.setItem("currentPage", this.currentPage);
+          await this.fetchOrders(); // Wait for render
+          window.scrollTo({ top: 0, behavior: "smooth" }); // Scroll after render
         }
+      });
+    });
+  },
+
+  fetchOrders: async function () {
+    const endpoint =
+      this.orderType === "all"
+        ? "/api/orders"
+        : this.orderType === "delivered"
+        ? "/api/orders/delivered"
+        : "/api/orders/returned";
+
+    try {
+      const res = await axios.get(
+        `${endpoint}?page=${this.currentPage}&limit=${this.limit}`
+      );
+      const { trackingData, pagination } = res.data;
+
+      if (!trackingData || !pagination) {
+        console.error("Invalid response format:", res.data);
+        return;
+      }
+
+      this.totalPages = pagination.totalPages;
+
+      const columns = [
+        "Tracking Number",
+        "Status",
+        "Date",
+        "Customer Name",
+        "Product Name",
+        "Courier Type",
+        "Product Price",
+        "Flyer ID",
+        "Quantity",
+        "Last Tracking Update",
+      ];
+
+      const rows = trackingData.map((order) => {
+        const trackingHistory = order.rawJson?.details?.tracking_history || [];
+        return {
+          id: order._id,
+          "Tracking Number": order.trackingNumber,
+          Status: order.status,
+          "Flyer ID": order.flyerId,
+          "Courier Type": order.courierType,
+          "Customer Name": order.productInfo?.CustomerName || "N/A",
+          "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
+          Date: this.formatDate(order.productInfo?.date),
+          Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
+          "Product Price": order.invoicePayment || "N/A",
+          "Last Tracking Update": order.last_tracking_update
+            ? new Date(order.last_tracking_update).toLocaleString()
+            : "N/A",
+          tracking_history: trackingHistory,
+        };
+      });
+
+      this.renderTable({ columns, rows });
+      this.renderPagination();
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      document.getElementById("orders-table-container").innerHTML = `
+        <div class="alert alert-danger" role="alert">
+          Error fetching orders. Please try again later.
+        </div>
+      `;
     }
+  },
+
+  deleteOrder: function (orderId) {
+    if (confirm("Are you sure you want to delete this order?")) {
+      axios
+        .delete(`/api/orders/${orderId}`)
+        .then(() => {
+          this.fetchOrders();
+        })
+        .catch((error) => {
+          console.error("Error deleting order:", error);
+          alert("An error occurred while deleting the order.");
+        });
+    }
+  },
 };
