@@ -1,5 +1,6 @@
 import express from 'express';
 import { getOrders, deliveredOrder, returnedOrder, verifyReturn, deleteOrder, updateOrder } from '../../controllers/orders/order.controller.js';
+import {updateOrderStatuses} from '../../controllers/orders/cron.controller.js'
 
 const router = express.Router();
 
@@ -54,4 +55,5 @@ router.delete('/:orderId', deleteOrder);
 
 router.put('/:orderId', updateOrder);
 
+router.get('/update-status', updateOrderStatuses)
 export default router;
