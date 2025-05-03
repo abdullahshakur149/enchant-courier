@@ -3,10 +3,13 @@ const OrderManager = {
   limit: 50,
   totalPages: 1,
   trackingHistoryModal: null,
-  orderType: null, // 'all', 'delivered', or 'returned'
+  orderType: null,
 
   init: function (orderType) {
     this.orderType = orderType;
+    this.currentPage = 1;
+    sessionStorage.setItem("currentPage", this.currentPage);
+
     this.trackingHistoryModal = new bootstrap.Modal(
       document.getElementById("trackingHistoryModal")
     );
