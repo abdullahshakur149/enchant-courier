@@ -98,12 +98,13 @@
             </div>
             <form id="verifyReturnForm">
               <div class="mb-3">
-                <label for="trackingNumber" class="form-label">Tracking Number</label>
-                <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" required autofocus>
+                <label for="verifytrackingNumber" class="form-label">Tracking Number</label>
+                <input type="text" class="form-control" id="verifytrackingNumber" name="verifytrackingNumber" required
+                  autofocus>
               </div>
               <div class="mb-3">
-                <label for="flyerId" class="form-label">Flyer ID</label>
-                <input type="text" class="form-control" id="flyerId" name="flyerId" required>
+                <label for="verifyflyerId" class="form-label">Flyer ID</label>
+                <input type="text" class="form-control" id="verifyflyerId" name="verifyflyerId" required>
               </div>
             </form>
           </div>
@@ -131,8 +132,8 @@
         const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
         const verifyReturnForm = document.getElementById('verifyReturnForm');
         const verifyReturnBtn = document.getElementById('verifyReturnBtn');
-        const trackingNumberInput = document.getElementById('trackingNumber');
-        const flyerIdInput = document.getElementById('flyerId');
+        const trackingNumberInput = document.getElementById('verifytrackingNumber');
+        const flyerIdInput = document.getElementById('verifyflyerId');
         console.log(trackingNumberInput)
         console.log(flyerIdInput)
         // Focus on tracking number input when modal opens

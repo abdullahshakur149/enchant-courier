@@ -1,0 +1,45 @@
+<div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="editOrderModalLabel">Edit Order</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="editOrderForm">
+
+                    <!-- Tracking Number -->
+                    <div class="mb-3">
+                        <label for="trackingNumber" class="form-label">Tracking Number</label>
+                        <input type="text" class="form-control" id="trackingNumber" required>
+                    </div>
+
+                    <!-- Flyer ID -->
+                    <div class="mb-3">
+                        <label for="flyerId" class="form-label">Flyer ID</label>
+                        <input type="text" class="form-control" id="flyerId" required>
+                    </div>
+
+                    <!-- Courier Type -->
+                    <div class="mb-3">
+                        <label for="courierType" class="form-label">Courier Type</label>
+                        <select class="form-control" id="courierType" required>
+                            <option value="postex">Postex</option>
+                            <option value="daewoo">Daewoo</option>
+                            <option value="trax">Trax</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
