@@ -96,6 +96,11 @@
               <i class="fas fa-info-circle me-2"></i>
               Please scan the returned order's tracking number and flyer ID
             </div>
+
+            <div id="verifySuccessMsg" class="alert alert-success d-none" role="alert">
+              Return verified successfully!
+            </div>
+
             <form id="verifyReturnForm">
               <div class="mb-3">
                 <label for="verifytrackingNumber" class="form-label">Tracking Number</label>
@@ -106,11 +111,13 @@
                 <label for="verifyflyerId" class="form-label">Flyer ID</label>
                 <input type="text" class="form-control" id="verifyflyerId" name="verifyflyerId" required>
               </div>
+
+
             </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" id="verifyReturnBtn">Verify Return</button>
+            <button type="submit" class="btn btn-primary" id="verifyReturnBtn">Verify Return</button>
           </div>
         </div>
       </div>
@@ -121,9 +128,6 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="/js/orders.js"></script>
     <script type="module">
-      import {
-        showSuccessAnimation
-      } from '/js/modules/successAnimation.js';
 
       document.addEventListener('DOMContentLoaded', function () {
         OrderManager.init('returned');
@@ -131,34 +135,18 @@
         // Initialize verify return modal
         const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
         const verifyReturnForm = document.getElementById('verifyReturnForm');
-        const verifyReturnBtn = document.getElementById('verifyReturnBtn');
         const trackingNumberInput = document.getElementById('verifytrackingNumber');
         const flyerIdInput = document.getElementById('verifyflyerId');
-        console.log(trackingNumberInput)
-        console.log(flyerIdInput)
+
         // Focus on tracking number input when modal opens
         document.getElementById('verifyReturnModal').addEventListener('shown.bs.modal', function () {
           trackingNumberInput.focus();
         });
 
-        // Press Enter on tracking number -> move to flyer ID
-        trackingNumberInput.addEventListener('keypress', function (e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            flyerIdInput.focus();
-          }
-        });
+        // Handle form submission
+        verifyReturnForm.addEventListener('submit', async function (e) {
+          e.preventDefault();
 
-        // Press Enter on flyer ID -> trigger verification
-        flyerIdInput.addEventListener('keypress', function (e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            verifyReturnBtn.click();
-          }
-        });
-
-        // Handle Verify Return button click
-        verifyReturnBtn.addEventListener('click', async function () {
           const trackingNumber = trackingNumberInput.value.trim();
           const flyerId = flyerIdInput.value.trim();
 
@@ -171,7 +159,7 @@
             trackingNumber,
             flyerId
           };
-          // changes
+
           try {
             const response = await axios.post('/api/orders/verify-return', data, {
               headers: {
@@ -180,10 +168,16 @@
             });
 
             if (response.data.success) {
-              showSuccessAnimation();
-              verifyReturnModal.hide();
               verifyReturnForm.reset();
               OrderManager.fetchOrders();
+
+              const successMsg = document.getElementById('verifySuccessMsg');
+              successMsg.classList.remove('d-none');
+              successMsg.textContent = 'Return verified successfully!';
+
+              setTimeout(() => {
+                successMsg.classList.add('d-none');
+              }, 3000);
             } else {
               alert(response.data.message || 'Failed to verify return');
             }
