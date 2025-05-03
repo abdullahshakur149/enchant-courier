@@ -10,7 +10,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
   try {
     const totalOrders = await Order.countDocuments();
     // const checkOrder = await Order.find({ trackingNumber: 22243880003610, flyerId: '3001256575' })
-    console.log(checkOrder);
+    // console.log(checkOrder);
     const deliveredOrders = await Order.countDocuments({ isDelivered: true });
     const returnedOrders = await Order.countDocuments({ isReturned: true });
     const pendingOrders = totalOrders - deliveredOrders - returnedOrders;
