@@ -478,6 +478,7 @@ export const verifyReturn = async (req, res) => {
     try {
         const { trackingNumber, flyerId } = req.body;
 
+
         // Validate input
         if (!trackingNumber || !flyerId) {
             return res.json({
