@@ -36,7 +36,8 @@ router.get("/", checkAuthenticated, async (req, res) => {
       delivered_at: { $gte: startOfDay, $lt: endOfDay },
     });
 
-    // Orders returned today
+    // Orders returned today    // Orders returned today
+
     const returnedOrdersToday = await Order.countDocuments({
       returned_at: { $gte: startOfDay, $lt: endOfDay },
     });

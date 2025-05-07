@@ -72,7 +72,7 @@ const OrderManager = {
             <tr>
                 <td>${entry.date_time || "N/A"}</td>
                 <td>${entry.status || "N/A"}</td>
-                <td>${entry.status_reason || "N/A"}</td>
+                <td>${entry.status_reason || "No Reason has been provided"}</td>
             </tr>
         `
       )
