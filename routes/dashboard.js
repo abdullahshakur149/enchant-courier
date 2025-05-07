@@ -8,10 +8,38 @@ const router = express.Router();
 // Dashboard route
 router.get("/", checkAuthenticated, async (req, res) => {
   try {
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0); 
+
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999); 
+
+    // Total orders in the database
     const totalOrders = await Order.countDocuments();
+
+    // Delivered orders in the database
     const deliveredOrders = await Order.countDocuments({ isDelivered: true });
+
+    // Returned orders in the database
     const returnedOrders = await Order.countDocuments({ isReturned: true });
+
+    // Pending orders
     const pendingOrders = totalOrders - deliveredOrders - returnedOrders;
+
+    // Orders created today
+    const totalOrdersToday = await Order.countDocuments({
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
+    });
+
+    // Orders delivered today
+    const deliveredOrdersToday = await Order.countDocuments({
+      delivered_at: { $gte: startOfDay, $lt: endOfDay },
+    });
+
+    // Orders returned today
+    const returnedOrdersToday = await Order.countDocuments({
+      returned_at: { $gte: startOfDay, $lt: endOfDay },
+    });
 
     res.render("dashboard/index", {
       user: req.user,
@@ -22,6 +50,9 @@ router.get("/", checkAuthenticated, async (req, res) => {
       deliveredOrders,
       returnedOrders,
       pendingOrders,
+      totalOrdersToday,
+      deliveredOrdersToday,
+      returnedOrdersToday,
     });
   } catch (error) {
     console.error("Error fetching order data:", error);
@@ -33,9 +64,13 @@ router.get("/", checkAuthenticated, async (req, res) => {
       totalOrders: 0,
       deliveredOrders: 0,
       returnedOrders: 0,
+      totalOrdersToday: 0,
+      deliveredOrdersToday: 0,
+      returnedOrdersToday: 0,
     });
   }
 });
+
 
 // Orders page (AJAX table)
 router.get("/orders", checkAuthenticated, (req, res) => {
