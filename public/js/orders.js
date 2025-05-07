@@ -361,15 +361,16 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('click', function (e) {
     const editBtn = e.target.closest('.edit-btn');
     if (editBtn) {
-      orderId = editBtn.getAttribute('data-id'); // Store the ID for API call
+      orderId = editBtn.getAttribute('data-id');
       console.log('Order ID:', orderId);
+
       const trackingNumber = editBtn.getAttribute('data-tracking-number') || '';
       const flyerId = editBtn.getAttribute('data-flyer-id') || '';
       const courierType = editBtn.getAttribute('data-courier-type') || '';
 
-      document.getElementById('trackingNumber').value = trackingNumber;
-      document.getElementById('flyerId').value = flyerId;
-      document.getElementById('courierType').value = courierType;
+      document.getElementById('editTrackingNumber').value = trackingNumber;
+      document.getElementById('editFlyerId').value = flyerId;
+      document.getElementById('editCourierType').value = courierType;
     }
   });
 
@@ -378,14 +379,13 @@ document.addEventListener('DOMContentLoaded', function () {
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    // Validate form fields
-    const trackingNumber = document.getElementById('trackingNumber').value;
-    const flyerId = document.getElementById('flyerId').value;
-    const courierType = document.getElementById('courierType').value;
+    const trackingNumber = document.getElementById('editTrackingNumber').value;
+    const flyerId = document.getElementById('editFlyerId').value;
+    const courierType = document.getElementById('editCourierType').value;
 
     if (!trackingNumber || !flyerId || !courierType) {
       alert('Please fill in all fields.');
-      return; // Prevent submission if any field is missing
+      return;
     }
 
     try {
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (response.ok) {
         alert('Tracking updated successfully!');
-        location.reload(); // Reload page or handle UI updates accordingly
+        location.reload();
       } else {
         alert('Failed to update: ' + result.error);
       }
