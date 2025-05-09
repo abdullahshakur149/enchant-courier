@@ -13,7 +13,6 @@ const tz = "Asia/Karachi";
 
 
 // Dashboard route
-// Dashboard route
 router.get("/", checkAuthenticated, async (req, res) => {
   try {
     const startOfDay = dayjs().tz(tz).startOf("day").toDate();
