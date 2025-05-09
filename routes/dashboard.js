@@ -1,18 +1,23 @@
 import express from "express";
 import { checkAuthenticated } from "../config/webAuth.js";
 import { Order } from "../models/order.js";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
 
 const router = express.Router();
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const tz = "Asia/Karachi";
+
 
 // Dashboard route
 // Dashboard route
 router.get("/", checkAuthenticated, async (req, res) => {
   try {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0); 
-
-    const endOfDay = new Date();
-    endOfDay.setHours(23, 59, 59, 999); 
+    const startOfDay = dayjs().tz(tz).startOf("day").toDate();
+    const endOfDay = dayjs().tz(tz).endOf("day").toDate();
 
     // Total orders in the database
     const totalOrders = await Order.countDocuments();
