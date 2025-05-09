@@ -107,4 +107,15 @@ router.get("/returned-orders", checkAuthenticated, (req, res) => {
   });
 });
 
+router.get('/employee-management', (req, res) => {
+  res.render('employee-management', {
+    layout: 'layouts/dashboard',
+    title: 'Employee Management',
+    path: "/employee-management",
+    user: req.user,
+  });
+});
+
+
+
 export default router;

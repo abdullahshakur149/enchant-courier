@@ -11,6 +11,11 @@ const connectDB = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
+
+        // // Drop the 'email_1' index from the 'users' collection
+        // await mongoose.connection.db.collection('users').dropIndex('email_1');
+        // console.log('Email index dropped successfully!');
+
         console.log(`MongoDB connected: ${con.connection.host}`);
     } catch (err) {
         console.error('MongoDB connection error:', err);

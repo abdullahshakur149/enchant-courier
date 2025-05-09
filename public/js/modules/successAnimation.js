@@ -1,4 +1,8 @@
 export function showSuccessAnimation() {
+    // Fade out the entire page content
+    document.body.style.transition = 'opacity 0.5s ease-out';
+    document.body.style.opacity = '0.3';
+
     // Create success icon element
     const successIcon = document.createElement('div');
     successIcon.className = 'success-animation';
@@ -10,7 +14,7 @@ export function showSuccessAnimation() {
             </svg>
         </div>
     `;
-    
+
     // Add styles for the animation
     const style = document.createElement('style');
     style.textContent = `
@@ -19,7 +23,7 @@ export function showSuccessAnimation() {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 1000;
+            z-index: 9999;
         }
         .success-icon {
             width: 80px;
@@ -64,14 +68,13 @@ export function showSuccessAnimation() {
             100% { box-shadow: inset 0px 0px 0px 30px #4bb71b; }
         }
     `;
-    
-    // Add the success icon and styles to the page
+
     document.head.appendChild(style);
     document.body.appendChild(successIcon);
-    
-    // Remove the animation after it's complete
+
     setTimeout(() => {
         successIcon.remove();
         style.remove();
+        document.body.style.opacity = '1'; // Restore full opacity
     }, 1000);
-} 
+}

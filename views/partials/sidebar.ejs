@@ -11,45 +11,31 @@
       <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Overview</h6>
       <ul class="list-unstyled">
         <li>
-          <a href="/dashboard" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/dashboard' ? 'active' : '' %>">
+          <a href="/dashboard"
+            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/dashboard' ? 'active' : '' %>">
             <i class="fas fa-chart-line me-3"></i>
             <span>Dashboard</span>
           </a>
         </li>
         <li>
-          <a href="/dashboard/orders" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/orders' ? 'active' : '' %>">
+          <a href="/dashboard/orders"
+            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/orders' ? 'active' : '' %>">
             <i class="fas fa-box me-3"></i>
             <span>Orders</span>
           </a>
         </li>
         <li>
-          <a href="/dashboard/delivered-orders" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/delivered-orders' ? 'active' : '' %>">
+          <a href="/dashboard/delivered-orders"
+            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/delivered-orders' ? 'active' : '' %>">
             <i class="fas fa-truck-fast me-3"></i>
             <span>Delivered Orders</span>
           </a>
         </li>
         <li>
-          <a href="/dashboard/returned-orders" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/returned-orders' ? 'active' : '' %>">
+          <a href="/dashboard/returned-orders"
+            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/returned-orders' ? 'active' : '' %>">
             <i class="fas fa-box-open me-3"></i>
             <span>Returned Orders</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-
-    <div class="sidebar-section mb-4">
-      <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Management</h6>
-      <ul class="list-unstyled">
-        <li>
-          <a href="/dashboard/reports" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/reports' ? 'active' : '' %>">
-            <i class="fas fa-chart-pie me-3"></i>
-            <span>Reports</span>
-          </a>
-        </li>
-        <li>
-          <a href="/dashboard/analytics" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/analytics' ? 'active' : '' %>">
-            <i class="fas fa-chart-simple me-3"></i>
-            <span>Analytics</span>
           </a>
         </li>
       </ul>
@@ -59,7 +45,8 @@
       <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Support</h6>
       <ul class="list-unstyled">
         <li>
-          <a href="/support" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/help' ? 'active' : '' %>">
+          <a href="/support"
+            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/help' ? 'active' : '' %>">
             <i class="fas fa-circle-question me-3"></i>
             <span>Help Center</span>
           </a>
@@ -67,22 +54,39 @@
       </ul>
     </div>
 
-    <div class="sidebar-section">
-      <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Settings</h6>
-      <ul class="list-unstyled">
-        <li>
-          <a href="/dashboard/settings" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/settings' ? 'active' : '' %>">
-            <i class="fas fa-sliders me-3"></i>
-            <span>Settings</span>
-          </a>
-        </li>
-        <li>
-          <a href="/dashboard/profile" class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/profile' ? 'active' : '' %>">
-            <i class="fas fa-user-gear me-3"></i>
-            <span>Profile</span>
-          </a>
-        </li>
-      </ul>
-    </div>
+    <!-- Debugging line to check user -->
+    <!-- <p style="color: white;"><%- JSON.stringify(user) %></p> -->
+
+    <!-- Conditionally Render Admin Section -->
+    <% if (user && user.role==='admin' ) { %>
+      <div class="sidebar-section mb-4">
+        <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Admin Actions</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="/dashboard/employee-management"
+              class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/create-employee' ? 'active' : '' %>">
+              <i class="fas fa-user-plus me-3"></i>
+              <span>Employee Management</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <% } %>
+
+        <div class="sidebar-section mb-4">
+          <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Account</h6>
+          <ul class="list-unstyled">
+            <li>
+              <form action="/auth/logout" method="POST" class="d-flex align-items-center p-3">
+                <button type="submit"
+                  class="btn btn-link text-gray-300 text-decoration-none p-0 d-flex align-items-center w-100">
+                  <i class="fas fa-sign-out-alt me-3"></i>
+                  <span>Logout</span>
+                </button>
+              </form>
+            </li>
+          </ul>
+        </div>
+
   </div>
 </nav>

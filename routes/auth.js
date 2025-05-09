@@ -5,7 +5,7 @@ import { checkNotAuthenticated } from '../config/webAuth.js';
 const router = express.Router();
 
 router.get('/', checkNotAuthenticated, (req, res) => {
-    res.render('auth/login', { 
+    res.render('auth/login', {
         error: req.flash("error")[0],
         page: 'auth'
     });
@@ -30,10 +30,10 @@ router.post('/', (req, res, next) => {
     })(req, res, next);
 });
 
-router.delete('/', (req, res, next) => {
+router.post('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
-        res.json({ success: true, redirectUrl: '/login' });
+        res.redirect('/auth');
     });
 });
 

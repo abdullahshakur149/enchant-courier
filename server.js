@@ -16,6 +16,7 @@ import authRoutes from './routes/auth.js';
 import adminRoutes from './routes/admin.js';
 import dashboardRoutes from './routes/dashboard.js';
 import apiOrdersRoutes from './routes/api/orders.js';
+import apiEmployeeRoutes from './routes/api/employee-management.js';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -55,7 +56,7 @@ app.use(session({
         ttl: 4 * 24 * 60 * 60,
     }),
     cookie: {
-        maxAge: 4 * 24 * 60 * 60 * 1000, 
+        maxAge: 4 * 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true
     }
@@ -86,6 +87,7 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/api/orders', apiOrdersRoutes);
+app.use('/api', apiEmployeeRoutes);
 
 
 // Error handling middleware
