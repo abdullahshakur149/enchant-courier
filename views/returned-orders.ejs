@@ -79,80 +79,83 @@
         </div>
       </div>
 
+      <%- include('./components/remarksModel.ejs') %>
 
 
-      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-      <script src="/js/orders.js"></script>
-      <script type="module">
-        document.addEventListener('DOMContentLoaded', function () {
-          OrderManager.init('returned');
 
-          const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
-          const verifyReturnForm = document.getElementById('verifyReturnForm');
-          const trackingNumberInput = document.getElementById('verifytrackingNumber');
-          const flyerIdInput = document.getElementById('verifyflyerId');
-          const successMsg = document.getElementById('verifySuccessMsg');
 
-          // Focus on tracking number when modal is shown
-          document.getElementById('verifyReturnModal').addEventListener('shown.bs.modal', function () {
-            trackingNumberInput.focus();
-          });
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="/js/orders.js"></script>
+        <script type="module">
+          document.addEventListener('DOMContentLoaded', function () {
+            OrderManager.init('returned');
 
-          // Move focus to flyerId on Enter in trackingNumber
-          trackingNumberInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              flyerIdInput.focus();
-            }
-          });
+            const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
+            const verifyReturnForm = document.getElementById('verifyReturnForm');
+            const trackingNumberInput = document.getElementById('verifytrackingNumber');
+            const flyerIdInput = document.getElementById('verifyflyerId');
+            const successMsg = document.getElementById('verifySuccessMsg');
 
-          // Submit form on Enter in flyerId
-          flyerIdInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              verifyReturnForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-            }
-          });
+            // Focus on tracking number when modal is shown
+            document.getElementById('verifyReturnModal').addEventListener('shown.bs.modal', function () {
+              trackingNumberInput.focus();
+            });
 
-          // Handle form submission
-          verifyReturnForm.addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const trackingNumber = trackingNumberInput.value.trim();
-            const flyerId = flyerIdInput.value.trim();
-
-            if (!trackingNumber || !flyerId) {
-              alert('Both Tracking Number and Flyer ID are required');
-              return;
-            }
-
-            const data = { trackingNumber, flyerId };
-
-            try {
-              const response = await axios.post('/api/orders/verify-return', data, {
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
-
-              if (response.data.success) {
-                verifyReturnForm.reset();
-                OrderManager.fetchOrders();
-
-                successMsg.classList.remove('d-none');
-                successMsg.textContent = 'Return verified successfully!';
-
-                setTimeout(() => {
-                  successMsg.classList.add('d-none');
-                  trackingNumberInput.focus();
-                }, 3000);
-              } else {
-                alert(response.data.message || 'Failed to verify return');
+            // Move focus to flyerId on Enter in trackingNumber
+            trackingNumberInput.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                flyerIdInput.focus();
               }
-            } catch (error) {
-              console.error('Error verifying return:', error);
-              alert('Error verifying return. Please try again later.');
-            }
+            });
+
+            // Submit form on Enter in flyerId
+            flyerIdInput.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyReturnForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+              }
+            });
+
+            // Handle form submission
+            verifyReturnForm.addEventListener('submit', async function (e) {
+              e.preventDefault();
+
+              const trackingNumber = trackingNumberInput.value.trim();
+              const flyerId = flyerIdInput.value.trim();
+
+              if (!trackingNumber || !flyerId) {
+                alert('Both Tracking Number and Flyer ID are required');
+                return;
+              }
+
+              const data = { trackingNumber, flyerId };
+
+              try {
+                const response = await axios.post('/api/orders/verify-return', data, {
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                });
+
+                if (response.data.success) {
+                  verifyReturnForm.reset();
+                  OrderManager.fetchOrders();
+
+                  successMsg.classList.remove('d-none');
+                  successMsg.textContent = 'Return verified successfully!';
+
+                  setTimeout(() => {
+                    successMsg.classList.add('d-none');
+                    trackingNumberInput.focus();
+                  }, 3000);
+                } else {
+                  alert(response.data.message || 'Failed to verify return');
+                }
+              } catch (error) {
+                console.error('Error verifying return:', error);
+                alert('Error verifying return. Please try again later.');
+              }
+            });
           });
-        });
-      </script>
+        </script>

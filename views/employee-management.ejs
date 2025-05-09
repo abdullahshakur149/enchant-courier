@@ -255,7 +255,7 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert('Employee deleted successfully');
+                    showSuccessAnimation();
                     fetchEmployees(); // Refresh the list
                 } else {
                     alert(data.message || 'Error deleting employee');

@@ -529,6 +529,61 @@ export const verifyReturn = async (req, res) => {
     }
 };
 
+// ===================================== remarks order ===============================================
+
+export const remarksOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { content } = req.body;
+        const userId = req.user?._id;
+
+        if (!orderId || !content) {
+            return res.status(400).json({
+                success: false,
+                message: 'Order ID and remark content are required'
+            });
+        }
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized: User not authenticated'
+            });
+        }
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        order.remarks = {
+            content,
+            createdBy: userId,
+            createdAt: new Date()
+        };
+
+        await order.save();
+
+        return res.json({
+            success: true,
+            message: 'Remark added successfully',
+            order
+        });
+
+    } catch (error) {
+        console.error('Error adding remarks:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Error adding remarks. Please try again later.'
+        });
+    }
+};
+
+
+
 
 
 

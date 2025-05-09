@@ -1,3 +1,4 @@
+
 const OrderManager = {
   currentPage: parseInt(sessionStorage.getItem("currentPage")) || 1,
   limit: 50,
@@ -161,6 +162,16 @@ const OrderManager = {
     data-bs-target="#editOrderModal"
 >
     <i class="fas fa-edit"></i>
+</button>
+
+<button 
+    class="btn btn-sm btn-outline-success remarks-btn" 
+    title="remarks" 
+    data-id="${row.id}"
+    data-bs-toggle="modal" 
+    data-bs-target="#remarksOrderModal"
+>
+    <i class="fas fa-comment"></i>
 </button>
 
 
@@ -354,7 +365,9 @@ const OrderManager = {
 };
 
 
+
 document.addEventListener('DOMContentLoaded', function () {
+
   let orderId = null;
 
   // Fill form when edit button is clicked
@@ -400,14 +413,79 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Tracking updated successfully!');
-        location.reload();
+        alert('Order updated successfully!');
+        window.location.reload();
       } else {
         alert('Failed to update: ' + result.error);
       }
     } catch (error) {
       console.error('Request failed:', error);
       alert('An error occurred while updating.');
+    }
+  });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // When "remark" button is clicked
+  document.addEventListener('click', function (e) {
+    const remarkBtn = e.target.closest('.remarks-btn');
+    if (remarkBtn) {
+      const orderId = remarkBtn.getAttribute('data-id');
+      console.log('Selected Order ID for remark:', orderId);
+
+      // Save orderId globally or on the form itself (as a data attribute)
+      const remarksForm = document.getElementById('remarksOrderForm');
+      if (remarksForm) {
+        remarksForm.setAttribute('data-order-id', orderId);  // Store orderId directly in the form
+      }
+    }
+  });
+
+  const remarksForm = document.getElementById('remarksOrderForm');
+  if (!remarksForm) return;
+
+  remarksForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    const content = document.getElementById('remarkText').value.trim();
+    const orderId = remarksForm.getAttribute('data-order-id');  // Retrieve the orderId from the form's data attribute
+    const submitBtn = remarksForm.querySelector('button[type="submit"]');
+
+    if (!orderId) {
+      alert('No order selected for remark.');
+      return;
+    }
+
+    if (!content) {
+      alert('Please enter a remark.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+
+    try {
+      const response = await fetch(`/api/orders/remarks/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('Remark added successfully!');
+        window.location.reload(); // Reload the page to see the changes
+      } else {
+        alert('Failed to add remark: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error while submitting remark:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
     }
   });
 });
