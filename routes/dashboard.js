@@ -13,6 +13,7 @@ const tz = "Asia/Karachi";
 
 
 // Dashboard route
+// Dashboard route
 router.get("/", checkAuthenticated, async (req, res) => {
   try {
     const startOfDay = dayjs().tz(tz).startOf("day").toDate();
@@ -35,13 +36,13 @@ router.get("/", checkAuthenticated, async (req, res) => {
       createdAt: { $gte: startOfDay, $lt: endOfDay },
     });
 
-    // Orders delivered today
+    // Fixed query to check for delivered orders today
     const deliveredOrdersToday = await Order.countDocuments({
       delivered_at: { $gte: startOfDay, $lt: endOfDay },
+      isDelivered: true,  // Ensure the order is marked as delivered
     });
 
-    // Orders returned today    // Orders returned today
-
+    // Orders returned today
     const returnedOrdersToday = await Order.countDocuments({
       returned_at: { $gte: startOfDay, $lt: endOfDay },
     });
@@ -75,6 +76,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
     });
   }
 });
+
 
 
 // Orders page (AJAX table)

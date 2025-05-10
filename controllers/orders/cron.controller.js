@@ -1,6 +1,12 @@
 import { Order } from '../../models/order.js';
-import { formatDate } from '../../utils/helpers.js';
 import axios from 'axios';
+import dayjs from 'dayjs'; // Import dayjs for date manipulation
+import utc from 'dayjs/plugin/utc.js'; // Import the UTC plugin
+import timezone from 'dayjs/plugin/timezone.js'; // Import the timezone plugin
+
+// Extend dayjs with UTC and timezone plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const updateOrderStatuses = async (req, res) => {
     try {
@@ -30,6 +36,10 @@ export const updateOrderStatuses = async (req, res) => {
                     const data = item.trackingResponse || {};
                     const status = data.transactionStatus;
                     const timestamp = new Date();
+                    console.log('PostEx Date', data.transactionDate);
+
+                    // Normalize PostEx date (YYYY-MM-DD) to ISO 8601 UTC format
+                    const normalizedPostExDate = dayjs(data.transactionDate).startOf('day').utc().toDate();
 
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
@@ -40,7 +50,7 @@ export const updateOrderStatuses = async (req, res) => {
                         rawJson: data,
                         productInfo: {
                             OrderNumber: data.orderRefNumber || "Not Available",
-                            date: formatDate(data.transactionDate) || "Not Available",
+                            date: data.transactionDate || "Not Available",
                             CustomerName: data.customerName || order.productInfo?.CustomerName || "Not Available",
                             Address: data.deliveryAddress || order.productInfo?.Address || "Not Available",
                             OrderDetails: {
@@ -51,11 +61,9 @@ export const updateOrderStatuses = async (req, res) => {
                     };
 
                     if (status?.includes('Delivered')) {
-                        updateFields.delivered_at = timestamp.toISOString();
+                        updateFields.delivered_at = normalizedPostExDate.toISOString();
                         updateFields.isDelivered = true;
                     }
-
-
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
                 }));
@@ -80,21 +88,10 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = latest?.Status;
                     const timestamp = new Date();
                     const date = latest?.Date;
+                    console.log('Daewoo Date', date);
 
-                    // Parse the date string into a proper Date object
-                    const parseDaewooDate = (dateStr) => {
-                        if (!dateStr) return null;
-                        const [datePart, timePart] = dateStr.split(' ');
-                        const [day, month, year] = datePart.split('/');
-                        const [time, period] = timePart.split(' ');
-                        const [hours, minutes, seconds] = time.split(':');
-
-                        let hour = parseInt(hours);
-                        if (period === 'PM' && hour !== 12) hour += 12;
-                        if (period === 'AM' && hour === 12) hour = 0;
-
-                        return new Date(year, month - 1, day, hour, minutes, seconds);
-                    };
+                    // Normalize Daewoo date (MM/DD/YYYY HH:mm:ss A) to ISO 8601 UTC format
+                    const normalizedDaewooDate = dayjs(date, "MM/DD/YYYY hh:mm:ss A").utc().toDate();
 
                     const updateFields = {
                         status: status || order.status,
@@ -114,10 +111,9 @@ export const updateOrderStatuses = async (req, res) => {
                     };
 
                     if (status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) {
-                        updateFields.delivered_at = parseDaewooDate(date);
+                        updateFields.delivered_at = normalizedDaewooDate.toISOString(); // Use normalized date
                         updateFields.isDelivered = true;
                     }
-
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
@@ -151,6 +147,7 @@ export const updateOrderStatuses = async (req, res) => {
                     const product = details.order_information?.items?.[0] || {};
                     const status = latest?.status;
                     const timestamp = latest?.timestamp ? new Date(latest.timestamp * 1000) : new Date();
+                    console.log('Trax Date', timestamp);
 
                     const updateFields = {
                         customer_name: details.consignee?.name || order.customer_name,
@@ -173,7 +170,7 @@ export const updateOrderStatuses = async (req, res) => {
                     };
 
                     if (status?.includes("Shipment - Delivered")) {
-                        updateFields.delivered_at = timestamp.toISOString();
+                        updateFields.delivered_at = timestamp.toISOString(); // Use normalized date
                         updateFields.isDelivered = true;
                     }
 
