@@ -36,7 +36,7 @@ export const updateOrderStatuses = async (req, res) => {
                     const data = item.trackingResponse || {};
                     const status = data.transactionStatus;
                     const timestamp = new Date();
-                    console.log('PostEx Date', data.transactionDate);
+                    // console.log('PostEx Date', data.transactionDate);
 
                     // Normalize PostEx date (YYYY-MM-DD) to ISO 8601 UTC format
                     const normalizedPostExDate = dayjs(data.transactionDate).startOf('day').utc().toDate();
@@ -88,7 +88,7 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = latest?.Status;
                     const timestamp = new Date();
                     const date = latest?.Date;
-                    console.log('Daewoo Date', date);
+                    // console.log('Daewoo Date', date);
 
                     // Normalize Daewoo date (MM/DD/YYYY HH:mm:ss A) to ISO 8601 UTC format
                     const normalizedDaewooDate = dayjs(date, "MM/DD/YYYY hh:mm:ss A").utc().toDate();
@@ -147,7 +147,7 @@ export const updateOrderStatuses = async (req, res) => {
                     const product = details.order_information?.items?.[0] || {};
                     const status = latest?.status;
                     const timestamp = latest?.timestamp ? new Date(latest.timestamp * 1000) : new Date();
-                    console.log('Trax Date', timestamp);
+                    // console.log('Trax Date', timestamp);
 
                     const updateFields = {
                         customer_name: details.consignee?.name || order.customer_name,

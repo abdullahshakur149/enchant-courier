@@ -13,7 +13,6 @@ const tz = "Asia/Karachi";
 
 
 // Dashboard route
-// Dashboard route
 router.get("/", checkAuthenticated, async (req, res) => {
   try {
     const startOfDay = dayjs().tz(tz).startOf("day").toDate();
@@ -39,13 +38,74 @@ router.get("/", checkAuthenticated, async (req, res) => {
     // Fixed query to check for delivered orders today
     const deliveredOrdersToday = await Order.countDocuments({
       delivered_at: { $gte: startOfDay, $lt: endOfDay },
-      isDelivered: true,  // Ensure the order is marked as delivered
+      isDelivered: true,
     });
 
     // Orders returned today
     const returnedOrdersToday = await Order.countDocuments({
       returned_at: { $gte: startOfDay, $lt: endOfDay },
     });
+
+    // Fetch latest 6 orders with customer info and remarks
+    const latestOrders = await Order.find({})
+      .select('trackingNumber flyerId status isDelivered isReturned delivered_at returned_at productInfo invoicePayment createdAt')
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .lean();
+
+    // Get orders for the last 7 days for the chart with proper timezone handling
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = dayjs().tz(tz).subtract(i, 'day');
+      return {
+        start: date.startOf('day').toDate(),
+        end: date.endOf('day').toDate(),
+        label: date.format('ddd')
+      };
+    }).reverse();
+
+    const ordersByDay = await Promise.all(
+      last7Days.map(async ({ start, end }) => {
+        return Order.countDocuments({
+          createdAt: { $gte: start, $lt: end }
+        });
+      })
+    );
+
+    // Get courier distribution
+    const courierDistribution = await Order.aggregate([
+      {
+        $group: {
+          _id: {
+            $toLower: '$courierType' // Convert to lowercase for consistent grouping
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          courierType: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$_id', 'trax'] }, then: 'Trax' },
+                { case: { $eq: ['$_id', 'postex'] }, then: 'Postex' },
+                { case: { $eq: ['$_id', 'daewoo'] }, then: 'Daewoo' }
+              ],
+              default: 'Unknown'
+            }
+          },
+          count: 1
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+
+    const courierData = {
+      labels: courierDistribution.map(c => c.courierType),
+      data: courierDistribution.map(c => c.count)
+    };
 
     res.render("dashboard/index", {
       user: req.user,
@@ -59,6 +119,14 @@ router.get("/", checkAuthenticated, async (req, res) => {
       totalOrdersToday,
       deliveredOrdersToday,
       returnedOrdersToday,
+      latestOrders,
+      chartData: {
+        ordersByDay: {
+          labels: last7Days.map(d => d.label),
+          data: ordersByDay
+        },
+        courierDistribution: courierData
+      }
     });
   } catch (error) {
     console.error("Error fetching order data:", error);
@@ -73,6 +141,16 @@ router.get("/", checkAuthenticated, async (req, res) => {
       totalOrdersToday: 0,
       deliveredOrdersToday: 0,
       returnedOrdersToday: 0,
+      chartData: {
+        ordersByDay: {
+          labels: [],
+          data: []
+        },
+        courierDistribution: {
+          labels: [],
+          data: []
+        }
+      }
     });
   }
 });

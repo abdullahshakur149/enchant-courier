@@ -31,7 +31,7 @@ export const CreateUser = async (req, res) => {
 
 export const getAllEmployees = async (req, res) => {
     try {
-        const employees = await User.find({ role: 'employee' }).select('username role createdAt updatedAt');
+        const employees = await User.find();
 
         res.status(200).json({ employees });
     } catch (error) {

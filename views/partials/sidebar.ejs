@@ -1,92 +1,101 @@
 <nav class="sidebar">
   <div class="sidebar-header">
-    <h3 class="mb-0 text-white fw-semibold">
-      <i class="fas fa-boxes-stacked text-primary me-2"></i>
-      Enchant Courier
-    </h3>
+    <div class="brand-wrapper">
+      <i class="fas fa-boxes-stacked text-primary"></i>
+      <h3 class="mb-0 text-white fw-semibold">Enchant Courier</h3>
+    </div>
+    <div class="user-profile">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="user-info">
+        <span class="user-name"><%= user.name %></span>
+        <span class="user-role"><%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></span>
+      </div>
+    </div>
   </div>
 
-  <div class="">
-    <div class="sidebar-section mb-4">
-      <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Overview</h6>
-      <ul class="list-unstyled">
+  <div class="sidebar-content">
+    <div class="sidebar-section">
+      <h6 class="section-title">Overview</h6>
+      <ul class="nav-menu">
         <li>
-          <a href="/dashboard"
-            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/dashboard' ? 'active' : '' %>">
-            <i class="fas fa-chart-line me-3"></i>
+          <a href="/dashboard" class="nav-link <%= path === '/dashboard' ? 'active' : '' %>">
+            <i class="fas fa-chart-line"></i>
             <span>Dashboard</span>
+            <span class="nav-indicator"></span>
           </a>
         </li>
         <li>
-          <a href="/dashboard/orders"
-            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/orders' ? 'active' : '' %>">
-            <i class="fas fa-box me-3"></i>
+          <a href="/dashboard/orders" class="nav-link <%= path === '/orders' ? 'active' : '' %>">
+            <i class="fas fa-box"></i>
             <span>Orders</span>
+            <span class="nav-indicator"></span>
           </a>
         </li>
         <li>
-          <a href="/dashboard/delivered-orders"
-            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/delivered-orders' ? 'active' : '' %>">
-            <i class="fas fa-truck-fast me-3"></i>
+          <a href="/dashboard/delivered-orders" class="nav-link <%= path === '/delivered-orders' ? 'active' : '' %>">
+            <i class="fas fa-truck-fast"></i>
             <span>Delivered Orders</span>
+            <span class="nav-indicator"></span>
           </a>
         </li>
         <li>
-          <a href="/dashboard/returned-orders"
-            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/returned-orders' ? 'active' : '' %>">
-            <i class="fas fa-box-open me-3"></i>
+          <a href="/dashboard/returned-orders" class="nav-link <%= path === '/returned-orders' ? 'active' : '' %>">
+            <i class="fas fa-box-open"></i>
             <span>Returned Orders</span>
+            <span class="nav-indicator"></span>
           </a>
         </li>
       </ul>
     </div>
 
-    <div class="sidebar-section mb-4">
-      <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Support</h6>
-      <ul class="list-unstyled">
+    <div class="sidebar-section">
+      <h6 class="section-title">Support</h6>
+      <ul class="nav-menu">
         <li>
-          <a href="/support"
-            class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/help' ? 'active' : '' %>">
-            <i class="fas fa-circle-question me-3"></i>
+          <a href="/support" class="nav-link <%= path === '/help' ? 'active' : '' %>">
+            <i class="fas fa-circle-question"></i>
             <span>Help Center</span>
+            <span class="nav-indicator"></span>
           </a>
         </li>
       </ul>
     </div>
 
-    <!-- Debugging line to check user -->
-    <!-- <p style="color: white;"><%- JSON.stringify(user) %></p> -->
+    <% if (user && user.role === 'admin') { %>
+    <div class="sidebar-section">
+      <h6 class="section-title">Admin Actions</h6>
+      <ul class="nav-menu">
+        <li>
+          <a href="/dashboard/employee-management" class="nav-link <%= path === '/create-employee' ? 'active' : '' %>">
+            <i class="fas fa-user-plus"></i>
+            <span>Employee Management</span>
+            <span class="nav-indicator"></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <% } %>
 
-    <!-- Conditionally Render Admin Section -->
-    <% if (user && user.role==='admin' ) { %>
-      <div class="sidebar-section mb-4">
-        <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Admin Actions</h6>
-        <ul class="list-unstyled">
-          <li>
-            <a href="/dashboard/employee-management"
-              class="d-flex align-items-center text-gray-300 text-decoration-none p-3 <%= path === '/create-employee' ? 'active' : '' %>">
-              <i class="fas fa-user-plus me-3"></i>
-              <span>Employee Management</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-      <% } %>
+    <div class="sidebar-section">
+      <h6 class="section-title">Account</h6>
+      <ul class="nav-menu">
+        <li>
+          <form action="/auth/logout" method="POST" class="nav-link logout-form">
+            <button type="submit" class="btn-logout">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
 
-        <div class="sidebar-section mb-4">
-          <h6 class="text-gray-400 text-uppercase fw-semibold mb-3">Account</h6>
-          <ul class="list-unstyled">
-            <li>
-              <form action="/auth/logout" method="POST" class="d-flex align-items-center p-3">
-                <button type="submit"
-                  class="btn btn-link text-gray-300 text-decoration-none p-0 d-flex align-items-center w-100">
-                  <i class="fas fa-sign-out-alt me-3"></i>
-                  <span>Logout</span>
-                </button>
-              </form>
-            </li>
-          </ul>
-        </div>
-
+  <div class="sidebar-footer">
+    <div class="version-info">
+      <span>Version 1.0.0</span>
+    </div>
   </div>
 </nav>

@@ -1,117 +1,318 @@
-<div class="row g-4 mb-4">
-    <!-- Total Orders & Pending Orders -->
-    <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Total Orders</h5>
-                    <i class="fas fa-box text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= totalOrders %></h2>
-                <p class="text-white-50 mb-0 text-sm">Total number of orders</p>
-            </div>
+<!-- Dashboard Content -->
+<div class="container-fluid py-4">
+  <!-- Quick Actions Section -->
+  <div class="quick-actions mb-4">
+    <div class="section-header">
+      <h2 class="section-title">Quick Actions</h2>
+    </div>
+    <div class="actions-grid">
+      <a href="/dashboard/orders/new" class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-plus-circle"></i>
         </div>
+        <div class="action-text">New Order</div>
+      </a>
+      <a href="/dashboard/orders" class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-list"></i>
+        </div>
+        <div class="action-text">View Orders</div>
+      </a>
+      <a href="/dashboard/delivered-orders" class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-check-double"></i>
+        </div>
+        <div class="action-text">Delivered Orders</div>
+      </a>
+      <a href="/dashboard/returned-orders" class="action-card">
+        <div class="action-icon">
+          <i class="fas fa-undo"></i>
+        </div>
+        <div class="action-text">Returned Orders</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="dashboard-stats">
+    <!-- Total Orders Card -->
+    <div class="stat-card total-orders">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <div class="stat-value"><%= totalOrders %></div>
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-change">
+        <span>Today: <%= totalOrdersToday %></span>
+      </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #ffb74d, #ffa000);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Pending Orders</h5>
-                    <i class="fas fa-clock text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= pendingOrders %></h2>
-                <p class="text-white-50 mb-0 text-sm">Orders awaiting processing</p>
-            </div>
-        </div>
+    <!-- Delivered Orders Card -->
+    <div class="stat-card delivered">
+      <div class="stat-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-value"><%= deliveredOrders %></div>
+      <div class="stat-label">Delivered Orders</div>
+      <div class="stat-change positive">
+        <span>Today: <%= deliveredOrdersToday %></span>
+      </div>
     </div>
 
-    <!-- Delivered Orders & Returned Orders -->
-    <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #4caf50, #81c784);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Delivered Orders</h5>
-                    <i class="fas fa-check-circle text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= deliveredOrders %></h2>
-                <p class="text-white-50 mb-0 text-sm">Orders successfully delivered</p>
-            </div>
-        </div>
+    <!-- Returned Orders Card -->
+    <div class="stat-card returned">
+      <div class="stat-icon">
+        <i class="fas fa-undo"></i>
+      </div>
+      <div class="stat-value"><%= returnedOrders %></div>
+      <div class="stat-label">Returned Orders</div>
+      <div class="stat-change negative">
+        <span>Today: <%= returnedOrdersToday %></span>
+      </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #f44336, #ef5350);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Returned Orders</h5>
-                    <i class="fas fa-undo text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= returnedOrders %></h2>
-                <p class="text-white-50 mb-0 text-sm">Returned items</p>
-            </div>
-        </div>
+    <!-- Pending Orders Card -->
+    <div class="stat-card pending">
+      <div class="stat-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="stat-value"><%= pendingOrders %></div>
+      <div class="stat-label">Pending Orders</div>
+      <div class="stat-change">
+        <span>Awaiting Delivery</span>
+      </div>
     </div>
+  </div>
 
-    <!-- New Cards for Today's Data -->
+  <!-- Charts Section -->
+  <div class="row mt-4">
     <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #00bcd4, #26c6da);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Orders Created Today</h5>
-                    <i class="fas fa-calendar-plus text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= totalOrdersToday %></h2>
-                <p class="text-white-50 mb-0 text-sm">Orders created today</p>
-            </div>
+      <div class="chart-card">
+        <div class="section-header">
+          <h2 class="section-title">Orders Overview</h2>
+          <div class="chart-actions">
+            <select class="form-select form-select-sm" id="ordersTimeRange">
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+            </select>
+          </div>
         </div>
+        <canvas id="ordersChart"></canvas>
+      </div>
     </div>
+    <div class="col-md-6">
+      <div class="chart-card">
+        <div class="section-header">
+          <h2 class="section-title">Courier Distribution</h2>
+        </div>
+        <canvas id="courierChart"></canvas>
+      </div>
+    </div>
+  </div>
 
-    <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #8e24aa, #d81b60);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Orders Delivered Today</h5>
-                    <i class="fas fa-truck-loading text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= deliveredOrdersToday %></h2>
-                <p class="text-white-50 mb-0 text-sm">Orders delivered today</p>
-            </div>
-        </div>
+  <!-- Latest Orders Section -->
+  <div class="latest-orders mt-4">
+    <div class="section-header">
+      <h2 class="section-title">Latest Orders</h2>
+      <a href="/dashboard/orders" class="view-all">View All Orders <i class="fas fa-arrow-right"></i></a>
     </div>
-
-    <div class="col-md-6">
-        <div class="card h-100 shadow-lg border-0 rounded-3" style="background: linear-gradient(135deg, #ff4081, #f50057);">
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="card-title text-white mb-0 text-xl font-weight-bold">Orders Returned Today</h5>
-                    <i class="fas fa-undo-alt text-white fa-3x"></i>
-                </div>
-                <h2 class="text-white mb-0 text-5xl font-weight-bold"><%= returnedOrdersToday %></h2>
-                <p class="text-white-50 mb-0 text-sm">Orders returned today</p>
-            </div>
-        </div>
+    
+    <div class="table-responsive">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% latestOrders.forEach(order => { %>
+            <tr>
+              <td>#<%= order.trackingNumber %></td>
+              <td><%= order.productInfo?.CustomerName || 'N/A' %></td>
+              <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+              <td>
+                <% if (order.isDelivered) { %>
+                  <span class="status-badge delivered">Delivered</span>
+                <% } else if (order.isReturned) { %>
+                  <span class="status-badge returned">Returned</span>
+                <% } else { %>
+                  <span class="status-badge pending">Pending</span>
+                <% } %>
+              </td>
+              <td>Rs. <%= order.invoicePayment || '0' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
     </div>
+  </div>
 </div>
 
-<!-- Add custom hover effects and animations -->
-<style>
-    .card:hover {
-        transform: translateY(-10px);
-        transition: transform 0.3s ease-in-out;
-    }
+<!-- Include Chart.js -->
 
-    .card i {
-        transition: transform 0.3s ease-in-out;
-    }
 
-    .card:hover i {
-        transform: scale(1.3);
-    }
 
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+<!-- Dashboard Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Common chart options
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 1000
+    },
+    interaction: {
+      mode: 'index',
+      intersect: false
+    },
+    elements: {
+      point: {
+        radius: 3,
+        hoverRadius: 5,
+        hoverBorderWidth: 2
+      },
+      line: {
+        borderWidth: 2,
+        tension: 0.4
+      }
     }
-</style>
+  };
+
+  // Orders Chart
+  const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+  new Chart(ordersCtx, {
+    type: 'line',
+    data: {
+      labels: <%- JSON.stringify(chartData.ordersByDay.labels) %>,
+      datasets: [{
+        label: 'New Orders',
+        data: <%- JSON.stringify(chartData.ordersByDay.data) %>,
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      ...commonOptions,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 10,
+          titleFont: {
+            size: 14,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 13
+          },
+          callbacks: {
+            label: function(context) {
+              return `Orders: ${context.parsed.y}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            display: true,
+            drawBorder: false,
+            color: 'rgba(0, 0, 0, 0.05)'
+          },
+          ticks: {
+            precision: 0,
+            font: {
+              size: 12
+            }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: {
+              size: 12
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Courier Distribution Chart
+  const courierCtx = document.getElementById('courierChart').getContext('2d');
+  new Chart(courierCtx, {
+    type: 'doughnut',
+    data: {
+      labels: <%- JSON.stringify(chartData.courierDistribution.labels) %>,
+      datasets: [{
+        data: <%- JSON.stringify(chartData.courierDistribution.data) %>,
+        backgroundColor: [
+          '#059669', // Postex color
+          '#2563eb', // Daewoo color
+          '#64748b', // Trax color
+          '#94a3b8'  // Unknown color
+        ],
+        borderWidth: 2,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      ...commonOptions,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true,
+            font: {
+              size: 12
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 10,
+          titleFont: {
+            size: 14,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 13
+          },
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Time range selector handler
+  document.getElementById('ordersTimeRange').addEventListener('change', function(e) {
+    // Here you would typically make an AJAX call to fetch new data
+    console.log('Selected time range:', e.target.value);
+  });
+});
+</script>

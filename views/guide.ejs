@@ -1,117 +1,242 @@
 <div class="container py-5">
     <div class="row">
         <div class="col-12">
-            <h1 class="mb-4">Enchant Courier Admin Guide</h1>
+            <div class="guide-header text-center mb-5">
+                <h1 class="display-4 fw-bold text-primary mb-3">Enchant Courier Admin Guide</h1>
+                <p class="lead text-muted">Your comprehensive resource for managing the Enchant Courier system</p>
+            </div>
             
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">System Overview</h2>
-                    <p>Enchant Courier is a Node.js-based courier management system developed by Abdullah Shakur. This guide provides technical documentation for administrators and developers.</p>
+            <!-- Quick Navigation -->
+            <div class="quick-nav mb-5">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <a href="#overview" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm hover-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-info-circle fa-2x text-primary mb-3"></i>
+                                    <h5>Overview</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#features" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm hover-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-list-check fa-2x text-primary mb-3"></i>
+                                    <h5>Features</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#orders" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm hover-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-box fa-2x text-primary mb-3"></i>
+                                    <h5>Orders</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#dashboard" class="text-decoration-none">
+                            <div class="card h-100 border-0 shadow-sm hover-card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                                    <h5>Dashboard</h5>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Technical Stack</h2>
-                    <ul class="list-unstyled">
-                        <li><strong>Backend:</strong> Node.js, Express.js</li>
-                        <li><strong>Database:</strong> MongoDB with Mongoose ODM</li>
-                        <li><strong>Authentication:</strong> Passport.js with Local Strategy</li>
-                        <li><strong>Frontend:</strong> EJS Templates, Bootstrap 5</li>
-                        <li><strong>Styling:</strong> SASS/SCSS</li>
-                    </ul>
+            <!-- System Overview -->
+            <div id="overview" class="card mb-4 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h3 mb-4 text-primary">System Overview</h2>
+                    <p class="lead">Enchant Courier is a modern courier management system that helps you track and manage orders across multiple courier services including Trax, Postex, and Daewoo Express. The system provides real-time tracking, order management, and comprehensive analytics.</p>
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Project Structure</h2>
-                    <pre class="bg-light p-3 rounded">
-├── config/           # Configuration files
-├── controllers/      # Route controllers
-├── models/          # Database models
-├── public/          # Static assets
-│   ├── css/        # Compiled CSS
-│   ├── js/         # Client-side JavaScript
-│   └── images/     # Image assets
-├── routes/          # Route definitions
-├── utils/           # Utility functions
-└── views/           # EJS templates
-    ├── layouts/    # Layout templates
-    ├── partials/   # Reusable components
-    └── [feature]/  # Feature-specific views
-                    </pre>
+            <!-- Features -->
+            <div id="features" class="card mb-4 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h3 mb-4 text-primary">Key Features</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="feature-item p-3 bg-light rounded">
+                                <i class="fas fa-truck-fast text-primary me-2"></i>
+                                <strong>Multi-Courier Support:</strong> Manage orders across Trax, Postex, and Daewoo Express
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item p-3 bg-light rounded">
+                                <i class="fas fa-chart-pie text-primary me-2"></i>
+                                <strong>Real-time Analytics:</strong> Track orders, deliveries, and returns with detailed statistics
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item p-3 bg-light rounded">
+                                <i class="fas fa-users text-primary me-2"></i>
+                                <strong>Employee Management:</strong> Manage staff access and permissions
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-item p-3 bg-light rounded">
+                                <i class="fas fa-shield-alt text-primary me-2"></i>
+                                <strong>Secure Authentication:</strong> Role-based access control with secure login
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Authentication Flow</h2>
-                    <ol>
-                        <li>User submits login credentials</li>
-                        <li>Passport.js validates credentials against MongoDB</li>
-                        <li>Session is created and stored in MongoDB</li>
-                        <li>User is redirected to appropriate dashboard</li>
-                    </ol>
+            <!-- Orders Management -->
+            <div id="orders" class="card mb-4 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h3 mb-4 text-primary">Order Management</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="order-section">
+                                <h3 class="h5 mb-3">Order Types</h3>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-box text-primary me-2"></i>
+                                        <strong>All Orders:</strong> Complete order listing with tracking
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Delivered Orders:</strong> Successfully delivered shipments
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-undo text-warning me-2"></i>
+                                        <strong>Returned Orders:</strong> Returned or failed deliveries
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="order-section">
+                                <h3 class="h5 mb-3">Order Information</h3>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-barcode text-primary me-2"></i>
+                                        Tracking Number & Flyer ID
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-user text-primary me-2"></i>
+                                        Customer Details
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                        Delivery Address
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-comment text-primary me-2"></i>
+                                        Order Remarks
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Order Management</h2>
-                    <p>The system handles three types of orders:</p>
-                    <ul>
-                        <li><strong>All Orders:</strong> Complete order listing</li>
-                        <li><strong>Delivered Orders:</strong> Successfully delivered shipments</li>
-                        <li><strong>Returned Orders:</strong> Returned or failed deliveries</li>
-                    </ul>
+            <!-- Dashboard Guide -->
+            <div id="dashboard" class="card mb-4 border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h3 mb-4 text-primary">Dashboard Features</h2>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="dashboard-section">
+                                <h3 class="h5 mb-3">Daily Statistics</h3>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-chart-bar text-primary me-2"></i>
+                                        Total Orders Today
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-check-double text-success me-2"></i>
+                                        Delivered Orders Today
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-undo text-warning me-2"></i>
+                                        Returned Orders Today
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="dashboard-section">
+                                <h3 class="h5 mb-3">Analytics</h3>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-chart-line text-primary me-2"></i>
+                                        7-Day Order Trends
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                                        Courier Service Distribution
+                                    </li>
+                                    <li class="list-group-item bg-transparent">
+                                        <i class="fas fa-clock text-primary me-2"></i>
+                                        Real-time Updates
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Development Guidelines</h2>
-                    <h3 class="h5 mt-3">Code Style</h3>
-                    <ul>
-                        <li>Use ES6+ JavaScript features</li>
-                        <li>Follow MVC architecture pattern</li>
-                        <li>Implement proper error handling</li>
-                        <li>Write meaningful comments</li>
-                    </ul>
-
-                    <h3 class="h5 mt-3">Security Best Practices</h3>
-                    <ul>
-                        <li>Always validate user input</li>
-                        <li>Use environment variables for sensitive data</li>
-                        <li>Implement proper session management</li>
-                        <li>Follow the principle of least privilege</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Troubleshooting</h2>
-                    <h3 class="h5 mt-3">Common Issues</h3>
-                    <ul>
-                        <li><strong>Authentication Failures:</strong> Check MongoDB connection and user credentials</li>
-                        <li><strong>Form Submission Errors:</strong> Verify client-side validation and server-side processing</li>
-                        <li><strong>Database Issues:</strong> Monitor MongoDB connection and query performance</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="h4 mb-3">Contact & Support</h2>
-                    <p>For technical support or development inquiries, contact:</p>
-                    <ul class="list-unstyled">
-                        <li><strong>Developer:</strong> Abdullah Shakur</li>
-                        <li><strong>Role:</strong> Full Stack Developer</li>
-                        <li><strong>Email:</strong> abdullahshakur95@gmail.com</li>
-                    </ul>
+            <!-- Contact Section -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h3 mb-4 text-primary">Contact & Support</h2>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="contact-info">
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-user-circle fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-0">Abdullah Shakur</h5>
+                                        <p class="text-muted mb-0">Full Stack Developer</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-envelope fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-0">Email</h5>
+                                        <p class="text-muted mb-0">abdullahshakur95@gmail.com</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+.hover-card {
+    transition: transform 0.2s ease-in-out;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+}
+.feature-item, .order-section, .dashboard-section {
+    transition: all 0.2s ease-in-out;
+}
+.feature-item:hover, .order-section:hover, .dashboard-section:hover {
+    transform: translateX(5px);
+    background-color: #f8f9fa;
+}
+.list-group-item {
+    border: none;
+    padding: 0.75rem 0;
+}
+</style> 
