@@ -12,7 +12,10 @@ export const updateOrderStatuses = async (req, res) => {
     try {
         console.log('Cronjob triggered at 3:00 AM');
 
-        const orders = await Order.find({}, "trackingNumber courierType flyerId");
+        const orders = await Order.find({
+            isDelivered: { $ne: true },
+            isReturned: { $ne: true }
+        }, "trackingNumber courierType flyerId isDelivered isReturned");
 
         // ===================== PostEx =====================
         const postexOrders = orders.filter(order => order.courierType.toLowerCase() === "postex");
@@ -88,10 +91,20 @@ export const updateOrderStatuses = async (req, res) => {
                     const status = latest?.Status;
                     const timestamp = new Date();
                     const date = latest?.Date;
-                    // console.log('Daewoo Date', date);
 
-                    // Normalize Daewoo date (MM/DD/YYYY HH:mm:ss A) to ISO 8601 UTC format
-                    const normalizedDaewooDate = dayjs(date, "MM/DD/YYYY hh:mm:ss A").utc().toDate();
+                    // Safely parse and validate the Daewoo date
+                    let normalizedDaewooDate = null;
+                    if (date) {
+                        try {
+                            // Try parsing with the expected format
+                            const parsedDate = dayjs(date, "MM/DD/YYYY hh:mm:ss A");
+                            if (parsedDate.isValid()) {
+                                normalizedDaewooDate = parsedDate.utc().toDate();
+                            }
+                        } catch (dateError) {
+                            console.error(`Invalid date format for Daewoo order ${order._id}:`, date);
+                        }
+                    }
 
                     const updateFields = {
                         status: status || order.status,
@@ -110,15 +123,15 @@ export const updateOrderStatuses = async (req, res) => {
                         }
                     };
 
-                    if (status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) {
-                        updateFields.delivered_at = normalizedDaewooDate.toISOString(); // Use normalized date
+                    if ((status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) && normalizedDaewooDate) {
+                        updateFields.delivered_at = normalizedDaewooDate.toISOString();
                         updateFields.isDelivered = true;
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
 
                 } catch (error) {
-                    console.error(`Error processing Daewoo order ${order._id}:`, error);
+                    console.error(`Error processing Daewoo order ${order._id}:`, error.message);
                 }
             }));
         }
