@@ -75,11 +75,12 @@ export const getOrders = async (page = 1, limit = 50) => {
                 { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         })
-            .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
+            .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at remarks returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .populate('remarks.createdBy'); // Populate the createdBy field inside remarks
+            .populate('remarks.createdBy', 'username role'); // Populate createdBy inside remarks
+
 
 
         const totalOrders = await Order.countDocuments({

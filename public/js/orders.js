@@ -317,29 +317,32 @@ const OrderManager = {
         "Last Tracking Update",
       ];
 
-      const rows = trackingData.map((order) => {
-        const trackingHistory = order.rawJson?.details?.tracking_history || [];
-        return {
-          id: order._id,
-          "Tracking Number": order.trackingNumber,
-          Status: order.status,
-          remarks: order.remarks,
-          "Flyer ID": order.flyerId,
-          "Courier Type": order.courierType,
-          Address: order.productInfo?.Address || "N/A",
-          "Customer Name": order.productInfo?.CustomerName || "N/A",
-          "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
-          Date: this.formatDate(order.productInfo?.date),
-          Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
-          "Product Price": order.invoicePayment || "N/A",
-          "Last Tracking Update": order.last_tracking_update
-            ? new Date(order.last_tracking_update).toLocaleString()
-            : "N/A",
-          tracking_history: trackingHistory,
-        };
-      });
+  const rows = trackingData.map((order) => {
+  const trackingHistory = order.rawJson?.details?.tracking_history || [];
+   const remarks = order.remarks?.map((remark) => remark.content).join(", ") || "No Remarks Found";  // Only show content
 
-      console.log("Fetched orders:", rows);
+
+  return {
+    id: order._id,
+    "Tracking Number": order.trackingNumber,
+    Status: order.status,
+    Remarks: remarks,
+    "Flyer ID": order.flyerId,
+    "Courier Type": order.courierType,
+    Address: order.productInfo?.Address || "N/A",
+    "Customer Name": order.productInfo?.CustomerName || "N/A",
+    "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
+    Date: this.formatDate(order.productInfo?.date),
+    Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
+    "Product Price": order.invoicePayment || "N/A",
+    "Last Tracking Update": order.last_tracking_update
+      ? new Date(order.last_tracking_update).toLocaleString()
+      : "N/A",
+    tracking_history: trackingHistory,
+  };
+});
+
+
 
       this.renderTable({ columns, rows });
       this.renderPagination();
