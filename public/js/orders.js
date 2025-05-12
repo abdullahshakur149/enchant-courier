@@ -305,6 +305,7 @@ const OrderManager = {
       const columns = [
         "Tracking Number",
         "Status",
+        "Remarks",
         "Date",
         "Address",
         "Customer Name",
@@ -322,6 +323,7 @@ const OrderManager = {
           id: order._id,
           "Tracking Number": order.trackingNumber,
           Status: order.status,
+          remarks: order.remarks,
           "Flyer ID": order.flyerId,
           "Courier Type": order.courierType,
           Address: order.productInfo?.Address || "N/A",
@@ -336,6 +338,8 @@ const OrderManager = {
           tracking_history: trackingHistory,
         };
       });
+
+      console.log("Fetched orders:", rows);
 
       this.renderTable({ columns, rows });
       this.renderPagination();

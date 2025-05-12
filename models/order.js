@@ -33,11 +33,14 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    remarks: {
-        content: { type: String, default: null },
-        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        createdAt: { type: Date, default: Date.now },
-    },
+    remarks: [
+        {
+            _id: false,
+            content: { type: String, default: null },
+            createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            createdAt: { type: Date, default: Date.now },
+        }
+    ],
     rawJson: {
         type: Object,
         default: {}

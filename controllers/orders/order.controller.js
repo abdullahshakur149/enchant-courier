@@ -78,7 +78,9 @@ export const getOrders = async (page = 1, limit = 50) => {
             .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .populate('remarks.createdBy'); // Populate the createdBy field inside remarks
+
 
         const totalOrders = await Order.countDocuments({
             $and: [
@@ -145,6 +147,7 @@ export const getOrders = async (page = 1, limit = 50) => {
                         Quantity: "Not Available"
                     }
                 },
+                remarks: order.remarks || [],
                 rawJson: order.rawJson,
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt
@@ -340,6 +343,8 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
                         Quantity: "Not Available"
                     }
                 },
+                remarks: order.remarks || [],
+
                 rawJson: order.rawJson,
                 lastUpdated: order.last_tracking_update || null,
                 createdAt: order.createdAt
@@ -432,6 +437,7 @@ export const returnedOrder = async (page = 1, limit = 50) => {
                         Quantity: "Not Available"
                     }
                 },
+                remarks: order.remarks || [],
                 trackingResponse: {
                     status: latestStatus,
                     status_record: trackingHistory
@@ -559,11 +565,11 @@ export const remarksOrder = async (req, res) => {
             });
         }
 
-        order.remarks = {
+        order.remarks.push({
             content,
             createdBy: userId,
-            createdAt: new Date()
-        };
+            createdAt: new Date(),
+        });
 
         await order.save();
 
