@@ -190,7 +190,7 @@
                     <td>${employee.username}</td>
                     <td>${employee.role}</td>
                     <td>
-                        Created: ${new Date(employee.createdAt).toLocaleString()}<br />
+                     ${new Date(employee.createdAt).toLocaleDateString('en-GB')}<br />
                     </td>
                     <td>
                         <button class="btn btn-danger delete-btn" data-id="${employee._id}">Delete</button>
