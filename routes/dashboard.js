@@ -76,7 +76,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
       {
         $group: {
           _id: {
-            $toLower: '$courierType' // Convert to lowercase for consistent grouping
+            $toLower: '$courierType'
           },
           count: { $sum: 1 }
         }
@@ -102,6 +102,41 @@ router.get("/", checkAuthenticated, async (req, res) => {
       }
     ]);
 
+    const deliveredByCourierToday = await Order.aggregate([
+      {
+        $match: {
+          isDelivered: true,
+          delivered_at: { $gte: startOfDay, $lt: endOfDay },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $toLower: "$courierType",
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          courierType: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$_id", "trax"] }, then: "Trax" },
+                { case: { $eq: ["$_id", "postex"] }, then: "Postex" },
+                { case: { $eq: ["$_id", "daewoo"] }, then: "Daewoo" },
+              ],
+              default: "Unknown",
+            },
+          },
+          count: 1,
+        },
+      },
+    ]);
+
+    console.log("Delivered by Courier Today:", deliveredByCourierToday);
+
+
     const courierData = {
       labels: courierDistribution.map(c => c.courierType),
       data: courierDistribution.map(c => c.count)
@@ -120,6 +155,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
       deliveredOrdersToday,
       returnedOrdersToday,
       latestOrders,
+      deliveredByCourierToday,
       chartData: {
         ordersByDay: {
           labels: last7Days.map(d => d.label),
