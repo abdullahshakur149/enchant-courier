@@ -12,6 +12,9 @@ export const updateOrderStatuses = async (req, res) => {
     try {
         console.log('Cronjob triggered at 3:00 AM');
 
+        const deliveredAtTimestamp = new Date(); // This timestamp will be used for all orders
+
+
         const orders = await Order.find({
             isDelivered: { $ne: true },
             isReturned: { $ne: true }
@@ -64,7 +67,7 @@ export const updateOrderStatuses = async (req, res) => {
                     };
 
                     if (status?.includes('Delivered')) {
-                        updateFields.delivered_at = normalizedPostExDate.toISOString();
+                        updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
                         updateFields.isDelivered = true;
                     }
 
@@ -124,7 +127,7 @@ export const updateOrderStatuses = async (req, res) => {
                     };
 
                     if ((status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) && normalizedDaewooDate) {
-                        updateFields.delivered_at = normalizedDaewooDate.toISOString();
+                        updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
                         updateFields.isDelivered = true;
                     }
 
@@ -183,7 +186,7 @@ export const updateOrderStatuses = async (req, res) => {
                     };
 
                     if (status?.includes("Shipment - Delivered")) {
-                        updateFields.delivered_at = timestamp.toISOString(); // Use normalized date
+                        updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
                         updateFields.isDelivered = true;
                     }
 
