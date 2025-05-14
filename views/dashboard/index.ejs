@@ -82,6 +82,20 @@
         <span>Awaiting Delivery</span>
       </div>
     </div>
+
+    
+  <% deliveredByCourierToday.forEach(courier => { %>
+    <div class="stat-card courier">
+      <div class="stat-icon">
+        <i style="color: brown;" class="fas fa-truck"></i>
+      </div>
+      <div class="stat-value"><%= courier.count %></div>
+      <div class="stat-label">Delivered Today: <%= courier.courierType %></div>
+    </div>
+  <% }); %>
+
+
+
   </div>
 
   <!-- Charts Section -->
