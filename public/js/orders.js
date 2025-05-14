@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (response.ok) {
         alert('Remark added successfully!');
-        window.location.reload(); // Reload the page to see the changes
+        // window.location.reload(); // Reload the page to see the changes
       } else {
         alert('Failed to add remark: ' + result.message);
       }
