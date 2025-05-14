@@ -127,6 +127,21 @@ const OrderManager = {
                       trackingHistory
                     )}'>${value}</span></td>`;
                   }
+                  if (colKey === "Remarks") {
+                    return `<td>
+   <button 
+      class="btn btn-sm btn-outline-secondary view-remarks-btn" 
+      title="View Remarks" 
+      data-remarks="${row.remarks || 'No remarks available.'}"  
+      data-id="${row.id}"
+      data-bs-toggle="modal" 
+      data-bs-target="#remarksHistoryModel">
+        <i class="fas fa-comment"></i> View Remarks
+    </button>
+</td>`;
+
+                  }
+
                   if (colKey === "Address") {
                     return `<td title="${value}">${value}</td>`;
                   }
@@ -192,6 +207,14 @@ const OrderManager = {
         `;
 
     document.getElementById("orders-table-container").innerHTML = tableHtml;
+    document.querySelectorAll(".view-remarks-btn").forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const remarks = e.currentTarget.getAttribute("data-remarks");
+        document.getElementById("remarksModalBody").innerText = remarks || "No remarks available.";
+      });
+    });
+
+
 
     // Status badge click handler
     document.querySelectorAll(".status-badge").forEach((badge) => {
@@ -305,7 +328,7 @@ const OrderManager = {
       const columns = [
         "Tracking Number",
         "Status",
-        "Remarks",
+        "Remarks",  // Add Remarks here
         "Date",
         "Address",
         "Customer Name",
@@ -317,30 +340,28 @@ const OrderManager = {
         "Last Tracking Update",
       ];
 
-  const rows = trackingData.map((order) => {
-  const trackingHistory = order.rawJson?.details?.tracking_history || [];
-   const remarks = order.remarks?.map((remark) => remark.content).join(", ") || "No Remarks Found";  // Only show content
+      const rows = trackingData.map((order) => {
+        const trackingHistory = order.rawJson?.details?.tracking_history || [];
 
 
-  return {
-    id: order._id,
-    "Tracking Number": order.trackingNumber,
-    Status: order.status,
-    Remarks: remarks,
-    "Flyer ID": order.flyerId,
-    "Courier Type": order.courierType,
-    Address: order.productInfo?.Address || "N/A",
-    "Customer Name": order.productInfo?.CustomerName || "N/A",
-    "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
-    Date: this.formatDate(order.productInfo?.date),
-    Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
-    "Product Price": order.invoicePayment || "N/A",
-    "Last Tracking Update": order.last_tracking_update
-      ? new Date(order.last_tracking_update).toLocaleString()
-      : "N/A",
-    tracking_history: trackingHistory,
-  };
-});
+        return {
+          id: order._id,
+          "Tracking Number": order.trackingNumber,
+          Status: order.status,
+          "Flyer ID": order.flyerId,
+          "Courier Type": order.courierType,
+          Address: order.productInfo?.Address || "N/A",
+          "Customer Name": order.productInfo?.CustomerName || "N/A",
+          "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
+          Date: this.formatDate(order.productInfo?.date),
+          Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
+          "Product Price": order.invoicePayment || "N/A",
+          "Last Tracking Update": order.last_tracking_update
+            ? new Date(order.last_tracking_update).toLocaleString()
+            : "N/A",
+          tracking_history: trackingHistory,
+        };
+      });
 
 
 
@@ -439,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const remarkBtn = e.target.closest('.remarks-btn');
     if (remarkBtn) {
       const orderId = remarkBtn.getAttribute('data-id');
-      console.log('Selected Order ID for remark:', orderId);
+      // console.log('Selected Order ID for remark:', orderId);
 
       // Save orderId globally or on the form itself (as a data attribute)
       const remarksForm = document.getElementById('remarksOrderForm');
@@ -496,3 +517,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 });
+
+
+
+
+
+
+
+
+
+

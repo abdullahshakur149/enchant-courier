@@ -8,24 +8,25 @@
 
 
     <!-- Tracking History Modal -->
-        <%- include('./components/trackingModel.ejs') %>
+    <%- include('./components/trackingModel.ejs') %>
 
 
-    <%- include('./components/editmodel.ejs') %>
+      <%- include('./components/editmodel.ejs') %>
 
-      <%- include('./components/remarksModel.ejs') %>
+        <%- include('./components/remarksModel.ejs') %>
 
-
-
-
+          <%- include('./components/showRemarks.ejs') %>
 
 
 
-        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-        <script src="/js/orders.js"></script>
-        <script>
-          document.addEventListener('DOMContentLoaded', function () {
-            const orderType = '<%= path %>' === '/delivered-orders' ? 'delivered' : 'all';
-            OrderManager.init(orderType);
-          });
-        </script>
+
+
+
+            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+            <script src="/js/orders.js"></script>
+            <script>
+              document.addEventListener('DOMContentLoaded', function () {
+                const orderType = '<%= path %>' === '/delivered-orders' ? 'delivered' : 'all';
+                OrderManager.init(orderType);
+              });
+            </script>
