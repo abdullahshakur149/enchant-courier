@@ -1,4 +1,5 @@
 import User from '../../models/user.js';
+import { createLog } from '../../utils/logger.js';
 
 export const CreateUser = async (req, res) => {
     try {
@@ -20,6 +21,20 @@ export const CreateUser = async (req, res) => {
         // Use passport-local-mongoose to register the user (handles password hashing)
         await User.register(user, password);
 
+        // Create log for user creation
+        await createLog({
+            action: 'create',
+            entity: 'user',
+            entityId: user._id,
+            details: {
+                username: user.username,
+                role: user.role,
+                createdAt: user.createdAt
+            },
+            performedBy: req.user._id,
+            req
+        });
+
         // Send a success response
         res.status(201).json({ message: 'User created successfully', user });
     } catch (error) {
@@ -33,6 +48,19 @@ export const getAllEmployees = async (req, res) => {
     try {
         const employees = await User.find();
 
+        // Create log for viewing employees
+        await createLog({
+            action: 'view',
+            entity: 'user',
+            entityId: 'all',
+            details: {
+                totalEmployees: employees.length,
+                roles: employees.map(emp => emp.role)
+            },
+            performedBy: req.user._id,
+            req
+        });
+
         res.status(200).json({ employees });
     } catch (error) {
         // Catch any errors during fetching users
@@ -45,13 +73,31 @@ export const deleteEmployeeController = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const employee = await User.findByIdAndDelete(id);
-
-        if (!employee) {
+        // Get employee details before deletion for logging
+        const employeeToDelete = await User.findById(id);
+        
+        if (!employeeToDelete) {
             return res.status(404).json({ message: 'Employee not found' });
         }
 
-        // After deletion, redirect to the employee list page
+        // Create log before deletion
+        await createLog({
+            action: 'delete',
+            entity: 'user',
+            entityId: id,
+            details: {
+                username: employeeToDelete.username,
+                role: employeeToDelete.role,
+                lastLogin: employeeToDelete.lastLogin,
+                createdAt: employeeToDelete.createdAt
+            },
+            performedBy: req.user._id,
+            req
+        });
+
+        // Delete the employee
+        await User.findByIdAndDelete(id);
+
         res.status(200).json({ message: 'Employee deleted successfully' });
     } catch (error) {
         console.error('Error deleting employee:', error);
