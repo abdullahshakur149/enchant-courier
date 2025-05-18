@@ -81,6 +81,23 @@
             <span class="nav-indicator"></span>
           </a>
         </li>
+        <li>
+          <a href="/dashboard/system-status" class="nav-link <%= path === '/dashboard/system-status' ? 'active' : '' %>">
+            <i class="fas fa-heartbeat"></i>
+            <span>System Status</span>
+            <span class="nav-indicator"></span>
+          </a>
+        </li>
+        <li>
+          <a href="/notifications" class="nav-link <%= path === '/notifications' ? 'active' : '' %>">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+            <span class="nav-indicator"></span>
+            <% if (typeof unreadNotifications !== 'undefined' && unreadNotifications && unreadNotifications.length > 0) { %>
+              <span class="badge badge-danger badge-pill"><%= unreadNotifications.length %></span>
+            <% } %>
+          </a>
+        </li>
       </ul>
     </div>
     <% } %>

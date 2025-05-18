@@ -5,6 +5,56 @@
     <div class="section-header d-flex justify-content-between align-items-center mb-3">
       <h2 class="section-title h4 mb-0">Quick Actions</h2>
     </div>
+    
+    <!-- Today's Stats -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card bg-primary bg-opacity-10">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title mb-1">Today's Orders</h6>
+                <h3 class="mb-0"><%= dashboardData.todayStats.totalOrders %></h3>
+              </div>
+              <div class="icon-circle bg-primary bg-opacity-10">
+                <i class="fas fa-shopping-cart text-primary"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-success bg-opacity-10">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title mb-1">Delivered Today</h6>
+                <h3 class="mb-0"><%= dashboardData.todayStats.deliveredOrders %></h3>
+              </div>
+              <div class="icon-circle bg-success bg-opacity-10">
+                <i class="fas fa-check-circle text-success"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card bg-warning bg-opacity-10">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title mb-1">Returns Today</h6>
+                <h3 class="mb-0"><%= dashboardData.todayStats.returnedOrders %></h3>
+              </div>
+              <div class="icon-circle bg-warning bg-opacity-10">
+                <i class="fas fa-undo text-warning"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="actions-grid">
       <a href="/dashboard/orders/new" class="action-card bg-primary bg-opacity-10 hover-shadow">
         <div class="action-icon text-primary">
@@ -33,331 +83,456 @@
     </div>
   </div>
 
-  <!-- Stats Grid -->
-  <div class="dashboard-stats row g-3 mb-4">
-    <!-- Total Orders Card -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card total-orders rounded-4 p-3 bg-white shadow-sm">
-        <div class="d-flex align-items-center mb-2">
-          <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-2 me-3">
-            <i class="fas fa-shopping-cart text-primary"></i>
+  <!-- Overview Cards -->
+  <div class="row mb-4">
+    <!-- Order Status Distribution -->
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Order Status</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Shows the distribution of orders across different statuses: Pending, Delivered, and Returned. Helps track order progress and identify bottlenecks."></i>
           </div>
-          <div class="stat-label text-muted">Total Orders</div>
-        </div>
-        <div class="stat-value h3 mb-1"><%= totalOrders %></div>
-        <div class="stat-change small text-muted">
-          <span>Today: <%= totalOrdersToday %></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delivered Orders Card -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card delivered rounded-4 p-3 bg-white shadow-sm">
-        <div class="d-flex align-items-center mb-2">
-          <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-2 me-3">
-            <i class="fas fa-check-circle text-success"></i>
-          </div>
-          <div class="stat-label text-muted">Delivered Orders</div>
-        </div>
-        <div class="stat-value h3 mb-1"><%= deliveredOrders %></div>
-        <div class="stat-change small text-success">
-          <span>Today: <%= deliveredOrdersToday %></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Returned Orders Card -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card returned rounded-4 p-3 bg-white shadow-sm">
-        <div class="d-flex align-items-center mb-2">
-          <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-2 me-3">
-            <i class="fas fa-undo text-warning"></i>
-          </div>
-          <div class="stat-label text-muted">Returned Orders</div>
-        </div>
-        <div class="stat-value h3 mb-1"><%= returnedOrders %></div>
-        <div class="stat-change small text-warning">
-          <span>Today: <%= returnedOrdersToday %></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pending Orders Card -->
-    <div class="col-md-6 col-lg-3">
-      <div class="stat-card pending rounded-4 p-3 bg-white shadow-sm">
-        <div class="d-flex align-items-center mb-2">
-          <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-2 me-3">
-            <i class="fas fa-clock text-info"></i>
-          </div>
-          <div class="stat-label text-muted">Pending Orders</div>
-        </div>
-        <div class="stat-value h3 mb-1"><%= pendingOrders %></div>
-        <div class="stat-change small text-muted">
-          <span>Awaiting Delivery</span>
-        </div>
-      </div>
-    </div>
-
-    <% 
-      const courierTypes = ['Trax', 'Postex', 'Daewoo'];
-      courierTypes.forEach(type => {
-        const courierData = deliveredByCourierToday.find(c => c.courierType === type) || { count: 0, courierType: type };
-    %>
-      <div class="col-md-6 col-lg-3">
-        <div class="stat-card courier rounded-4 p-3 bg-white shadow-sm">
-          <div class="d-flex align-items-center mb-2">
-            <div class="stat-icon bg-brown bg-opacity-10 rounded-3 p-2 me-3">
-              <i class="fas fa-truck text-brown"></i>
+          <span class="badge bg-primary mb-3"><%= Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) %></span>
+          <div class="mt-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Pending</span>
+              <span class="fw-medium"><%= dashboardData.orderStatus.pending || 0 %></span>
             </div>
-            <div class="stat-label text-muted">Delivered Today</div>
-          </div>
-          <div class="stat-value h3 mb-1"><%= courierData.count %></div>
-          <div class="stat-change small text-muted">
-            <span><%= courierData.courierType %></span>
+            <div class="progress mb-3" style="height: 6px;">
+              <div class="progress-bar bg-info" style="width: <%= (dashboardData.orderStatus.pending || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-2">
+              <span>Delivered</span>
+              <span class="fw-medium"><%= dashboardData.orderStatus.delivered || 0 %></span>
+            </div>
+            <div class="progress mb-3" style="height: 6px;">
+              <div class="progress-bar bg-success" style="width: <%= (dashboardData.orderStatus.delivered || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-2">
+              <span>Returned</span>
+              <span class="fw-medium"><%= dashboardData.orderStatus.returned || 0 %></span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-warning" style="width: <%= (dashboardData.orderStatus.returned || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%"></div>
+            </div>
           </div>
         </div>
       </div>
-    <% }); %>
+    </div>
+
+    <!-- Performance Metrics -->
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Performance</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Key performance indicators including delivery success rate, average processing time, and return rate. Helps monitor overall operational efficiency."></i>
+          </div>
+          <div class="mt-3">
+            <div class="d-flex justify-content-between mb-2">
+              <span>Success Rate</span>
+              <span class="fw-medium"><%= (dashboardData.performance.deliverySuccessRate * 100).toFixed(1) %>%</span>
+            </div>
+            <div class="progress mb-3" style="height: 6px;">
+              <div class="progress-bar bg-success" style="width: <%= dashboardData.performance.deliverySuccessRate * 100 %>%"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-2">
+              <span>Avg. Processing</span>
+              <span class="fw-medium">
+                <% 
+                  const avgProcessingTime = dashboardData.performance.averageProcessingTime;
+                  const hours = Math.floor(avgProcessingTime / (1000 * 60 * 60));
+                  const minutes = Math.floor((avgProcessingTime % (1000 * 60 * 60)) / (1000 * 60));
+                  if (hours > 24) {
+                    const days = Math.floor(hours / 24);
+                    const remainingHours = hours % 24;
+                    if (remainingHours > 0) {
+                      %><%= days %>d <%= remainingHours %>h<%
+                    } else {
+                      %><%= days %>d<%
+                    }
+                  } else {
+                    %><%= hours %>h <%= minutes %>m<%
+                  }
+                %>
+              </span>
+            </div>
+            <div class="progress mb-3" style="height: 6px;">
+              <div class="progress-bar bg-info" style="width: 70%"></div>
+            </div>
+            
+            <div class="d-flex justify-content-between mb-2">
+              <span>Return Rate</span>
+              <span class="fw-medium"><%= (dashboardData.performance.returnRate * 100).toFixed(1) %>%</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-warning" style="width: <%= dashboardData.performance.returnRate * 100 %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Stats -->
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Payments</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Shows the distribution of payment statuses across orders. Helps track payment processing and identify any payment-related issues."></i>
+          </div>
+          <span class="badge bg-primary mb-3"><%= Object.values(dashboardData.paymentStats).reduce((a, b) => a + b.count, 0) %></span>
+          <div class="mt-3">
+            <% 
+              const paymentStats = Object.entries(dashboardData.paymentStats)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 3); // Show only top 3 payment statuses
+            %>
+            <% paymentStats.forEach(([status, data]) => { %>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-truncate" style="max-width: 70%;"><%= status %></span>
+                <span class="fw-medium"><%= data.count %></span>
+              </div>
+              <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar bg-info" style="width: <%= (data.count / Object.values(dashboardData.paymentStats).reduce((a, b) => a + b.count, 0)) * 100 %>%"></div>
+              </div>
+            <% }); %>
+            <% if (Object.keys(dashboardData.paymentStats).length > 3) { %>
+              <div class="text-center mt-2">
+                <small class="text-muted">+<%= Object.keys(dashboardData.paymentStats).length - 3 %> more statuses</small>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remarks Stats -->
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Remarks</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Shows the distribution of different types of remarks added to orders. Helps identify common issues and track customer feedback."></i>
+          </div>
+          <span class="badge bg-primary mb-3"><%= Object.values(dashboardData.remarks).reduce((a, b) => a + b.count, 0) %></span>
+          <div class="mt-3">
+            <% Object.entries(dashboardData.remarks).forEach(([type, data]) => { %>
+              <div class="d-flex justify-content-between mb-2">
+                <span><%= type %></span>
+                <span class="fw-medium"><%= data.count %></span>
+              </div>
+              <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar bg-info" style="width: <%= (data.count / Object.values(dashboardData.remarks).reduce((a, b) => a + b.count, 0)) * 100 %>%"></div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Charts Section -->
-  <div class="row g-4 mb-4">
+  <!-- Charts Row -->
+  <div class="row mb-4">
+    <!-- Courier Performance -->
     <div class="col-md-6">
-      <div class="chart-card bg-white rounded-4 p-4 shadow-sm">
-        <div class="section-header d-flex justify-content-between align-items-center mb-4">
-          <h2 class="section-title h5 mb-0">Orders Overview</h2>
-          <div class="chart-actions">
-            <select class="form-select form-select-sm border-0 bg-light" id="ordersTimeRange">
-              <option value="7">Last 7 Days</option>
-              <option value="30">Last 30 Days</option>
-              <option value="90">Last 90 Days</option>
-            </select>
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Courier Performance</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Compares delivery and return rates across different courier services. Helps evaluate courier performance and identify areas for improvement."></i>
           </div>
-        </div>
-        <div style="height: 300px;">
-          <canvas id="ordersChart"></canvas>
+          <div class="chart-container" style="position: relative; height: 300px;">
+            <canvas id="courierPerformanceChart"></canvas>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- Time-based Analytics -->
     <div class="col-md-6">
-      <div class="chart-card bg-white rounded-4 p-4 shadow-sm">
-        <div class="section-header mb-4">
-          <h2 class="section-title h5 mb-0">Courier Distribution</h2>
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Daily Orders (Last 30 Days)</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Shows the trend of orders and deliveries over the last 30 days. Helps identify patterns and plan resources accordingly."></i>
+          </div>
+          <div class="chart-container" style="position: relative; height: 300px;">
+            <canvas id="timeBasedChart"></canvas>
+          </div>
         </div>
-        <div style="height: 300px;">
-          <canvas id="courierChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Stats Row -->
+  <div class="row">
+    <!-- Return Analysis -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Return Analysis</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Shows the number of returned orders for each courier service. Higher numbers may indicate areas needing improvement in delivery service."></i>
+          </div>
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-hover">
+              <thead class="sticky-top bg-white">
+                <tr>
+                  <th>Courier</th>
+                  <th>Returns</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dashboardData.returnAnalysis.forEach(stat => { %>
+                  <tr>
+                    <td class="fw-medium"><%= stat.courier %></td>
+                    <td><%= stat.returnCount %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Stats -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title mb-0">Product Statistics</h5>
+            <i class="fas fa-info-circle text-muted" 
+               data-bs-toggle="tooltip" 
+               data-bs-placement="top" 
+               title="Shows the total quantity and number of orders for each product. Helps track product popularity and inventory management."></i>
+          </div>
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-hover">
+              <thead class="sticky-top bg-white">
+                <tr>
+                  <th>Product</th>
+                  <th>Total Quantity</th>
+                  <th>Orders</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% dashboardData.productStats.forEach(stat => { %>
+                  <tr>
+                    <td><%= stat.product %></td>
+                    <td><%= stat.totalQuantity %></td>
+                    <td><%= stat.orderCount %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Latest Orders Section -->
-  <div class="latest-orders bg-white rounded-4 p-4 shadow-sm">
-    <div class="section-header d-flex justify-content-between align-items-center mb-4">
-      <h2 class="section-title h5 mb-0">Latest Orders</h2>
-      <a href="/dashboard/orders" class="btn btn-sm btn-outline-primary">
-        View All Orders <i class="fas fa-arrow-right ms-1"></i>
-      </a>
-    </div>
-    
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="bg-light">
-          <tr>
-            <th class="border-0">Order ID</th>
-            <th class="border-0">Customer</th>
-            <th class="border-0">Date</th>
-            <th class="border-0">Status</th>
-            <th class="border-0">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% latestOrders.forEach(order => { %>
+  <div class="card mt-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+          <h5 class="card-title mb-0">Latest Orders</h5>
+          <i class="fas fa-info-circle text-muted ms-2" 
+             data-bs-toggle="tooltip" 
+             data-bs-placement="top" 
+             title="Shows the most recent orders with their current status and details. Helps monitor recent order activity and customer information."></i>
+        </div>
+        <a href="/dashboard/orders" class="btn btn-sm btn-outline-primary">
+          View All Orders <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="bg-light">
             <tr>
-              <td class="fw-medium">#<%= order.trackingNumber %></td>
-              <td><%= order.productInfo?.CustomerName || 'N/A' %></td>
-              <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
-              <td>
-                <% if (order.isDelivered) { %>
-                  <span class="badge bg-success bg-opacity-10 text-success">Delivered</span>
-                <% } else if (order.isReturned) { %>
-                  <span class="badge bg-warning bg-opacity-10 text-warning">Returned</span>
-                <% } else { %>
-                  <span class="badge bg-info bg-opacity-10 text-info">Pending</span>
-                <% } %>
-              </td>
-              <td class="fw-medium">Rs. <%= order.invoicePayment || '0' %></td>
+              <th class="border-0">Order ID</th>
+              <th class="border-0">Customer</th>
+              <th class="border-0">Date</th>
+              <th class="border-0">Status</th>
+              <th class="border-0">Amount</th>
             </tr>
-          <% }); %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% latestOrders.forEach(order => { %>
+              <tr>
+                <td class="fw-medium">#<%= order.trackingNumber %></td>
+                <td><%= order.productInfo?.CustomerName || 'N/A' %></td>
+                <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                <td>
+                  <% if (order.isDelivered) { %>
+                    <span class="badge bg-success bg-opacity-10 text-success">Delivered</span>
+                  <% } else if (order.isReturned) { %>
+                    <span class="badge bg-warning bg-opacity-10 text-warning">Returned</span>
+                  <% } else { %>
+                    <span class="badge bg-info bg-opacity-10 text-info">Pending</span>
+                  <% } %>
+                </td>
+                <td class="fw-medium">Rs. <%= order.invoicePayment || '0' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
-
-
 <!-- Include Chart.js -->
-
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- Dashboard Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize all tooltips
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
+    return new bootstrap.Tooltip(tooltipTriggerEl, {
+      trigger: 'hover',
+      html: true,
+      placement: 'top'
+    });
+  });
+
+  // Prepare data for charts
+  const courierData = <%- JSON.stringify(dashboardData.courierPerformance) %>;
+  const timeData = <%- JSON.stringify(dashboardData.timeBasedAnalytics) %>;
+
   // Common chart options
   const commonOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: {
-      duration: 1000
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      }
     },
     interaction: {
-      mode: 'index',
+      mode: 'nearest',
+      axis: 'x',
       intersect: false
-    },
-    elements: {
-      point: {
-        radius: 3,
-        hoverRadius: 5,
-        hoverBorderWidth: 2
-      },
-      line: {
-        borderWidth: 2,
-        tension: 0.4
-      }
     }
   };
 
-  // Orders Chart
-  const ordersCtx = document.getElementById('ordersChart').getContext('2d');
-  new Chart(ordersCtx, {
+  // Courier Performance Chart
+  const courierCtx = document.getElementById('courierPerformanceChart').getContext('2d');
+  new Chart(courierCtx, {
+    type: 'bar',
+    data: {
+      labels: courierData.map(c => c.courier),
+      datasets: [{
+        label: 'Delivery Rate (%)',
+        data: courierData.map(c => c.deliveryRate),
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1
+      }, {
+        label: 'Return Rate (%)',
+        data: courierData.map(c => c.returnRate),
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      ...commonOptions,
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 100,
+          title: {
+            display: true,
+            text: 'Percentage (%)'
+          }
+        }
+      }
+    }
+  });
+
+  // Time-based Analytics Chart
+  const timeCtx = document.getElementById('timeBasedChart').getContext('2d');
+  new Chart(timeCtx, {
     type: 'line',
     data: {
-      labels: <%- JSON.stringify(chartData.ordersByDay.labels) %>,
+      labels: timeData.map(t => t.date),
       datasets: [{
-        label: 'New Orders',
-        data: <%- JSON.stringify(chartData.ordersByDay.data) %>,
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+        label: 'Orders',
+        data: timeData.map(t => t.orders),
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+        fill: true,
+        tension: 0.4
+      }, {
+        label: 'Delivered',
+        data: timeData.map(t => t.delivered),
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
         fill: true,
         tension: 0.4
       }]
     },
     options: {
       ...commonOptions,
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: 10,
-          titleFont: {
-            size: 14,
-            weight: 'bold'
-          },
-          bodyFont: {
-            size: 13
-          },
-          callbacks: {
-            label: function(context) {
-              return `Orders: ${context.parsed.y}`;
-            }
-          }
-        }
-      },
       scales: {
         y: {
           beginAtZero: true,
-          grid: {
+          title: {
             display: true,
-            drawBorder: false,
-            color: 'rgba(0, 0, 0, 0.05)'
-          },
-          ticks: {
-            precision: 0,
-            font: {
-              size: 12
-            }
-          }
-        },
-        x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            font: {
-              size: 12
-            }
+            text: 'Number of Orders'
           }
         }
       }
     }
-  });
-
-  // Courier Distribution Chart
-  const courierCtx = document.getElementById('courierChart').getContext('2d');
-  new Chart(courierCtx, {
-    type: 'doughnut',
-    data: {
-      labels: <%- JSON.stringify(chartData.courierDistribution.labels) %>,
-      datasets: [{
-        data: <%- JSON.stringify(chartData.courierDistribution.data) %>,
-        backgroundColor: [
-          '#059669', // Postex color
-          '#2563eb', // Daewoo color
-          '#64748b', // Trax color
-          '#94a3b8'  // Unknown color
-        ],
-        borderWidth: 2,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      ...commonOptions,
-      cutout: '60%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            padding: 20,
-            usePointStyle: true,
-            font: {
-              size: 12
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: 10,
-          titleFont: {
-            size: 14,
-            weight: 'bold'
-          },
-          bodyFont: {
-            size: 13
-          },
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.parsed || 0;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = Math.round((value / total) * 100);
-              return `${label}: ${value} (${percentage}%)`;
-            }
-          }
-        }
-      }
-    }
-  });
-
-  // Time range selector handler
-  document.getElementById('ordersTimeRange').addEventListener('change', function(e) {
-    // Here you would typically make an AJAX call to fetch new data
-    console.log('Selected time range:', e.target.value);
   });
 });
 </script>
+
+<style>
+.icon-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-circle i {
+  font-size: 1.5rem;
+}
+</style>

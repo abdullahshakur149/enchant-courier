@@ -1,0 +1,140 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">System Status Dashboard</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-primary" onclick="refreshStatus()">
+                            <i class="fas fa-sync-alt"></i> Refresh Status
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Database Status -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Database Status</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="status-indicator <%= dbStatus.status === 'operational' ? 'bg-success' : 'bg-danger' %>"></div>
+                                        <div class="ml-3">
+                                            <h5 class="mb-0"><%= dbStatus.message %></h5>
+                                            <small class="text-muted">Last checked: <%= new Date(dbStatus.lastChecked).toLocaleString() %></small>
+                                            <% if (dbStatus.error) { %>
+                                                <div class="text-danger mt-2"><%= dbStatus.error %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- API Endpoints Status -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">API Endpoints Status</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>API Name</th>
+                                                    <th>Status</th>
+                                                    <th>Message</th>
+                                                    <th>Available Routes</th>
+                                                    <th>Last Checked</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% apiStatus.forEach(endpoint => { %>
+                                                    <tr>
+                                                        <td><%= endpoint.name %></td>
+                                                        <td>
+                                                            <span class="badge <%= endpoint.status === 'operational' ? 'badge-success' : 'badge-danger' %>">
+                                                                <%= endpoint.status %>
+                                                            </span>
+                                                        </td>
+                                                        <td><%= endpoint.message %></td>
+                                                        <td>
+                                                            <div class="routes-list">
+                                                                <% endpoint.routes.forEach(route => { %>
+                                                                    <div class="route-item">
+                                                                        <span class="badge badge-info"><%= route.method %></span>
+                                                                        <code><%= route.path %></code>
+                                                                    </div>
+                                                                <% }); %>
+                                                            </div>
+                                                        </td>
+                                                        <td><%= new Date(endpoint.lastChecked).toLocaleString() %></td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-indicator {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.bg-success {
+    background-color: #28a745;
+}
+
+.bg-danger {
+    background-color: #dc3545;
+}
+
+.routes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.route-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.route-item code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+    color: white;
+}
+</style>
+
+<script>
+function refreshStatus() {
+    window.location.reload();
+}
+
+// Auto-refresh every 5 minutes
+setInterval(refreshStatus, 300000);
+</script> 

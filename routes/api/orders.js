@@ -62,4 +62,14 @@ router.put('/remarks/:orderId', remarksOrder);
 // cronejob
 
 router.get('/update-status', updateOrderStatuses)
+
+// Health check endpoint
+router.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'operational',
+        message: 'Orders API is healthy',
+        timestamp: new Date()
+    });
+});
+
 export default router;
