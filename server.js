@@ -17,6 +17,8 @@ import adminRoutes from './routes/admin.js';
 import dashboardRoutes from './routes/dashboard.js';
 import apiOrdersRoutes from './routes/api/orders.js';
 import apiEmployeeRoutes from './routes/api/employee-management.js';
+import apiLogsRoutes from './routes/api/logs.js';
+import logsRoutes from './routes/logs.js';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -32,6 +34,8 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files
 app.use(express.static(join(__dirname, 'public')));
@@ -87,7 +91,9 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/api/orders', apiOrdersRoutes);
-app.use('/api', apiEmployeeRoutes);
+app.use('/api/employee-management', apiEmployeeRoutes);
+app.use('/api/logs', apiLogsRoutes);
+app.use('/logs', logsRoutes);
 
 
 // Error handling middleware

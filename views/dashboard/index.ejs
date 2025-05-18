@@ -2,163 +2,192 @@
 <div class="container-fluid py-4">
   <!-- Quick Actions Section -->
   <div class="quick-actions mb-4">
-    <div class="section-header">
-      <h2 class="section-title">Quick Actions</h2>
+    <div class="section-header d-flex justify-content-between align-items-center mb-3">
+      <h2 class="section-title h4 mb-0">Quick Actions</h2>
     </div>
     <div class="actions-grid">
-      <a href="/dashboard/orders/new" class="action-card">
-        <div class="action-icon">
-          <i class="fas fa-plus-circle"></i>
+      <a href="/dashboard/orders/new" class="action-card bg-primary bg-opacity-10 hover-shadow">
+        <div class="action-icon text-primary">
+          <i class="fas fa-plus-circle fa-2x"></i>
         </div>
-        <div class="action-text">New Order</div>
+        <div class="action-text fw-medium">New Order</div>
       </a>
-      <a href="/dashboard/orders" class="action-card">
-        <div class="action-icon">
-          <i class="fas fa-list"></i>
+      <a href="/dashboard/orders" class="action-card bg-info bg-opacity-10 hover-shadow">
+        <div class="action-icon text-info">
+          <i class="fas fa-list fa-2x"></i>
         </div>
-        <div class="action-text">View Orders</div>
+        <div class="action-text fw-medium">View Orders</div>
       </a>
-      <a href="/dashboard/delivered-orders" class="action-card">
-        <div class="action-icon">
-          <i class="fas fa-check-double"></i>
+      <a href="/dashboard/delivered-orders" class="action-card bg-success bg-opacity-10 hover-shadow">
+        <div class="action-icon text-success">
+          <i class="fas fa-check-double fa-2x"></i>
         </div>
-        <div class="action-text">Delivered Orders</div>
+        <div class="action-text fw-medium">Delivered Orders</div>
       </a>
-      <a href="/dashboard/returned-orders" class="action-card">
-        <div class="action-icon">
-          <i class="fas fa-undo"></i>
+      <a href="/dashboard/returned-orders" class="action-card bg-warning bg-opacity-10 hover-shadow">
+        <div class="action-icon text-warning">
+          <i class="fas fa-undo fa-2x"></i>
         </div>
-        <div class="action-text">Returned Orders</div>
+        <div class="action-text fw-medium">Returned Orders</div>
       </a>
     </div>
   </div>
 
   <!-- Stats Grid -->
-  <div class="dashboard-stats">
+  <div class="dashboard-stats row g-3 mb-4">
     <!-- Total Orders Card -->
-    <div class="stat-card total-orders">
-      <div class="stat-icon">
-        <i class="fas fa-shopping-cart"></i>
-      </div>
-      <div class="stat-value"><%= totalOrders %></div>
-      <div class="stat-label">Total Orders</div>
-      <div class="stat-change">
-        <span>Today: <%= totalOrdersToday %></span>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card total-orders rounded-4 p-3 bg-white shadow-sm">
+        <div class="d-flex align-items-center mb-2">
+          <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-2 me-3">
+            <i class="fas fa-shopping-cart text-primary"></i>
+          </div>
+          <div class="stat-label text-muted">Total Orders</div>
+        </div>
+        <div class="stat-value h3 mb-1"><%= totalOrders %></div>
+        <div class="stat-change small text-muted">
+          <span>Today: <%= totalOrdersToday %></span>
+        </div>
       </div>
     </div>
 
     <!-- Delivered Orders Card -->
-    <div class="stat-card delivered">
-      <div class="stat-icon">
-        <i class="fas fa-check-circle"></i>
-      </div>
-      <div class="stat-value"><%= deliveredOrders %></div>
-      <div class="stat-label">Delivered Orders</div>
-      <div class="stat-change positive">
-        <span>Today: <%= deliveredOrdersToday %></span>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card delivered rounded-4 p-3 bg-white shadow-sm">
+        <div class="d-flex align-items-center mb-2">
+          <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-2 me-3">
+            <i class="fas fa-check-circle text-success"></i>
+          </div>
+          <div class="stat-label text-muted">Delivered Orders</div>
+        </div>
+        <div class="stat-value h3 mb-1"><%= deliveredOrders %></div>
+        <div class="stat-change small text-success">
+          <span>Today: <%= deliveredOrdersToday %></span>
+        </div>
       </div>
     </div>
 
     <!-- Returned Orders Card -->
-    <div class="stat-card returned">
-      <div class="stat-icon">
-        <i class="fas fa-undo"></i>
-      </div>
-      <div class="stat-value"><%= returnedOrders %></div>
-      <div class="stat-label">Returned Orders</div>
-      <div class="stat-change negative">
-        <span>Today: <%= returnedOrdersToday %></span>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card returned rounded-4 p-3 bg-white shadow-sm">
+        <div class="d-flex align-items-center mb-2">
+          <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-2 me-3">
+            <i class="fas fa-undo text-warning"></i>
+          </div>
+          <div class="stat-label text-muted">Returned Orders</div>
+        </div>
+        <div class="stat-value h3 mb-1"><%= returnedOrders %></div>
+        <div class="stat-change small text-warning">
+          <span>Today: <%= returnedOrdersToday %></span>
+        </div>
       </div>
     </div>
 
     <!-- Pending Orders Card -->
-    <div class="stat-card pending">
-      <div class="stat-icon">
-        <i class="fas fa-clock"></i>
-      </div>
-      <div class="stat-value"><%= pendingOrders %></div>
-      <div class="stat-label">Pending Orders</div>
-      <div class="stat-change">
-        <span>Awaiting Delivery</span>
+    <div class="col-md-6 col-lg-3">
+      <div class="stat-card pending rounded-4 p-3 bg-white shadow-sm">
+        <div class="d-flex align-items-center mb-2">
+          <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-2 me-3">
+            <i class="fas fa-clock text-info"></i>
+          </div>
+          <div class="stat-label text-muted">Pending Orders</div>
+        </div>
+        <div class="stat-value h3 mb-1"><%= pendingOrders %></div>
+        <div class="stat-change small text-muted">
+          <span>Awaiting Delivery</span>
+        </div>
       </div>
     </div>
 
-    
-  <% deliveredByCourierToday.forEach(courier => { %>
-    <div class="stat-card courier">
-      <div class="stat-icon">
-        <i style="color: brown;" class="fas fa-truck"></i>
+    <% 
+      const courierTypes = ['Trax', 'Postex', 'Daewoo'];
+      courierTypes.forEach(type => {
+        const courierData = deliveredByCourierToday.find(c => c.courierType === type) || { count: 0, courierType: type };
+    %>
+      <div class="col-md-6 col-lg-3">
+        <div class="stat-card courier rounded-4 p-3 bg-white shadow-sm">
+          <div class="d-flex align-items-center mb-2">
+            <div class="stat-icon bg-brown bg-opacity-10 rounded-3 p-2 me-3">
+              <i class="fas fa-truck text-brown"></i>
+            </div>
+            <div class="stat-label text-muted">Delivered Today</div>
+          </div>
+          <div class="stat-value h3 mb-1"><%= courierData.count %></div>
+          <div class="stat-change small text-muted">
+            <span><%= courierData.courierType %></span>
+          </div>
+        </div>
       </div>
-      <div class="stat-value"><%= courier.count %></div>
-      <div class="stat-label">Delivered Today: <%= courier.courierType %></div>
-    </div>
-  <% }); %>
-
-
-
+    <% }); %>
   </div>
 
   <!-- Charts Section -->
-  <div class="row mt-4">
+  <div class="row g-4 mb-4">
     <div class="col-md-6">
-      <div class="chart-card">
-        <div class="section-header">
-          <h2 class="section-title">Orders Overview</h2>
+      <div class="chart-card bg-white rounded-4 p-4 shadow-sm">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+          <h2 class="section-title h5 mb-0">Orders Overview</h2>
           <div class="chart-actions">
-            <select class="form-select form-select-sm" id="ordersTimeRange">
+            <select class="form-select form-select-sm border-0 bg-light" id="ordersTimeRange">
               <option value="7">Last 7 Days</option>
               <option value="30">Last 30 Days</option>
               <option value="90">Last 90 Days</option>
             </select>
           </div>
         </div>
-        <canvas id="ordersChart"></canvas>
+        <div style="height: 300px;">
+          <canvas id="ordersChart"></canvas>
+        </div>
       </div>
     </div>
     <div class="col-md-6">
-      <div class="chart-card">
-        <div class="section-header">
-          <h2 class="section-title">Courier Distribution</h2>
+      <div class="chart-card bg-white rounded-4 p-4 shadow-sm">
+        <div class="section-header mb-4">
+          <h2 class="section-title h5 mb-0">Courier Distribution</h2>
         </div>
-        <canvas id="courierChart"></canvas>
+        <div style="height: 300px;">
+          <canvas id="courierChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Latest Orders Section -->
-  <div class="latest-orders mt-4">
-    <div class="section-header">
-      <h2 class="section-title">Latest Orders</h2>
-      <a href="/dashboard/orders" class="view-all">View All Orders <i class="fas fa-arrow-right"></i></a>
+  <div class="latest-orders bg-white rounded-4 p-4 shadow-sm">
+    <div class="section-header d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title h5 mb-0">Latest Orders</h2>
+      <a href="/dashboard/orders" class="btn btn-sm btn-outline-primary">
+        View All Orders <i class="fas fa-arrow-right ms-1"></i>
+      </a>
     </div>
     
     <div class="table-responsive">
-      <table class="orders-table">
-        <thead>
+      <table class="table table-hover align-middle">
+        <thead class="bg-light">
           <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Amount</th>
+            <th class="border-0">Order ID</th>
+            <th class="border-0">Customer</th>
+            <th class="border-0">Date</th>
+            <th class="border-0">Status</th>
+            <th class="border-0">Amount</th>
           </tr>
         </thead>
         <tbody>
           <% latestOrders.forEach(order => { %>
             <tr>
-              <td>#<%= order.trackingNumber %></td>
+              <td class="fw-medium">#<%= order.trackingNumber %></td>
               <td><%= order.productInfo?.CustomerName || 'N/A' %></td>
               <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
               <td>
                 <% if (order.isDelivered) { %>
-                  <span class="status-badge delivered">Delivered</span>
+                  <span class="badge bg-success bg-opacity-10 text-success">Delivered</span>
                 <% } else if (order.isReturned) { %>
-                  <span class="status-badge returned">Returned</span>
+                  <span class="badge bg-warning bg-opacity-10 text-warning">Returned</span>
                 <% } else { %>
-                  <span class="status-badge pending">Pending</span>
+                  <span class="badge bg-info bg-opacity-10 text-info">Pending</span>
                 <% } %>
               </td>
-              <td>Rs. <%= order.invoicePayment || '0' %></td>
+              <td class="fw-medium">Rs. <%= order.invoicePayment || '0' %></td>
             </tr>
           <% }); %>
         </tbody>
@@ -166,6 +195,8 @@
     </div>
   </div>
 </div>
+
+
 
 <!-- Include Chart.js -->
 

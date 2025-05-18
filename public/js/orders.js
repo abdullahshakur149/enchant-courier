@@ -1,15 +1,18 @@
-
 const OrderManager = {
   currentPage: parseInt(sessionStorage.getItem("currentPage")) || 1,
   limit: 50,
   totalPages: 1,
   trackingHistoryModal: null,
+  remarksHistoryModal: null,
   orderType: null, // 'all', 'delivered', or 'returned'
 
   init: function (orderType) {
     this.orderType = orderType;
     this.trackingHistoryModal = new bootstrap.Modal(
       document.getElementById("trackingHistoryModal")
+    );
+    this.remarksHistoryModal = new bootstrap.Modal(
+      document.getElementById("remarksHistoryModal")
     );
     this.fetchOrders();
   },
@@ -84,171 +87,206 @@ const OrderManager = {
       : console.error("Modal not initialized");
   },
 
- renderTable: function ({ columns, rows }) {
-  let verifyBtnHtml =
-    this.orderType === "returned"
-      ? `
-          <div class="mb-2 text-end">
-              <button class="btn btn-success" id="verifyReturnsBtn">
-                  <i class="fas fa-check-circle"></i> Verify Returns
-              </button>
-          </div>
-      `
-      : "";
+  showRemarksHistory: function (remarks) {
+    const remarksArray = Array.isArray(remarks) ? remarks : [];
+    if (remarksArray.length === 0) return;
 
-  let tableHtml = `
-      ${verifyBtnHtml}
-      <div class="table-container">
-          <table class="table table-hover">
-              <thead>
-                  <tr>
-                      <th>#</th>
-                      ${columns.map((col) => `<th>${col}</th>`).join("")}
-                      <th class="action-buttons">Actions</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  ${rows.length
-    ? rows
-      .map((row, index) => {
-        return `
+    const tbody = document.getElementById("remarksHistoryBody");
+    tbody.innerHTML = remarksArray
+      .map(
+        (remark) => `
+          <tr>
+            <td>${new Date(remark.createdAt).toLocaleString()}</td>
+            <td>${remark.createdBy?.username || remark.createdBy || 'System'}</td>
+            <td>${remark.content || "No content"}</td>
+          </tr>
+        `
+      )
+      .join("");
+
+    this.remarksHistoryModal.show();
+  },
+
+  renderTable: function ({ columns, rows }) {
+    let verifyBtnHtml =
+      this.orderType === "returned"
+        ? `
+            <div class="mb-2 text-end">
+                <button class="btn btn-success" id="verifyReturnsBtn">
+                    <i class="fas fa-check-circle"></i> Verify Returns
+                </button>
+            </div>
+        `
+        : "";
+
+    let tableHtml = `
+        ${verifyBtnHtml}
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
                     <tr>
-                        <td>${(this.currentPage - 1) * this.limit + index + 1}</td>
-                        ${columns
-          .map((colKey) => {
-            const value = row[colKey];
-
-            if (colKey === "Status") {
-              const trackingHistory = row.tracking_history || [];
-              return `<td>
-                        <span class="status-badge ${this.getStatusClass(value)}" 
-                              style="cursor: pointer;" 
-                              data-tracking-history='${JSON.stringify(trackingHistory)}'>
-                            ${value}
-                        </span>
-                    </td>`;
-            }
-
-            if (colKey === "Remarks") {
-              const latestRemark = Array.isArray(value) && value.length > 0
-                ? value[value.length - 1]?.content
-                : 'No remarks';
-              return `<td class="text-truncate" title="${latestRemark}">${latestRemark}</td>`;
-            }
-
-            if (colKey === "Address") {
-              return `<td title="${value}">${value}</td>`;
-            }
-if (colKey === "Customer & Product Info") {
-  return `
-    <td>
-      <div class="small mt-1">${row["Customer & Product Info"] || "No Name"}</div>
-      <div class="small text-truncate mt-1"><strong>Product Name:</strong> ${row["Product Name"] || "No Product"}</div>
-      <div class="small mt-1"><strong>Product Price:</strong> ${row["Product Price"] || "No Price"}</div>
-      <div class="small mt-1"><strong>Product Quantity:</strong> ${row["Quantity"] || "No Quantity"}</div> <!-- Updated Quantity field -->
-    </td>
-  `;
-}
-
-
-
-
-            if (colKey === "Tracking Number") {
-              const courier = (row["Courier Type"] || "").toLowerCase();
-              let trackingUrl = "#";
-              let trackingTitle = value || "No tracking number"; // Default title if value is empty
-
-              // Set tracking URL based on the courier type
-              if (courier === "trax") {
-                trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
-                trackingTitle = `Track with Trax: ${value}`;
-              } else if (courier === "postex") {
-                trackingUrl = `https://postex.pk/tracking?cn=${value}`;
-                trackingTitle = `Track with Postex: ${value}`;
-              } else if (courier === "daewoo") {
-                trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
-                trackingTitle = `Track with Daewoo: ${value}`;
-              }
-
-              return `
-                  <td>
-                      <a href="${trackingUrl}" target="_blank" title="${trackingTitle}">${value}</a>
-<div class="small"><strong>Flyer ID:</strong> ${row["Flyer ID"] || "No Flyer ID"}</div>
-      <div class="small mt-1"><strong>Courier Type:</strong> ${row["Courier Type"] || "No Courier"}</div>
-
-                  </td>
-              `;
-            }
-
-            return `<td class="text-truncate" title="${value}">${value}</td>`;
-          })
-          .join("")}
-                        <td class="action-buttons">
-                            <button 
-                                class="btn btn-sm btn-outline-secondary edit-btn" 
-                                title="Edit" 
-                                data-id="${row.id}"
-                                data-tracking-number="${row['Tracking Number'] || ''}"
-                                data-flyer-id="${row['Flyer ID'] || ''}"
-                                data-courier-type="${row['Courier Type'] || ''}"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#editOrderModal">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button 
-                                class="btn btn-sm btn-outline-success remarks-btn" 
-                                title="remarks" 
-                                data-id="${row.id}"
-                                data-bs-toggle="modal" 
-                                data-bs-target="#remarksOrderModal">
-                                <i class="fas fa-comment"></i>
-                            </button>
-                            <button 
-                                class="btn btn-sm btn-outline-danger delete-btn" 
-                                title="Delete" 
-                                data-id="${row.id}">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
+                        <th>#</th>
+                        ${columns.map((col) => `<th>${col}</th>`).join("")}
+                        <th class="action-buttons">Actions</th>
                     </tr>
-                `;
-      })
-      .join("")
-    : `<tr><td colspan="${columns.length + 2}" class="text-center text-muted">No data found.</td></tr>`
-  }
-              </tbody>
-          </table>
-      </div>
-  `;
+                </thead>
+                <tbody>
+                    ${rows.length
+      ? rows
+        .map((row, index) => {
+          return `
+                      <tr>
+                          <td>${(this.currentPage - 1) * this.limit + index + 1}</td>
+                          ${columns
+        .map((colKey) => {
+          const value = row[colKey];
 
-  document.getElementById("orders-table-container").innerHTML = tableHtml;
+          if (colKey === "Status") {
+            const trackingHistory = row.tracking_history || [];
+            return `<td>
+                      <span class="status-badge ${this.getStatusClass(value)}" 
+                            style="cursor: pointer;" 
+                            data-tracking-history='${JSON.stringify(trackingHistory)}'>
+                        ${value}
+                      </span>
+                  </td>`;
+          }
 
-  // Status badge click handler
-  document.querySelectorAll(".status-badge").forEach((badge) => {
-    badge.addEventListener("click", (e) => {
-      try {
-        const trackingHistory = JSON.parse(e.currentTarget.dataset.trackingHistory);
-        this.showTrackingHistory(trackingHistory);
-      } catch (error) {
-        console.error("Error parsing tracking history:", error);
-      }
-    });
-  });
+          if (colKey === "Remarks") {
+            const remarks = Array.isArray(value) ? value : [];
+            const latestRemark = remarks.length > 0 ? remarks[remarks.length - 1]?.content : 'No remarks';
+            return `<td>
+              <span class="remarks-badge" 
+                    style="cursor: pointer;" 
+                    data-remarks='${JSON.stringify(remarks)}'>
+                ${latestRemark}
+              </span>
+            </td>`;
+          }
 
-  // Verify Returns button event
-  if (this.orderType === "returned") {
-    const verifyReturnsBtn = document.getElementById("verifyReturnsBtn");
-    if (verifyReturnsBtn) {
-      verifyReturnsBtn.addEventListener("click", () => {
-        const verifyReturnModal = new bootstrap.Modal(document.getElementById("verifyReturnModal"));
-        verifyReturnModal.show();
-      });
+          if (colKey === "Address") {
+            return `<td title="${value}">${value}</td>`;
+          }
+
+          if (colKey === "Customer & Product Info") {
+            return `
+              <td>
+                <div class="small mt-1">${row["Customer & Product Info"] || "No Name"}</div>
+                <div class="small text-truncate mt-1"><strong>Product Name:</strong> ${row["Product Name"] || "No Product"}</div>
+                <div class="small mt-1"><strong>Product Price:</strong> ${row["Product Price"] || "No Price"}</div>
+                <div class="small mt-1"><strong>Product Quantity:</strong> ${row["Quantity"] || "No Quantity"}</div>
+              </td>
+            `;
+          }
+
+          if (colKey === "Tracking Number") {
+            const courier = (row["Courier Type"] || "").toLowerCase();
+            let trackingUrl = "#";
+            let trackingTitle = value || "No tracking number"; // Default title if value is empty
+
+            // Set tracking URL based on the courier type
+            if (courier === "trax") {
+              trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
+              trackingTitle = `Track with Trax: ${value}`;
+            } else if (courier === "postex") {
+              trackingUrl = `https://postex.pk/tracking?cn=${value}`;
+              trackingTitle = `Track with Postex: ${value}`;
+            } else if (courier === "daewoo") {
+              trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
+              trackingTitle = `Track with Daewoo: ${value}`;
+            }
+
+            return `
+                <td>
+                    <a href="${trackingUrl}" target="_blank" title="${trackingTitle}">${value}</a>
+  <div class="small"><strong>Flyer ID:</strong> ${row["Flyer ID"] || "No Flyer ID"}</div>
+    <div class="small mt-1"><strong>Courier Type:</strong> ${row["Courier Type"] || "No Courier"}</div>
+
+                </td>
+            `;
+          }
+
+          return `<td class="text-truncate" title="${value}">${value}</td>`;
+        })
+        .join("")}
+                          <td class="action-buttons">
+                              <button 
+                                  class="btn btn-sm btn-outline-secondary edit-btn" 
+                                  title="Edit" 
+                                  data-id="${row.id}"
+                                  data-tracking-number="${row['Tracking Number'] || ''}"
+                                  data-flyer-id="${row['Flyer ID'] || ''}"
+                                  data-courier-type="${row['Courier Type'] || ''}"
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#editOrderModal">
+                                  <i class="fas fa-edit"></i>
+                              </button>
+                              <button 
+                                  class="btn btn-sm btn-outline-success remarks-btn" 
+                                  title="remarks" 
+                                  data-id="${row.id}"
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#remarksOrderModal">
+                                  <i class="fas fa-comment"></i>
+                              </button>
+                              <button 
+                                  class="btn btn-sm btn-outline-danger delete-btn" 
+                                  title="Delete" 
+                                  data-id="${row.id}">
+                                  <i class="fas fa-trash"></i>
+                              </button>
+                          </td>
+                      </tr>
+                  `;
+        })
+        .join("")
+      : `<tr><td colspan="${columns.length + 2}" class="text-center text-muted">No data found.</td></tr>`
     }
-  }
+                </tbody>
+            </table>
+        </div>
+    `;
 
-  // Attach delete listeners
-  this.attachDeleteListeners();
-},
+    document.getElementById("orders-table-container").innerHTML = tableHtml;
+
+    // Status badge click handler
+    document.querySelectorAll(".status-badge").forEach((badge) => {
+      badge.addEventListener("click", (e) => {
+        try {
+          const trackingHistory = JSON.parse(e.currentTarget.dataset.trackingHistory);
+          this.showTrackingHistory(trackingHistory);
+        } catch (error) {
+          console.error("Error parsing tracking history:", error);
+        }
+      });
+    });
+
+    // Verify Returns button event
+    if (this.orderType === "returned") {
+      const verifyReturnsBtn = document.getElementById("verifyReturnsBtn");
+      if (verifyReturnsBtn) {
+        verifyReturnsBtn.addEventListener("click", () => {
+          const verifyReturnModal = new bootstrap.Modal(document.getElementById("verifyReturnModal"));
+          verifyReturnModal.show();
+        });
+      }
+    }
+
+    // After the status badge click handler, add remarks badge click handler
+    document.querySelectorAll(".remarks-badge").forEach((badge) => {
+      badge.addEventListener("click", (e) => {
+        try {
+          const remarks = JSON.parse(e.currentTarget.dataset.remarks);
+          this.showRemarksHistory(remarks);
+        } catch (error) {
+          console.error("Error parsing remarks:", error);
+        }
+      });
+    });
+
+    // Attach delete listeners
+    this.attachDeleteListeners();
+  },
 
   attachDeleteListeners: function () {
     document
@@ -376,25 +414,33 @@ if (colKey === "Customer & Product Info") {
     }
   },
 
-  deleteOrder: function (orderId) {
+  deleteOrder: async function (orderId) {
     if (confirm("Are you sure you want to delete this order?")) {
-      axios
-        .delete(`/api/orders/${orderId}`)
-        .then(() => {
-          this.fetchOrders();
-        })
-        .catch((error) => {
-          console.error("Error deleting order:", error);
-          alert("An error occurred while deleting the order.");
-        });
+      try {
+        const response = await axios.delete(`/api/orders/${orderId}`);
+        if (response.data.success) {
+          // Refresh the orders to show the updated data
+          await this.fetchOrders();
+          // Show success animation
+          const { showSuccessAnimation } = await import('./modules/successAnimation.js');
+          showSuccessAnimation();
+        } else {
+          alert('Failed to delete order: ' + response.data.message);
+        }
+      } catch (error) {
+        console.error("Error deleting order:", error);
+        alert("An error occurred while deleting the order.");
+      }
     }
   },
 };
 
 
 
-document.addEventListener('DOMContentLoaded', function () {
-
+document.addEventListener('DOMContentLoaded', async function () {
+  // Import the success animation
+  const { showSuccessAnimation } = await import('./modules/successAnimation.js');
+  
   let orderId = null;
 
   // Fill form when edit button is clicked
@@ -402,8 +448,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const editBtn = e.target.closest('.edit-btn');
     if (editBtn) {
       orderId = editBtn.getAttribute('data-id');
-      console.log('Order ID:', orderId);
-
       const trackingNumber = editBtn.getAttribute('data-tracking-number') || '';
       const flyerId = editBtn.getAttribute('data-flyer-id') || '';
       const courierType = editBtn.getAttribute('data-courier-type') || '';
@@ -422,11 +466,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const trackingNumber = document.getElementById('editTrackingNumber').value;
     const flyerId = document.getElementById('editFlyerId').value;
     const courierType = document.getElementById('editCourierType').value;
+    const submitBtn = form.querySelector('button[type="submit"]');
 
     if (!trackingNumber || !flyerId || !courierType) {
       alert('Please fill in all fields.');
       return;
     }
+
+    submitBtn.disabled = true;
 
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
@@ -440,31 +487,37 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Order updated successfully!');
-        window.location.reload();
+        // Close the edit modal
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editOrderModal'));
+        editModal.hide();
+
+        // Clear the form
+        form.reset();
+
+        // Refresh the orders to show the updated data
+        await OrderManager.fetchOrders();
+
+        // Show success animation
+        showSuccessAnimation();
       } else {
         alert('Failed to update: ' + result.error);
       }
     } catch (error) {
       console.error('Request failed:', error);
       alert('An error occurred while updating.');
+    } finally {
+      submitBtn.disabled = false;
     }
   });
-});
 
-
-document.addEventListener('DOMContentLoaded', function () {
   // When "remark" button is clicked
   document.addEventListener('click', function (e) {
     const remarkBtn = e.target.closest('.remarks-btn');
     if (remarkBtn) {
       const orderId = remarkBtn.getAttribute('data-id');
-      // console.log('Selected Order ID for remark:', orderId);
-
-      // Save orderId globally or on the form itself (as a data attribute)
       const remarksForm = document.getElementById('remarksOrderForm');
       if (remarksForm) {
-        remarksForm.setAttribute('data-order-id', orderId);  // Store orderId directly in the form
+        remarksForm.setAttribute('data-order-id', orderId);
       }
     }
   });
@@ -476,7 +529,7 @@ document.addEventListener('DOMContentLoaded', function () {
     e.preventDefault();
 
     const content = document.getElementById('remarkText').value.trim();
-    const orderId = remarksForm.getAttribute('data-order-id');  // Retrieve the orderId from the form's data attribute
+    const orderId = remarksForm.getAttribute('data-order-id');
     const submitBtn = remarksForm.querySelector('button[type="submit"]');
 
     if (!orderId) {
@@ -503,8 +556,18 @@ document.addEventListener('DOMContentLoaded', function () {
       const result = await response.json();
 
       if (response.ok) {
-        alert('Remark added successfully!');
-        // window.location.reload(); // Reload the page to see the changes
+        // Close the remarks modal
+        const remarksModal = bootstrap.Modal.getInstance(document.getElementById('remarksOrderModal'));
+        remarksModal.hide();
+
+        // Clear the form
+        document.getElementById('remarkText').value = '';
+
+        // Refresh the orders to show the new remark
+        await OrderManager.fetchOrders();
+
+        // Show success animation
+        showSuccessAnimation();
       } else {
         alert('Failed to add remark: ' + result.message);
       }

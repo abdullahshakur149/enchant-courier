@@ -1,0 +1,223 @@
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-history me-2"></i>
+                        System Logs
+                    </h3>
+                    <div class="card-tools">
+                        <div class="input-group">
+                            <select id="actionFilter" class="form-select me-2">
+                                <option value="">All Actions</option>
+                                <option value="CREATE">Create</option>
+                                <option value="UPDATE">Update</option>
+                                <option value="DELETE">Delete</option>
+                                <option value="VIEW">View</option>
+                                <option value="LOGIN">Login</option>
+                                <option value="LOGOUT">Logout</option>
+                                <option value="ERROR">Error</option>
+                            </select>
+                            <select id="entityFilter" class="form-select me-2">
+                                <option value="">All Entities</option>
+                                <option value="ORDER">Order</option>
+                                <option value="USER">User</option>
+                                <option value="SYSTEM">System</option>
+                            </select>
+                            <input type="date" id="startDate" class="form-control me-2">
+                            <input type="date" id="endDate" class="form-control me-2">
+                            <button id="filterBtn" class="btn btn-primary">
+                                <i class="fas fa-filter me-1"></i>
+                                Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Action</th>
+                                    <th>Entity</th>
+                                    <th>Performed By</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                                <!-- Logs will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="pagination" class="mt-3">
+                        <!-- Pagination will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Log Details Modal -->
+<div class="modal fade" id="logDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Log Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <pre id="logDetails" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const LogManager = {
+    currentPage: 1,
+    limit: 50,
+    totalPages: 1,
+
+    init: function() {
+        this.fetchLogs();
+        this.attachEventListeners();
+    },
+
+    fetchLogs: async function() {
+        try {
+            const action = document.getElementById('actionFilter').value;
+            const entity = document.getElementById('entityFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            const queryParams = new URLSearchParams({
+                page: this.currentPage,
+                limit: this.limit,
+                ...(action && { action }),
+                ...(entity && { entity }),
+                ...(startDate && { startDate }),
+                ...(endDate && { endDate })
+            });
+
+            const response = await fetch(`/api/logs?${queryParams}`);
+            const data = await response.json();
+
+            if (data.logs) {
+                this.renderLogs(data.logs);
+                this.renderPagination(data.pagination);
+            }
+        } catch (error) {
+            console.error('Error fetching logs:', error);
+            alert('Error fetching logs. Please try again.');
+        }
+    },
+
+    renderLogs: function(logs) {
+        const tbody = document.getElementById('logsTableBody');
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td>${new Date(log.timestamp).toLocaleString()}</td>
+                <td><span class="badge bg-${this.getActionBadgeClass(log.action)}">${log.action}</span></td>
+                <td>${log.entity}</td>
+                <td>${log.performedBy?.username || 'System'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-details" 
+                            data-log='${JSON.stringify(log)}'>
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                </td>
+                <td>${log.ipAddress || 'N/A'}</td>
+            </tr>
+        `).join('');
+
+        // Attach click handlers for detail buttons
+        document.querySelectorAll('.view-details').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const log = JSON.parse(e.target.closest('button').dataset.log);
+                this.showLogDetails(log);
+            });
+        });
+    },
+
+    renderPagination: function(pagination) {
+        const paginationContainer = document.getElementById('pagination');
+        this.totalPages = pagination.totalPages;
+
+        let paginationHtml = `
+            <nav aria-label="Logs pagination">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${this.currentPage - 1}">Previous</a>
+                    </li>
+        `;
+
+        for (let i = 1; i <= pagination.totalPages; i++) {
+            paginationHtml += `
+                <li class="page-item ${this.currentPage === i ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `;
+        }
+
+        paginationHtml += `
+                    <li class="page-item ${this.currentPage === pagination.totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${this.currentPage + 1}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        `;
+
+        paginationContainer.innerHTML = paginationHtml;
+
+        // Attach click handlers for pagination
+        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const page = parseInt(e.target.dataset.page);
+                if (page && page !== this.currentPage) {
+                    this.currentPage = page;
+                    this.fetchLogs();
+                }
+            });
+        });
+    },
+
+    getActionBadgeClass: function(action) {
+        const classes = {
+            'CREATE': 'success',
+            'UPDATE': 'primary',
+            'DELETE': 'danger',
+            'VIEW': 'info',
+            'LOGIN': 'warning',
+            'LOGOUT': 'secondary',
+            'ERROR': 'danger'
+        };
+        return classes[action] || 'secondary';
+    },
+
+    showLogDetails: function(log) {
+        const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+        const detailsElement = document.getElementById('logDetails');
+        detailsElement.textContent = JSON.stringify(log, null, 2);
+        modal.show();
+    },
+
+    attachEventListeners: function() {
+        document.getElementById('filterBtn').addEventListener('click', () => {
+            this.currentPage = 1;
+            this.fetchLogs();
+        });
+    }
+};
+
+// Initialize the log manager when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    LogManager.init();
+});
+</script>
+

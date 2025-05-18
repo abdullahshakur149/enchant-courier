@@ -1,4 +1,5 @@
 import { Order, ReturnedOrder } from '../../models/order.js';
+import { createLog } from '../../utils/logger.js';
 // import { formatDate } from '../../utils/helpers.js';
 
 // ===================================== submit order ===============================================
@@ -41,6 +42,21 @@ export const submitOrder = async (req, res) => {
         });
 
         await newOrder.save();
+
+        // Create log for the new order
+        await createLog({
+            action: 'create',
+            entity: 'order',
+            entityId: newOrder._id,
+            details: {
+                trackingNumber: newOrder.trackingNumber,
+                flyerId: newOrder.flyerId,
+                courierType: newOrder.courierType,
+                status: newOrder.status
+            },
+            performedBy: req.user._id,
+            req
+        });
 
         return res.status(201).json({
             success: true,
@@ -188,20 +204,23 @@ export const getOrders = async (page = 1, limit = 50) => {
 // ===================================== update order ===============================================
 export const updateOrder = async (req, res) => {
     const { trackingNumber, flyerId, courierType } = req.body;
-
-    // Log the order ID for debugging
     const { orderId } = req.params;
-    // console.log('Order ID:', orderId);
 
     try {
         // Find the order by ID
         const order = await Order.findById(orderId);
-        // console.log('Order found:', order);
 
         // If the order is not found, return a 404 error
         if (!order) {
             return res.status(404).json({ error: 'Order not found.' });
         }
+
+        // Store old values for logging
+        const oldValues = {
+            trackingNumber: order.trackingNumber,
+            flyerId: order.flyerId,
+            courierType: order.courierType
+        };
 
         // Update the order fields if the respective field is provided in the request body
         if (trackingNumber) {
@@ -217,7 +236,23 @@ export const updateOrder = async (req, res) => {
         // Save the updated order
         const updatedOrder = await order.save();
 
-        // console.log('Updated Order:', updatedOrder);
+        // Create log for the update
+        await createLog({
+            action: 'update',
+            entity: 'order',
+            entityId: orderId,
+            details: {
+                trackingNumber: order.trackingNumber,
+                oldValues,
+                newValues: {
+                    trackingNumber: order.trackingNumber,
+                    flyerId: order.flyerId,
+                    courierType: order.courierType
+                }
+            },
+            performedBy: req.user._id,
+            req
+        });
 
         res.json({ message: 'Tracking history updated successfully.', data: updatedOrder });
     } catch (error) {
@@ -251,6 +286,22 @@ export const deleteOrder = async (req, res) => {
             });
         }
 
+        // Create log before deletion
+        await createLog({
+            action: 'delete',
+            entity: 'order',
+            entityId: orderId,
+            details: {
+                trackingNumber: orderExists.trackingNumber,
+                flyerId: orderExists.flyerId,
+                courierType: orderExists.courierType,
+                status: orderExists.status,
+                lastUpdated: orderExists.last_tracking_update
+            },
+            performedBy: req.user._id,
+            req
+        });
+
         // Delete the order
         await Order.deleteOne({ _id: orderId });
 
@@ -281,7 +332,8 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
             .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(limit);
+            .limit(limit)
+            .populate('remarks.createdBy', 'username role');
 
         const totalOrders = await Order.countDocuments({ isDelivered: true });
 
@@ -390,7 +442,8 @@ export const returnedOrder = async (page = 1, limit = 50) => {
         const returnedOrders = await Order.find({ isReturned: true })
             .skip(skip)
             .limit(limit)
-            .sort({ returned_at: -1 }); // Or use any other field like `createdAt`
+            .sort({ returned_at: -1 })
+            .populate('remarks.createdBy', 'username role');
 
         const totalOrders = await Order.countDocuments({ isReturned: true });
 
@@ -485,7 +538,6 @@ export const verifyReturn = async (req, res) => {
     try {
         const { trackingNumber, flyerId } = req.body;
 
-
         // Validate input
         if (!trackingNumber || !flyerId) {
             return res.json({
@@ -520,6 +572,21 @@ export const verifyReturn = async (req, res) => {
             },
             { new: true }
         );
+
+        // Create log for the return verification
+        await createLog({
+            action: 'status_change',
+            entity: 'order',
+            entityId: order._id,
+            details: {
+                trackingNumber: order.trackingNumber,
+                oldStatus: order.status,
+                newStatus: 'Returned',
+                returnDate: new Date()
+            },
+            performedBy: req.user._id,
+            req
+        });
 
         return res.json({
             success: true,
@@ -574,10 +641,28 @@ export const remarksOrder = async (req, res) => {
 
         await order.save();
 
+        // Create log for the remark
+        await createLog({
+            action: 'remark_add',
+            entity: 'order',
+            entityId: orderId,
+            details: {
+                trackingNumber: order.trackingNumber,
+                remarkContent: content,
+                totalRemarks: order.remarks.length
+            },
+            performedBy: userId,
+            req
+        });
+
+        // Populate the remarks with user data before sending response
+        const populatedOrder = await Order.findById(orderId)
+            .populate('remarks.createdBy', 'username role');
+
         return res.json({
             success: true,
             message: 'Remark added successfully',
-            order
+            order: populatedOrder
         });
 
     } catch (error) {

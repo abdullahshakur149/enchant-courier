@@ -1,70 +1,142 @@
-<div class="table-responsive rounded shadow-sm bg-white p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0 fw-semibold">
-            <%= typeof title !=='undefined' ? title : '' %>
+<!-- Table Container -->
+<div class="table-container">
+    <!-- Table Header -->
+    <div class="table-header">
+        <h5 class="table-title">
+            <i class="fas fa-table"></i>
+            <%= typeof title !== 'undefined' ? title : '' %>
+            <% if (typeof subtitle !== 'undefined' && subtitle) { %>
+                <span class="text-muted small ms-2">(<%= subtitle %>)</span>
+            <% } %>
         </h5>
-        <form class="d-flex" role="search" style="max-width: 300px;">
-            <input class="form-control form-control-sm me-2" type="search" placeholder="Search..." aria-label="Search"
-                disabled>
-            <button class="btn btn-outline-primary btn-sm" type="submit" disabled><i class="fas fa-search"></i></button>
-        </form>
+        <div class="d-flex align-items-center gap-3">
+            <% if (typeof filters !== 'undefined' && filters.length > 0) { %>
+                <div class="table-filters">
+                    <% filters.forEach(function(filter) { %>
+                        <button class="btn btn-sm btn-outline-secondary">
+                            <i class="<%= filter.icon %> me-1"></i>
+                            <%= filter.label %>
+                        </button>
+                    <% }); %>
+                </div>
+            <% } %>
+            <div class="table-search">
+                <i class="fas fa-search"></i>
+                <input class="form-control" type="search" placeholder="Search..." aria-label="Search" disabled>
+            </div>
+        </div>
     </div>
-    <table class="table align-middle table-hover mb-0">
-        <thead class="table-light">
-            <tr>
-                <% columns.forEach(function(col) { %>
-                    <th>
-                        <%= col %>
-                    </th>
+
+    <!-- Table Content -->
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead>
+                <tr>
+                    <% columns.forEach(function(col) { %>
+                        <th>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-sort"></i>
+                                <%= col %>
+                            </div>
+                        </th>
                     <% }); %>
-                        <% if (typeof actions !=='undefined' && actions.length> 0) { %>
-                            <th>Actions</th>
-                            <% } %>
-            </tr>
-        </thead>
-        <tbody>
-            <% if (rows && rows.length> 0) { %>
-                <% rows.forEach(function(row) { %>
-                    <tr>
-                        <% columns.forEach(function(colKey) { %>
-                            <td>
-                                <%= row[colKey] %>
-                            </td>
-                            <% }); %>
-                                <% if (typeof actions !=='undefined' && actions.length> 0) { %>
-                                    <td>
-                                        <% actions.forEach(function(action) { %>
-                                            <a href="javascript:void(0);" data-id="<%= row.id %>"
-                                                class="btn btn-sm btn-outline-primary me-1 edit-btn" title="View"><i
-                                                    class="fas fa-eye"></i></a>
-                                            <% if (action==='edit' ) { %>
-                                                <a href="javascript:void(0);" data-id="<%= row.id %>"
-                                                    class="btn btn-sm btn-outline-secondary me-1 edit-btn"
-                                                    title="Edit"><i class="fas fa-edit"></i></a>
-                                                <% } else if (action==='delete' ) { %>
-                                                    <button class="btn btn-sm btn-outline-danger" title="Delete"
-                                                        data-id="<%= row.id %>"><i class="fas fa-trash"></i></button>
-                                                    <% } %>
-                                                        <% }); %>
-                                    </td>
+                    <% if (typeof actions !== 'undefined' && actions.length > 0) { %>
+                        <th class="text-end">Actions</th>
+                    <% } %>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (rows && rows.length > 0) { %>
+                    <% rows.forEach(function(row) { %>
+                        <tr>
+                            <% columns.forEach(function(colKey) { %>
+                                <td data-label="<%= colKey %>">
+                                    <% if (colKey === 'Status') { %>
+                                        <span class="status-badge status-<%= row[colKey].toLowerCase() %>">
+                                            <i class="fas fa-circle"></i>
+                                            <%= row[colKey] %>
+                                        </span>
+                                    <% } else if (colKey === 'Remarks') { %>
+                                        <span class="remarks-badge">
+                                            <i class="fas fa-comment"></i>
+                                            <%= row[colKey] %>
+                                        </span>
+                                    <% } else if (colKey === 'Date') { %>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="far fa-calendar-alt text-muted"></i>
+                                            <%= row[colKey] %>
+                                        </div>
+                                    <% } else if (colKey === 'Amount') { %>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-dollar-sign text-success"></i>
+                                            <%= row[colKey] %>
+                                        </div>
+                                    <% } else { %>
+                                        <%= row[colKey] %>
                                     <% } %>
-                    </tr>
-                    <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="<%= columns.length + (actions && actions.length > 0 ? 1 : 0) %>"
-                                    class="text-center text-muted">No data found.</td>
-                            </tr>
+                                </td>
+                            <% }); %>
+                            <% if (typeof actions !== 'undefined' && actions.length > 0) { %>
+                                <td class="action-buttons">
+                                    <% actions.forEach(function(action) { %>
+                                        <% if (action === 'view') { %>
+                                            <button class="btn btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        <% } else if (action === 'edit') { %>
+                                            <button class="btn btn-outline-secondary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        <% } else if (action === 'delete') { %>
+                                            <button class="btn btn-outline-danger" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        <% } %>
+                                    <% }); %>
+                                </td>
                             <% } %>
-        </tbody>
-    </table>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="<%= columns.length + (actions && actions.length > 0 ? 1 : 0) %>" class="text-center text-muted">
+                            <div class="py-5">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p class="mb-0">No data found</p>
+                                <% if (typeof emptyStateMessage !== 'undefined' && emptyStateMessage) { %>
+                                    <p class="text-muted small mt-2"><%= emptyStateMessage %></p>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
     <!-- Pagination -->
-    <div class="d-flex justify-content-end mt-3">
+    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+        <div class="text-muted small">
+            <i class="fas fa-info-circle me-1"></i>
+            Showing <%= (currentPage - 1) * limit + 1 %> to <%= Math.min(currentPage * limit, totalItems) %> of <%= totalItems %> entries
+        </div>
         <nav aria-label="Table pagination">
-            <ul class="pagination pagination-sm mb-0">
-                <li class="page-item disabled"><a class="page-link">Prev</a></li>
-                <li class="page-item active"><a class="page-link">1</a></li>
-                <li class="page-item disabled"><a class="page-link">Next</a></li>
+            <ul class="pagination mb-0">
+                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="#" data-page="<%= currentPage - 1 %>">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="#" data-page="<%= i %>"><%= i %></a>
+                    </li>
+                <% } %>
+                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="#" data-page="<%= currentPage + 1 %>">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
