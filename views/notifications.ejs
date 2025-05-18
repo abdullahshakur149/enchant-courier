@@ -1,0 +1,156 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Notifications</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-sm btn-outline-secondary mark-all-read">
+            <i class="fas fa-check-double me-1"></i>
+            Mark all as read
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <% if (notifications.length === 0) { %>
+            <div class="text-center py-5">
+                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">No notifications yet</h5>
+            </div>
+        <% } else { %>
+            <div class="list-group list-group-flush">
+                <% notifications.forEach(notification => { %>
+                    <div class="list-group-item notification-item <%= !notification.isRead ? 'unread' : '' %>" data-id="<%= notification._id %>">
+                        <div class="d-flex w-100 justify-content-between">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="mb-0">
+                                        <% if (notification.type === 'order_created') { %>
+                                            <i class="fas fa-plus-circle text-success me-2"></i>
+                                        <% } else if (notification.type === 'order_deleted') { %>
+                                            <i class="fas fa-trash-alt text-danger me-2"></i>
+                                        <% } else if (notification.type === 'order_delivered') { %>
+                                            <i class="fas fa-check-circle text-primary me-2"></i>
+                                        <% } else if (notification.type === 'order_returned') { %>
+                                            <i class="fas fa-undo text-warning me-2"></i>
+                                        <% } else { %>
+                                            <i class="fas fa-info-circle text-info me-2"></i>
+                                        <% } %>
+                                        <%= notification.title %>
+                                    </h6>
+                                    <% if (!notification.isRead) { %>
+                                        <span class="badge bg-primary rounded-pill">New</span>
+                                    <% } %>
+                                </div>
+                                <p class="mb-1 text-muted"><%= notification.message %></p>
+                                <div class="notification-details mt-2">
+                                    <% if (notification.type === 'order_created' || notification.type === 'order_deleted') { %>
+                                        <div class="d-flex flex-wrap gap-3">
+                                            <% if (notification.type === 'order_created') { %>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-truck me-1"></i>
+                                                    <%= notification.courierType || 'N/A' %>
+                                                </span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-id-card me-1"></i>
+                                                    Flyer ID: <%= notification.flyerId || 'N/A' %>
+                                                </span>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-barcode me-1"></i>
+                                                    Tracking: <%= notification.trackingNumber || 'N/A' %>
+                                                </span>
+                                            <% } else { %>
+                                                <span class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Order has been permanently deleted
+                                                </span>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="far fa-clock me-1"></i>
+                                    <%= new Date(notification.createdAt).toLocaleString() %>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<style>
+.notification-item {
+    transition: background-color 0.2s;
+    cursor: pointer;
+    padding: 1rem;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: #f0f7ff;
+}
+
+.notification-item .badge {
+    font-size: 0.8em;
+}
+
+.notification-details {
+    font-size: 0.9em;
+}
+
+.notification-details span {
+    display: inline-flex;
+    align-items: center;
+}
+
+.notification-details i {
+    width: 16px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to mark notification as read
+    async function markAsRead(id) {
+        try {
+            await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+            const item = document.querySelector(`[data-id="${id}"]`);
+            if (item) {
+                item.classList.remove('unread');
+                const badge = item.querySelector('.badge');
+                if (badge) badge.remove();
+            }
+        } catch (error) {
+            console.error('Error marking notification as read:', error);
+        }
+    }
+
+    // Function to mark all notifications as read
+    async function markAllAsRead() {
+        try {
+            await fetch('/api/notifications/read-all', { method: 'POST' });
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.classList.remove('unread');
+                const badge = item.querySelector('.badge');
+                if (badge) badge.remove();
+            });
+        } catch (error) {
+            console.error('Error marking all notifications as read:', error);
+        }
+    }
+
+    // Add click handlers
+    document.querySelectorAll('.notification-item').forEach(item => {
+        item.addEventListener('click', () => markAsRead(item.dataset.id));
+    });
+
+    // Add click handler to mark all as read button
+    document.querySelector('.mark-all-read').addEventListener('click', markAllAsRead);
+});
+</script>
+
+<%- include('partials/footer') %> 

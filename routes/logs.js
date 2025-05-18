@@ -7,7 +7,9 @@ const router = express.Router();
 router.get('/', isAdmin, (req, res) => {
     res.render('logs/index', {
         title: 'System Logs',
-        user: req.user
+        user: req.user,
+        path: '/logs',
+        layout: 'layouts/dashboard'
     });
 });
 

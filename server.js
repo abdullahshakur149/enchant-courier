@@ -19,6 +19,7 @@ import apiOrdersRoutes from './routes/api/orders.js';
 import apiEmployeeRoutes from './routes/api/employee-management.js';
 import apiLogsRoutes from './routes/api/logs.js';
 import logsRoutes from './routes/logs.js';
+import notificationRoutes from './routes/notifications.js';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -86,15 +87,21 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use('/', courierRoutes);
-app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
-app.use('/dashboard', dashboardRoutes);
-app.use('/api/orders', apiOrdersRoutes);
-app.use('/api/employee-management', apiEmployeeRoutes);
-app.use('/api/logs', apiLogsRoutes);
-app.use('/logs', logsRoutes);
+app.get('/', (req, res) => {
+    res.render('home/index', {
+        title: 'Home',
+        user: req.user || null
+    });
+});
 
+app.use('/', authRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/admin', adminRoutes);
+app.use('/courier', courierRoutes);
+app.use('/logs', logsRoutes);
+app.use('/api/logs', apiLogsRoutes);
+app.use('/', notificationRoutes);
+app.use('/api/orders', apiOrdersRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

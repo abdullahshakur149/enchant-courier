@@ -1,5 +1,6 @@
 import User from '../../models/user.js';
 import { createLog } from '../../utils/logger.js';
+import { Notification } from '../../models/notification.js';
 
 export const CreateUser = async (req, res) => {
     try {
@@ -20,6 +21,14 @@ export const CreateUser = async (req, res) => {
 
         // Use passport-local-mongoose to register the user (handles password hashing)
         await User.register(user, password);
+
+        // Create notification for new user
+        await Notification.create({
+            type: 'status_change',
+            title: 'New User Created',
+            message: `New ${role} user "${username}" has been created`,
+            user: req.user._id
+        });
 
         // Create log for user creation
         await createLog({
@@ -79,6 +88,14 @@ export const deleteEmployeeController = async (req, res) => {
         if (!employeeToDelete) {
             return res.status(404).json({ message: 'Employee not found' });
         }
+
+        // Create notification before deletion
+        await Notification.create({
+            type: 'status_change',
+            title: 'User Deleted',
+            message: `User "${employeeToDelete.username}" has been deleted`,
+            user: req.user._id
+        });
 
         // Create log before deletion
         await createLog({

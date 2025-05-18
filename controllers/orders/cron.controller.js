@@ -1,4 +1,5 @@
 import { Order } from '../../models/order.js';
+import { Notification } from '../../models/notification.js';
 import axios from 'axios';
 import dayjs from 'dayjs'; // Import dayjs for date manipulation
 import utc from 'dayjs/plugin/utc.js'; // Import the UTC plugin
@@ -69,6 +70,14 @@ export const updateOrderStatuses = async (req, res) => {
                     if (status?.includes('Delivered')) {
                         updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
                         updateFields.isDelivered = true;
+
+                        // Create notification for delivered order
+                        await Notification.create({
+                            type: 'order_delivered',
+                            title: 'Order Delivered',
+                            message: `Order #${order.trackingNumber} has been delivered`,
+                            orderId: order._id
+                        });
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -129,6 +138,14 @@ export const updateOrderStatuses = async (req, res) => {
                     if ((status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) && normalizedDaewooDate) {
                         updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
                         updateFields.isDelivered = true;
+
+                        // Create notification for delivered order
+                        await Notification.create({
+                            type: 'order_delivered',
+                            title: 'Order Delivered',
+                            message: `Order #${order.trackingNumber} has been delivered`,
+                            orderId: order._id
+                        });
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -188,6 +205,14 @@ export const updateOrderStatuses = async (req, res) => {
                     if (status?.includes("Shipment - Delivered")) {
                         updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
                         updateFields.isDelivered = true;
+
+                        // Create notification for delivered order
+                        await Notification.create({
+                            type: 'order_delivered',
+                            title: 'Order Delivered',
+                            message: `Order #${order.trackingNumber} has been delivered`,
+                            orderId: order._id
+                        });
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -204,6 +229,7 @@ export const updateOrderStatuses = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Error updating order statuses:', error);
         res.status(500).json({
             success: false,
             message: "Failed to update order statuses",

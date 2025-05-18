@@ -1,5 +1,6 @@
 import { Order, ReturnedOrder } from '../../models/order.js';
 import { createLog } from '../../utils/logger.js';
+import { Notification } from '../../models/notification.js';
 // import { formatDate } from '../../utils/helpers.js';
 
 // ===================================== submit order ===============================================
@@ -42,6 +43,18 @@ export const submitOrder = async (req, res) => {
         });
 
         await newOrder.save();
+
+        // Create notification for new order
+        await Notification.create({
+            type: 'order_created',
+            title: 'New Order Created',
+            message: `Order #${newOrder.trackingNumber} has been created via ${courierType}`,
+            orderId: newOrder._id,
+            user: req.user._id,
+            courierType: newOrder.courierType,
+            flyerId: newOrder.flyerId,
+            trackingNumber: newOrder.trackingNumber
+        });
 
         // Create log for the new order
         await createLog({
@@ -236,6 +249,15 @@ export const updateOrder = async (req, res) => {
         // Save the updated order
         const updatedOrder = await order.save();
 
+        // Create notification for order update
+        await Notification.create({
+            type: 'status_change',
+            title: 'Order Updated',
+            message: `Order #${order.trackingNumber} has been updated`,
+            orderId: order._id,
+            user: req.user._id
+        });
+
         // Create log for the update
         await createLog({
             action: 'update',
@@ -285,6 +307,15 @@ export const deleteOrder = async (req, res) => {
                 message: 'Order does not exist'
             });
         }
+
+        // Create notification for order deletion
+        await Notification.create({
+            type: 'status_change',
+            title: 'Order Deleted',
+            message: `Order #${orderExists.trackingNumber} has been deleted`,
+            orderId: orderExists._id,
+            user: req.user._id
+        });
 
         // Create log before deletion
         await createLog({
@@ -573,6 +604,15 @@ export const verifyReturn = async (req, res) => {
             { new: true }
         );
 
+        // Create notification for returned order
+        await Notification.create({
+            type: 'order_returned',
+            title: 'Order Returned',
+            message: `Order #${order.trackingNumber} has been marked as returned`,
+            orderId: order._id,
+            user: req.user._id
+        });
+
         // Create log for the return verification
         await createLog({
             action: 'status_change',
@@ -640,6 +680,15 @@ export const remarksOrder = async (req, res) => {
         });
 
         await order.save();
+
+        // Create notification for new remark
+        await Notification.create({
+            type: 'status_change',
+            title: 'New Remark Added',
+            message: `A new remark has been added to Order #${order.trackingNumber}`,
+            orderId: order._id,
+            user: req.user._id
+        });
 
         // Create log for the remark
         await createLog({

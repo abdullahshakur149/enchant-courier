@@ -1,63 +1,55 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-history me-2"></i>
+        System Logs
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="input-group">
+            <select id="actionFilter" class="form-select me-2">
+                <option value="">All Actions</option>
+                <option value="create">Create</option>
+                <option value="update">Update</option>
+                <option value="delete">Delete</option>
+                <option value="status_change">Status Change</option>
+                <option value="remark_add">Remark Added</option>
+            </select>
+            <select id="entityFilter" class="form-select me-2">
+                <option value="">All Entities</option>
+                <option value="order">Order</option>
+                <option value="user">User</option>
+                <option value="system">System</option>
+            </select>
+            <input type="date" id="startDate" class="form-control me-2">
+            <input type="date" id="endDate" class="form-control me-2">
+            <button id="filterBtn" class="btn btn-primary">
+                <i class="fas fa-filter me-1"></i>
+                Filter
+            </button>
+        </div>
+    </div>
+</div>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        <i class="fas fa-history me-2"></i>
-                        System Logs
-                    </h3>
-                    <div class="card-tools">
-                        <div class="input-group">
-                            <select id="actionFilter" class="form-select me-2">
-                                <option value="">All Actions</option>
-                                <option value="CREATE">Create</option>
-                                <option value="UPDATE">Update</option>
-                                <option value="DELETE">Delete</option>
-                                <option value="VIEW">View</option>
-                                <option value="LOGIN">Login</option>
-                                <option value="LOGOUT">Logout</option>
-                                <option value="ERROR">Error</option>
-                            </select>
-                            <select id="entityFilter" class="form-select me-2">
-                                <option value="">All Entities</option>
-                                <option value="ORDER">Order</option>
-                                <option value="USER">User</option>
-                                <option value="SYSTEM">System</option>
-                            </select>
-                            <input type="date" id="startDate" class="form-control me-2">
-                            <input type="date" id="endDate" class="form-control me-2">
-                            <button id="filterBtn" class="btn btn-primary">
-                                <i class="fas fa-filter me-1"></i>
-                                Filter
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Timestamp</th>
-                                    <th>Action</th>
-                                    <th>Entity</th>
-                                    <th>Performed By</th>
-                                    <th>Details</th>
-                                    <th>IP Address</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logsTableBody">
-                                <!-- Logs will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <div id="pagination" class="mt-3">
-                        <!-- Pagination will be added here -->
-                    </div>
-                </div>
-            </div>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>Performed By</th>
+                        <th>Details</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <!-- Logs will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        <div id="pagination" class="mt-3">
+            <!-- Pagination will be added here -->
         </div>
     </div>
 </div>
@@ -189,13 +181,11 @@ const LogManager = {
 
     getActionBadgeClass: function(action) {
         const classes = {
-            'CREATE': 'success',
-            'UPDATE': 'primary',
-            'DELETE': 'danger',
-            'VIEW': 'info',
-            'LOGIN': 'warning',
-            'LOGOUT': 'secondary',
-            'ERROR': 'danger'
+            'create': 'success',
+            'update': 'primary',
+            'delete': 'danger',
+            'status_change': 'warning',
+            'remark_add': 'info'
         };
         return classes[action] || 'secondary';
     },

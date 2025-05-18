@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
 });
 
 // Form page route
-router.get('/courier/form', (req, res) => {
+router.get('/form', (req, res) => {
     const courierType = req.query.type;
     if (!courierType || !['Trax', 'Daewoo', 'PostEx'].includes(courierType)) {
         req.flash('error', 'Invalid courier type selected');
