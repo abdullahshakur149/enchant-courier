@@ -259,8 +259,8 @@ router.get("/", checkAuthenticated, async (req, res) => {
         {
           $match: {
             createdAt: {
-              $gte: dayjs().startOf('day').toDate(),
-              $lte: dayjs().endOf('day').toDate()
+              $gte: dayjs().tz(tz).startOf('day').toDate(),
+              $lte: dayjs().tz(tz).endOf('day').toDate()
             }
           }
         },
