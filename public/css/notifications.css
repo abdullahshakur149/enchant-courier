@@ -1,0 +1,30 @@
+.notification-item {
+    transition: background-color 0.2s;
+    cursor: pointer;
+    padding: 1rem;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+    background-color: #f0f7ff;
+}
+
+.notification-item .badge {
+    font-size: 0.8em;
+}
+
+.notification-details {
+    font-size: 0.9em;
+}
+
+.notification-details span {
+    display: inline-flex;
+    align-items: center;
+}
+
+.notification-details i {
+    width: 16px;
+}

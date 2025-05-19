@@ -20,6 +20,8 @@ import apiEmployeeRoutes from './routes/api/employee-management.js';
 import apiLogsRoutes from './routes/api/logs.js';
 import logsRoutes from './routes/logs.js';
 import notificationRoutes from './routes/notifications.js';
+import { WebSocketServer } from 'ws';
+import { createServer } from 'http';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -31,6 +33,8 @@ dotenv.config();
 connectDB();
 
 const app = express();
+const server = createServer(app);
+const wss = new WebSocketServer({ server });
 
 // Middlewares
 app.use(express.json());
@@ -103,6 +107,38 @@ app.use('/api/logs', apiLogsRoutes);
 app.use('/', notificationRoutes);
 app.use('/api/orders', apiOrdersRoutes);
 
+// WebSocket connection handling
+wss.on('connection', (ws) => {
+    console.log('New WebSocket connection established');
+
+    ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
+    });
+
+    ws.on('close', () => {
+        console.log('WebSocket connection closed');
+    });
+});
+
+// Function to broadcast notifications to all connected clients
+export function broadcastNotification(notification) {
+    console.log('Broadcasting notification:', notification);
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            try {
+                client.send(JSON.stringify({
+                    type: 'notification',
+                    title: notification.title,
+                    message: notification.message
+                }));
+                console.log('Notification sent successfully');
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
+        }
+    });
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
@@ -113,7 +149,7 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`.yellow.bold);
 });
 

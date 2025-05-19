@@ -2,6 +2,7 @@ import express from 'express';
 import { Notification } from '../models/notification.js';
 import { isAuthenticated } from '../middleware/auth.js';
 import { Order } from '../models/order.js';
+import { broadcastNotification } from '../server.js';
 
 const router = express.Router();
 
@@ -41,6 +42,24 @@ router.get('/api/notifications', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error fetching notifications:', error);
         res.status(500).json({ message: 'Error fetching notifications' });
+    }
+});
+
+// Create a new notification
+router.post('/api/notifications', isAuthenticated, async (req, res) => {
+    try {
+        const notification = await Notification.create({
+            ...req.body,
+            user: req.user._id
+        });
+
+        // Broadcast the notification to all connected clients
+        broadcastNotification(notification);
+
+        res.status(201).json(notification);
+    } catch (error) {
+        console.error('Error creating notification:', error);
+        res.status(500).json({ message: 'Error creating notification' });
     }
 });
 

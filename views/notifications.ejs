@@ -79,78 +79,10 @@
     </div>
 </div>
 
-<style>
-.notification-item {
-    transition: background-color 0.2s;
-    cursor: pointer;
-    padding: 1rem;
-}
 
-.notification-item:hover {
-    background-color: #f8f9fa;
-}
-
-.notification-item.unread {
-    background-color: #f0f7ff;
-}
-
-.notification-item .badge {
-    font-size: 0.8em;
-}
-
-.notification-details {
-    font-size: 0.9em;
-}
-
-.notification-details span {
-    display: inline-flex;
-    align-items: center;
-}
-
-.notification-details i {
-    width: 16px;
-}
-</style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Function to mark notification as read
-    async function markAsRead(id) {
-        try {
-            await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
-            const item = document.querySelector(`[data-id="${id}"]`);
-            if (item) {
-                item.classList.remove('unread');
-                const badge = item.querySelector('.badge');
-                if (badge) badge.remove();
-            }
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
-        }
-    }
 
-    // Function to mark all notifications as read
-    async function markAllAsRead() {
-        try {
-            await fetch('/api/notifications/read-all', { method: 'POST' });
-            document.querySelectorAll('.notification-item').forEach(item => {
-                item.classList.remove('unread');
-                const badge = item.querySelector('.badge');
-                if (badge) badge.remove();
-            });
-        } catch (error) {
-            console.error('Error marking all notifications as read:', error);
-        }
-    }
-
-    // Add click handlers
-    document.querySelectorAll('.notification-item').forEach(item => {
-        item.addEventListener('click', () => markAsRead(item.dataset.id));
-    });
-
-    // Add click handler to mark all as read button
-    document.querySelector('.mark-all-read').addEventListener('click', markAllAsRead);
-});
 </script>
 
 <%- include('partials/footer') %> 
