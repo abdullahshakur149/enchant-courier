@@ -192,10 +192,12 @@ router.get("/", checkAuthenticated, async (req, res) => {
             averageProcessingTime: {
               $avg: {
                 $cond: [
-                  { $and: [
-                    { $ne: ['$last_tracking_update', null] },
-                    { $ne: ['$createdAt', null] }
-                  ]},
+                  {
+                    $and: [
+                      { $ne: ['$last_tracking_update', null] },
+                      { $ne: ['$createdAt', null] }
+                    ]
+                  },
                   { $subtract: ['$last_tracking_update', '$createdAt'] },
                   null
                 ]
@@ -233,8 +235,12 @@ router.get("/", checkAuthenticated, async (req, res) => {
             totalQuantity: { $sum: '$productInfo.OrderDetails.Quantity' },
             orderCount: { $sum: 1 }
           }
+        },
+        {
+          $sort: { orderCount: -1 }
         }
       ]),
+
 
       // 9. Latest Orders
       Order.find()
@@ -273,7 +279,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
         acc[curr.status] = curr.count;
         return acc;
       }, { pending: 0, delivered: 0, returned: 0 }),
-      
+
       courierPerformance: courierStats.map(stat => ({
         courier: stat.courier,
         totalOrders: stat.totalOrders,
@@ -281,7 +287,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
         returnedOrders: stat.returnedOrders,
         deliveryRate: (stat.deliveredOrders / stat.totalOrders * 100).toFixed(2),
         returnRate: (stat.returnedOrders / stat.totalOrders * 100).toFixed(2),
-        averageDeliveryTime: stat.averageDeliveryTime ? 
+        averageDeliveryTime: stat.averageDeliveryTime ?
           Math.round(stat.averageDeliveryTime / (1000 * 60 * 60 * 24)) : 0
       })),
 
@@ -391,163 +397,163 @@ router.get('/employee-management', (req, res) => {
 });
 
 router.get('/system-status', checkAuthenticated, async (req, res) => {
-    try {
-        // Check database connection
-        const dbStatus = await checkDatabaseConnection();
-        
-        // Check file system
-        const fileSystemStatus = await checkFileSystem();
-        
-        // Check API endpoints
-        const apiStatus = await checkAPIEndpoints();
-        
-        res.render('dashboard/system-status', {
-            title: 'System Status',
-            user: req.user,
-            dbStatus,
-            fileSystemStatus,
-            apiStatus,
-            currentPage: 'system-status',
-            layout: 'layouts/dashboard',
-            path: '/dashboard/system-status'
-        });
-    } catch (error) {
-        console.error('Error checking system status:', error);
-        res.status(500).render('error', { 
-            message: 'Error checking system status',
-            error: process.env.NODE_ENV === 'development' ? error : {}
-        });
-    }
+  try {
+    // Check database connection
+    const dbStatus = await checkDatabaseConnection();
+
+    // Check file system
+    const fileSystemStatus = await checkFileSystem();
+
+    // Check API endpoints
+    const apiStatus = await checkAPIEndpoints();
+
+    res.render('dashboard/system-status', {
+      title: 'System Status',
+      user: req.user,
+      dbStatus,
+      fileSystemStatus,
+      apiStatus,
+      currentPage: 'system-status',
+      layout: 'layouts/dashboard',
+      path: '/dashboard/system-status'
+    });
+  } catch (error) {
+    console.error('Error checking system status:', error);
+    res.status(500).render('error', {
+      message: 'Error checking system status',
+      error: process.env.NODE_ENV === 'development' ? error : {}
+    });
+  }
 });
 
 // Helper functions to check system components
 async function checkDatabaseConnection() {
-    try {
-        await mongoose.connection.db.admin().ping();
-        return {
-            status: 'operational',
-            message: 'Database connection is healthy',
-            lastChecked: new Date()
-        };
-    } catch (error) {
-        return {
-            status: 'error',
-            message: 'Database connection failed',
-            error: error.message,
-            lastChecked: new Date()
-        };
-    }
+  try {
+    await mongoose.connection.db.admin().ping();
+    return {
+      status: 'operational',
+      message: 'Database connection is healthy',
+      lastChecked: new Date()
+    };
+  } catch (error) {
+    return {
+      status: 'error',
+      message: 'Database connection failed',
+      error: error.message,
+      lastChecked: new Date()
+    };
+  }
 }
 
 async function checkFileSystem() {
-    try {
-        // Check if public directory exists and is writable
-        const publicDir = path.join(process.cwd(), 'public');
-        await fs.access(publicDir, fs.constants.R_OK);
-        
-        // Check if views directory exists and is readable
-        const viewsDir = path.join(process.cwd(), 'views');
-        await fs.access(viewsDir, fs.constants.R_OK);
-        
-        return {
-            status: 'operational',
-            message: 'File system is healthy',
-            lastChecked: new Date()
-        };
-    } catch (error) {
-        return {
-            status: 'error',
-            message: 'File system check failed',
-            error: error.message,
-            lastChecked: new Date()
-        };
-    }
+  try {
+    // Check if public directory exists and is writable
+    const publicDir = path.join(process.cwd(), 'public');
+    await fs.access(publicDir, fs.constants.R_OK);
+
+    // Check if views directory exists and is readable
+    const viewsDir = path.join(process.cwd(), 'views');
+    await fs.access(viewsDir, fs.constants.R_OK);
+
+    return {
+      status: 'operational',
+      message: 'File system is healthy',
+      lastChecked: new Date()
+    };
+  } catch (error) {
+    return {
+      status: 'error',
+      message: 'File system check failed',
+      error: error.message,
+      lastChecked: new Date()
+    };
+  }
 }
 
 async function checkAPIEndpoints() {
-    const endpoints = [
-        { 
-            name: 'Authentication API', 
-            path: '/auth',
-            routes: [
-                { path: '/', method: 'GET' },
-                { path: '/', method: 'POST' },
-                { path: '/logout', method: 'POST' }
-            ]
-        },
-        { 
-            name: 'Orders API', 
-            path: '/api/orders',
-            routes: [
-                { path: '/', method: 'GET' },
-                { path: '/delivered', method: 'GET' },
-                { path: '/returned', method: 'GET' },
-                { path: '/verify-return', method: 'POST' },
-                { path: '/update-status', method: 'GET' },
-                { path: '/:orderId', method: 'DELETE' },
-                { path: '/:orderId', method: 'PUT' },
-                { path: '/remarks/:orderId', method: 'PUT' }
-            ]
-        },
-        { 
-            name: 'Logs API', 
-            path: '/api/logs',
-            routes: [
-                { path: '/', method: 'GET' }
-            ]
-        }
-    ];
+  const endpoints = [
+    {
+      name: 'Authentication API',
+      path: '/auth',
+      routes: [
+        { path: '/', method: 'GET' },
+        { path: '/', method: 'POST' },
+        { path: '/logout', method: 'POST' }
+      ]
+    },
+    {
+      name: 'Orders API',
+      path: '/api/orders',
+      routes: [
+        { path: '/', method: 'GET' },
+        { path: '/delivered', method: 'GET' },
+        { path: '/returned', method: 'GET' },
+        { path: '/verify-return', method: 'POST' },
+        { path: '/update-status', method: 'GET' },
+        { path: '/:orderId', method: 'DELETE' },
+        { path: '/:orderId', method: 'PUT' },
+        { path: '/remarks/:orderId', method: 'PUT' }
+      ]
+    },
+    {
+      name: 'Logs API',
+      path: '/api/logs',
+      routes: [
+        { path: '/', method: 'GET' }
+      ]
+    }
+  ];
 
-    const results = await Promise.all(endpoints.map(async (endpoint) => {
-        try {
-            // For auth routes, we'll check if the route exists by making a GET request
-            if (endpoint.path === '/auth') {
-                const response = await axios.get(`http://localhost:${process.env.PORT}${endpoint.path}`);
-                return {
-                    name: endpoint.name,
-                    status: 'operational',
-                    message: 'API endpoint is healthy',
-                    routes: endpoint.routes,
-                    lastChecked: new Date()
-                };
-            } else {
-                // For other APIs, use the health endpoint
-                const response = await axios.get(`http://localhost:${process.env.PORT}${endpoint.path}/health`, {
-                    headers: {
-                        'Cookie': 'connect.sid=' + process.env.SESSION_SECRET // Add session cookie if needed
-                    }
-                });
-                return {
-                    name: endpoint.name,
-                    status: 'operational',
-                    message: 'API endpoint is healthy',
-                    routes: endpoint.routes,
-                    lastChecked: new Date()
-                };
-            }
-        } catch (error) {
-            // If we get a 401/403, the API is working but requires authentication
-            if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-                return {
-                    name: endpoint.name,
-                    status: 'operational',
-                    message: 'API endpoint is healthy (requires authentication)',
-                    routes: endpoint.routes,
-                    lastChecked: new Date()
-                };
-            }
-            return {
-                name: endpoint.name,
-                status: 'error',
-                message: 'API endpoint check failed',
-                routes: endpoint.routes,
-                error: error.message,
-                lastChecked: new Date()
-            };
-        }
-    }));
+  const results = await Promise.all(endpoints.map(async (endpoint) => {
+    try {
+      // For auth routes, we'll check if the route exists by making a GET request
+      if (endpoint.path === '/auth') {
+        const response = await axios.get(`http://localhost:${process.env.PORT}${endpoint.path}`);
+        return {
+          name: endpoint.name,
+          status: 'operational',
+          message: 'API endpoint is healthy',
+          routes: endpoint.routes,
+          lastChecked: new Date()
+        };
+      } else {
+        // For other APIs, use the health endpoint
+        const response = await axios.get(`http://localhost:${process.env.PORT}${endpoint.path}/health`, {
+          headers: {
+            'Cookie': 'connect.sid=' + process.env.SESSION_SECRET // Add session cookie if needed
+          }
+        });
+        return {
+          name: endpoint.name,
+          status: 'operational',
+          message: 'API endpoint is healthy',
+          routes: endpoint.routes,
+          lastChecked: new Date()
+        };
+      }
+    } catch (error) {
+      // If we get a 401/403, the API is working but requires authentication
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        return {
+          name: endpoint.name,
+          status: 'operational',
+          message: 'API endpoint is healthy (requires authentication)',
+          routes: endpoint.routes,
+          lastChecked: new Date()
+        };
+      }
+      return {
+        name: endpoint.name,
+        status: 'error',
+        message: 'API endpoint check failed',
+        routes: endpoint.routes,
+        error: error.message,
+        lastChecked: new Date()
+      };
+    }
+  }));
 
-    return results;
+  return results;
 }
 
 export default router;
