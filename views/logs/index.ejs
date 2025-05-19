@@ -32,19 +32,50 @@
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover logs-table">
                 <thead>
                     <tr>
                         <th>Timestamp</th>
+                        <th>User</th>
                         <th>Action</th>
-                        <th>Entity</th>
-                        <th>Performed By</th>
                         <th>Details</th>
                         <th>IP Address</th>
                     </tr>
                 </thead>
-                <tbody id="logsTableBody">
-                    <!-- Logs will be populated here -->
+                <tbody>
+                    <% if (logs && logs.length > 0) { %>
+                        <% logs.forEach(log => { %>
+                            <tr style="cursor: pointer;" 
+                                class="log-row" 
+                                data-log='<%= JSON.stringify(log) %>'>
+                                <td><%= new Date(log.timestamp).toLocaleString() %></td>
+                                <td><%= log.performedBy?.username || 'System' %></td>
+                                <td>
+                                    <span class="badge bg-<%= 
+                                        log.action === 'create' ? 'success' : 
+                                        log.action === 'update' ? 'primary' : 
+                                        log.action === 'delete' ? 'danger' : 
+                                        log.action === 'status_change' ? 'warning' : 'info' 
+                                    %>">
+                                        <%= log.action %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 300px;">
+                                        <%= log.details %>
+                                    </div>
+                                </td>
+                                <td><%= log.ipAddress || 'N/A' %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-info-circle text-muted mb-2"></i>
+                                <p class="text-muted mb-0">No logs found</p>
+                            </td>
+                        </tr>
+                    <% } %>
                 </tbody>
             </table>
         </div>
@@ -63,10 +94,78 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <pre id="logDetails" class="bg-light p-3 rounded"></pre>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong>Timestamp:</strong> <span id="modalTimestamp"></span></p>
+                        <p><strong>User:</strong> <span id="modalUser"></span></p>
+                        <p><strong>Action:</strong> <span id="modalAction"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>IP Address:</strong> <span id="modalIp"></span></p>
+                        <p><strong>Entity:</strong> <span id="modalEntity"></span></p>
+                        <p><strong>Entity ID:</strong> <span id="modalEntityId"></span></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <pre id="modalDetails" class="mb-0"></pre>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers to log rows
+    document.querySelectorAll('.log-row').forEach(row => {
+        row.addEventListener('click', function() {
+            const log = JSON.parse(this.dataset.log);
+            showLogDetails(log);
+        });
+    });
+});
+
+function showLogDetails(log) {
+    // Format the timestamp
+    document.getElementById('modalTimestamp').textContent = new Date(log.timestamp).toLocaleString();
+    
+    // Set user
+    document.getElementById('modalUser').textContent = log.performedBy?.username || 'System';
+    
+    // Set action with badge
+    const actionBadge = document.createElement('span');
+    actionBadge.className = `badge bg-${
+        log.action === 'create' ? 'success' : 
+        log.action === 'update' ? 'primary' : 
+        log.action === 'delete' ? 'danger' : 
+        log.action === 'status_change' ? 'warning' : 'info'
+    }`;
+    actionBadge.textContent = log.action;
+    document.getElementById('modalAction').innerHTML = '';
+    document.getElementById('modalAction').appendChild(actionBadge);
+    
+    // Set other fields
+    document.getElementById('modalIp').textContent = log.ipAddress || 'N/A';
+    document.getElementById('modalEntity').textContent = log.entity;
+    document.getElementById('modalEntityId').textContent = log.entityId;
+    
+    // Set details with proper formatting
+    const detailsElement = document.getElementById('modalDetails');
+    if (typeof log.details === 'object' && log.details !== null) {
+        detailsElement.textContent = JSON.stringify(log.details, null, 2);
+    } else {
+        detailsElement.textContent = log.details || 'N/A';
+    }
+    
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+    modal.show();
+}
+</script>
 
 
