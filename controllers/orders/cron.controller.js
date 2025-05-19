@@ -4,10 +4,29 @@ import axios from 'axios';
 import dayjs from 'dayjs'; // Import dayjs for date manipulation
 import utc from 'dayjs/plugin/utc.js'; // Import the UTC plugin
 import timezone from 'dayjs/plugin/timezone.js'; // Import the timezone plugin
+import twilio from 'twilio';
+
+// Initialize Twilio client
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioClient = twilio(accountSid, authToken);
 
 // Extend dayjs with UTC and timezone plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
+// Function to send WhatsApp notification
+const sendWhatsAppNotification = async (order) => {
+    try {
+        await twilioClient.messages.create({
+            from: 'whatsapp:+14155238886',
+            body: `Order Delivered! 🎉\n\nTracking Number: ${order.trackingNumber}\nCourier: ${order.courierType}\nCustomer: ${order.productInfo?.CustomerName || 'N/A'}\nAddress: ${order.productInfo?.Address || 'N/A'}\nDelivered at: ${new Date().toLocaleString()}`,
+            to: 'whatsapp:+923349196224'
+        });
+    } catch (error) {
+        console.error('Error sending WhatsApp notification:', error);
+    }
+};
 
 export const updateOrderStatuses = async (req, res) => {
     try {
@@ -78,6 +97,9 @@ export const updateOrderStatuses = async (req, res) => {
                             message: `Order #${order.trackingNumber} has been delivered`,
                             orderId: order._id
                         });
+
+                        // Send WhatsApp notification
+                        await sendWhatsAppNotification(order);
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -147,6 +169,9 @@ export const updateOrderStatuses = async (req, res) => {
                             message: `Order #${order.trackingNumber} has been delivered`,
                             orderId: order._id
                         });
+
+                        // Send WhatsApp notification
+                        await sendWhatsAppNotification(order);
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -214,6 +239,9 @@ export const updateOrderStatuses = async (req, res) => {
                             message: `Order #${order.trackingNumber} has been delivered`,
                             orderId: order._id
                         });
+
+                        // Send WhatsApp notification
+                        await sendWhatsAppNotification(order);
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
