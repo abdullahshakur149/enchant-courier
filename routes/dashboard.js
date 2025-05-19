@@ -136,14 +136,12 @@ router.get("/", checkAuthenticated, async (req, res) => {
       // 4. Return Analysis
       Order.aggregate([
         {
-          $match: { isReturned: true }
-        },
-        {
           $group: {
             _id: {
               $toLower: '$courierType' // Convert to lowercase for standardization
             },
-            returnCount: { $sum: 1 }
+            returnCount: { $sum: { $cond: [{ $eq: ['$isReturned', true] }, 1, 0] } },
+            totalOrders: { $sum: 1 }
           }
         },
         {
@@ -158,14 +156,22 @@ router.get("/", checkAuthenticated, async (req, res) => {
                 default: 'Other'
               }
             },
-            returnCount: { $sum: '$returnCount' }
+            returnCount: { $sum: '$returnCount' },
+            totalOrders: { $sum: '$totalOrders' }
           }
         },
         {
           $project: {
             _id: 0,
             courier: '$_id',
-            returnCount: 1
+            returnCount: 1,
+            totalOrders: 1,
+            returnRate: {
+              $multiply: [
+                { $divide: ['$returnCount', '$totalOrders'] },
+                100
+              ]
+            }
           }
         },
         {
@@ -300,7 +306,9 @@ router.get("/", checkAuthenticated, async (req, res) => {
 
       returnAnalysis: returnStats.map(stat => ({
         courier: stat.courier,
-        returnCount: stat.returnCount
+        returnCount: stat.returnCount,
+        totalOrders: stat.totalOrders,
+        returnRate: stat.returnRate.toFixed(2)
       })),
 
       paymentStats: paymentStats.reduce((acc, stat) => {

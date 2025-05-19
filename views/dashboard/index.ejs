@@ -5,7 +5,7 @@
     <div class="section-header d-flex justify-content-between align-items-center mb-3">
       <h2 class="section-title h4 mb-0">Quick Actions</h2>
     </div>
-    
+
     <!-- Today's Stats -->
     <div class="row mb-4">
       <div class="col-md-4">
@@ -14,7 +14,9 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-1">Today's Orders</h6>
-                <h3 class="mb-0"><%= dashboardData.todayStats.totalOrders %></h3>
+                <h3 class="mb-0">
+                  <%= dashboardData.todayStats.totalOrders %>
+                </h3>
               </div>
               <div class="icon-circle bg-primary bg-opacity-10">
                 <i class="fas fa-shopping-cart text-primary"></i>
@@ -29,7 +31,9 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-1">Delivered Today</h6>
-                <h3 class="mb-0"><%= dashboardData.todayStats.deliveredOrders %></h3>
+                <h3 class="mb-0">
+                  <%= dashboardData.todayStats.deliveredOrders %>
+                </h3>
               </div>
               <div class="icon-circle bg-success bg-opacity-10">
                 <i class="fas fa-check-circle text-success"></i>
@@ -44,7 +48,9 @@
             <div class="d-flex justify-content-between align-items-center">
               <div>
                 <h6 class="card-title mb-1">Returns Today</h6>
-                <h3 class="mb-0"><%= dashboardData.todayStats.returnedOrders %></h3>
+                <h3 class="mb-0">
+                  <%= dashboardData.todayStats.returnedOrders %>
+                </h3>
               </div>
               <div class="icon-circle bg-warning bg-opacity-10">
                 <i class="fas fa-undo text-warning"></i>
@@ -91,35 +97,47 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Order Status</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Shows the distribution of orders across different statuses: Pending, Delivered, and Returned. Helps track order progress and identify bottlenecks."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Shows the distribution of orders across different statuses: Pending, Delivered, and Returned. Helps track order progress and identify bottlenecks."></i>
           </div>
-          <span class="badge bg-primary mb-3"><%= Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) %></span>
+          <span class="badge bg-primary mb-3">
+            <%= Object.values(dashboardData.orderStatus).reduce((a, b)=> a + b, 0) %>
+          </span>
           <div class="mt-3">
             <div class="d-flex justify-content-between mb-2">
               <span>Pending</span>
-              <span class="fw-medium"><%= dashboardData.orderStatus.pending || 0 %></span>
+              <span class="fw-medium">
+                <%= dashboardData.orderStatus.pending || 0 %>
+              </span>
             </div>
             <div class="progress mb-3" style="height: 6px;">
-              <div class="progress-bar bg-info" style="width: <%= (dashboardData.orderStatus.pending || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%"></div>
+              <div class="progress-bar bg-info"
+                style="width: <%= (dashboardData.orderStatus.pending || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%">
+              </div>
             </div>
-            
+
             <div class="d-flex justify-content-between mb-2">
               <span>Delivered</span>
-              <span class="fw-medium"><%= dashboardData.orderStatus.delivered || 0 %></span>
+              <span class="fw-medium">
+                <%= dashboardData.orderStatus.delivered || 0 %>
+              </span>
             </div>
             <div class="progress mb-3" style="height: 6px;">
-              <div class="progress-bar bg-success" style="width: <%= (dashboardData.orderStatus.delivered || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%"></div>
+              <div class="progress-bar bg-success"
+                style="width: <%= (dashboardData.orderStatus.delivered || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%">
+              </div>
             </div>
-            
+
             <div class="d-flex justify-content-between mb-2">
               <span>Returned</span>
-              <span class="fw-medium"><%= dashboardData.orderStatus.returned || 0 %></span>
+              <span class="fw-medium">
+                <%= dashboardData.orderStatus.returned || 0 %>
+              </span>
             </div>
             <div class="progress" style="height: 6px;">
-              <div class="progress-bar bg-warning" style="width: <%= (dashboardData.orderStatus.returned || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%"></div>
+              <div class="progress-bar bg-warning"
+                style="width: <%= (dashboardData.orderStatus.returned || 0) / Object.values(dashboardData.orderStatus).reduce((a, b) => a + b, 0) * 100 %>%">
+              </div>
             </div>
           </div>
         </div>
@@ -132,51 +150,48 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Performance</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Key performance indicators including delivery success rate, average processing time, and return rate. Helps monitor overall operational efficiency."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Key performance indicators including delivery success rate, average processing time, and return rate. Helps monitor overall operational efficiency."></i>
           </div>
           <div class="mt-3">
             <div class="d-flex justify-content-between mb-2">
               <span>Success Rate</span>
-              <span class="fw-medium"><%= (dashboardData.performance.deliverySuccessRate * 100).toFixed(1) %>%</span>
+              <span class="fw-medium">
+                <%= (dashboardData.performance.deliverySuccessRate * 100).toFixed(1) %>%
+              </span>
             </div>
             <div class="progress mb-3" style="height: 6px;">
-              <div class="progress-bar bg-success" style="width: <%= dashboardData.performance.deliverySuccessRate * 100 %>%"></div>
+              <div class="progress-bar bg-success"
+                style="width: <%= dashboardData.performance.deliverySuccessRate * 100 %>%"></div>
             </div>
-            
+
             <div class="d-flex justify-content-between mb-2">
               <span>Avg. Processing</span>
               <span class="fw-medium">
-                <% 
-                  const avgProcessingTime = dashboardData.performance.averageProcessingTime;
-                  const hours = Math.floor(avgProcessingTime / (1000 * 60 * 60));
-                  const minutes = Math.floor((avgProcessingTime % (1000 * 60 * 60)) / (1000 * 60));
-                  if (hours > 24) {
-                    const days = Math.floor(hours / 24);
-                    const remainingHours = hours % 24;
-                    if (remainingHours > 0) {
-                      %><%= days %>d <%= remainingHours %>h<%
-                    } else {
-                      %><%= days %>d<%
-                    }
-                  } else {
-                    %><%= hours %>h <%= minutes %>m<%
-                  }
-                %>
+                <% const avgProcessingTime=dashboardData.performance.averageProcessingTime; const
+                  hours=Math.floor(avgProcessingTime / (1000 * 60 * 60)); const minutes=Math.floor((avgProcessingTime %
+                  (1000 * 60 * 60)) / (1000 * 60)); if (hours> 24) {
+                  const days = Math.floor(hours / 24);
+                  const remainingHours = hours % 24;
+                  if (remainingHours > 0) {
+                  %><%= days %>d <%= remainingHours %>h<% } else { %>
+                        <%= days %>d<% } } else { %>
+                            <%= hours %>h <%= minutes %>m<% } %>
               </span>
             </div>
             <div class="progress mb-3" style="height: 6px;">
               <div class="progress-bar bg-info" style="width: 70%"></div>
             </div>
-            
+
             <div class="d-flex justify-content-between mb-2">
               <span>Return Rate</span>
-              <span class="fw-medium"><%= (dashboardData.performance.returnRate * 100).toFixed(1) %>%</span>
+              <span class="fw-medium">
+                <%= (dashboardData.performance.returnRate * 100).toFixed(1) %>%
+              </span>
             </div>
             <div class="progress" style="height: 6px;">
-              <div class="progress-bar bg-warning" style="width: <%= dashboardData.performance.returnRate * 100 %>%"></div>
+              <div class="progress-bar bg-warning" style="width: <%= dashboardData.performance.returnRate * 100 %>%">
+              </div>
             </div>
           </div>
         </div>
@@ -189,32 +204,37 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Payments</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Shows the distribution of payment statuses across orders. Helps track payment processing and identify any payment-related issues."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Shows the distribution of payment statuses across orders. Helps track payment processing and identify any payment-related issues."></i>
           </div>
-          <span class="badge bg-primary mb-3"><%= Object.values(dashboardData.paymentStats).reduce((a, b) => a + b.count, 0) %></span>
+          <span class="badge bg-primary mb-3">
+            <%= Object.values(dashboardData.paymentStats).reduce((a, b)=> a + b.count, 0) %>
+          </span>
           <div class="mt-3">
-            <% 
-              const paymentStats = Object.entries(dashboardData.paymentStats)
-                .sort((a, b) => b[1].count - a[1].count)
-                .slice(0, 3); // Show only top 3 payment statuses
-            %>
-            <% paymentStats.forEach(([status, data]) => { %>
-              <div class="d-flex justify-content-between mb-2">
-                <span class="text-truncate" style="max-width: 70%;"><%= status %></span>
-                <span class="fw-medium"><%= data.count %></span>
-              </div>
-              <div class="progress mb-3" style="height: 6px;">
-                <div class="progress-bar bg-info" style="width: <%= (data.count / Object.values(dashboardData.paymentStats).reduce((a, b) => a + b.count, 0)) * 100 %>%"></div>
-              </div>
-            <% }); %>
-            <% if (Object.keys(dashboardData.paymentStats).length > 3) { %>
-              <div class="text-center mt-2">
-                <small class="text-muted">+<%= Object.keys(dashboardData.paymentStats).length - 3 %> more statuses</small>
-              </div>
-            <% } %>
+            <% const paymentStats=Object.entries(dashboardData.paymentStats) .sort((a, b)=> b[1].count - a[1].count)
+              .slice(0, 3); // Show only top 3 payment statuses
+              %>
+              <% paymentStats.forEach(([status, data])=> { %>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-truncate" style="max-width: 70%;">
+                    <%= status %>
+                  </span>
+                  <span class="fw-medium">
+                    <%= data.count %>
+                  </span>
+                </div>
+                <div class="progress mb-3" style="height: 6px;">
+                  <div class="progress-bar bg-info"
+                    style="width: <%= (data.count / Object.values(dashboardData.paymentStats).reduce((a, b) => a + b.count, 0)) * 100 %>%">
+                  </div>
+                </div>
+                <% }); %>
+                  <% if (Object.keys(dashboardData.paymentStats).length> 3) { %>
+                    <div class="text-center mt-2">
+                      <small class="text-muted">+<%= Object.keys(dashboardData.paymentStats).length - 3 %> more
+                          statuses</small>
+                    </div>
+                    <% } %>
           </div>
         </div>
       </div>
@@ -226,22 +246,28 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Remarks</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Shows the distribution of different types of remarks added to orders. Helps identify common issues and track customer feedback."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Shows the distribution of different types of remarks added to orders. Helps identify common issues and track customer feedback."></i>
           </div>
-          <span class="badge bg-primary mb-3"><%= Object.values(dashboardData.remarks).reduce((a, b) => a + b.count, 0) %></span>
+          <span class="badge bg-primary mb-3">
+            <%= Object.values(dashboardData.remarks).reduce((a, b)=> a + b.count, 0) %>
+          </span>
           <div class="mt-3">
-            <% Object.entries(dashboardData.remarks).forEach(([type, data]) => { %>
+            <% Object.entries(dashboardData.remarks).forEach(([type, data])=> { %>
               <div class="d-flex justify-content-between mb-2">
-                <span><%= type %></span>
-                <span class="fw-medium"><%= data.count %></span>
+                <span>
+                  <%= type %>
+                </span>
+                <span class="fw-medium">
+                  <%= data.count %>
+                </span>
               </div>
               <div class="progress mb-3" style="height: 6px;">
-                <div class="progress-bar bg-info" style="width: <%= (data.count / Object.values(dashboardData.remarks).reduce((a, b) => a + b.count, 0)) * 100 %>%"></div>
+                <div class="progress-bar bg-info"
+                  style="width: <%= (data.count / Object.values(dashboardData.remarks).reduce((a, b) => a + b.count, 0)) * 100 %>%">
+                </div>
               </div>
-            <% }); %>
+              <% }); %>
           </div>
         </div>
       </div>
@@ -256,10 +282,8 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Courier Performance</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Compares delivery and return rates across different courier services. Helps evaluate courier performance and identify areas for improvement."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Compares delivery and return rates across different courier services. Helps evaluate courier performance and identify areas for improvement."></i>
           </div>
           <div class="chart-container" style="position: relative; height: 300px;">
             <canvas id="courierPerformanceChart"></canvas>
@@ -274,10 +298,8 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Daily Orders (Last 30 Days)</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Shows the trend of orders and deliveries over the last 30 days. Helps identify patterns and plan resources accordingly."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Shows the trend of orders and deliveries over the last 30 days. Helps identify patterns and plan resources accordingly."></i>
           </div>
           <div class="chart-container" style="position: relative; height: 300px;">
             <canvas id="timeBasedChart"></canvas>
@@ -291,32 +313,27 @@
   <div class="row">
     <!-- Return Analysis -->
     <div class="col-md-6">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Return Analysis</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Shows the number of returned orders for each courier service. Higher numbers may indicate areas needing improvement in delivery service."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Shows the number of returned orders for each courier service, along with their total orders and return rate. Helps identify which courier services have higher return rates."></i>
           </div>
-          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-            <table class="table table-hover">
-              <thead class="sticky-top bg-white">
-                <tr>
-                  <th>Courier</th>
-                  <th>Returns</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% dashboardData.returnAnalysis.forEach(stat => { %>
-                  <tr>
-                    <td class="fw-medium"><%= stat.courier %></td>
-                    <td><%= stat.returnCount %></td>
-                  </tr>
-                <% }); %>
-              </tbody>
-            </table>
+          <div class="mt-3">
+            <% dashboardData.returnAnalysis.forEach(stat=> { %>
+              <div class="d-flex justify-content-between mb-2">
+                <span>
+                  <%= stat.courier %>
+                </span>
+                <span class="fw-medium">
+                  <%= stat.returnCount %> / <%= stat.totalOrders %> (<%= stat.returnRate %>%)
+                </span>
+              </div>
+              <div class="progress mb-3" style="height: 6px;">
+                <div class="progress-bar bg-warning" style="width: <%= stat.returnRate %>%"></div>
+              </div>
+              <% }); %>
           </div>
         </div>
       </div>
@@ -328,10 +345,8 @@
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="card-title mb-0">Product Statistics</h5>
-            <i class="fas fa-info-circle text-muted" 
-               data-bs-toggle="tooltip" 
-               data-bs-placement="top" 
-               title="Shows the total quantity and number of orders for each product. Helps track product popularity and inventory management."></i>
+            <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+              title="Shows the total quantity and number of orders for each product. Helps track product popularity and inventory management."></i>
           </div>
           <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
             <table class="table table-hover">
@@ -343,13 +358,19 @@
                 </tr>
               </thead>
               <tbody>
-                <% dashboardData.productStats.forEach(stat => { %>
+                <% dashboardData.productStats.forEach(stat=> { %>
                   <tr>
-                    <td><%= stat.product %></td>
-                    <td><%= stat.totalQuantity %></td>
-                    <td><%= stat.orderCount %></td>
+                    <td>
+                      <%= stat.product %>
+                    </td>
+                    <td>
+                      <%= stat.totalQuantity %>
+                    </td>
+                    <td>
+                      <%= stat.orderCount %>
+                    </td>
                   </tr>
-                <% }); %>
+                  <% }); %>
               </tbody>
             </table>
           </div>
@@ -364,16 +385,14 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
           <h5 class="card-title mb-0">Latest Orders</h5>
-          <i class="fas fa-info-circle text-muted ms-2" 
-             data-bs-toggle="tooltip" 
-             data-bs-placement="top" 
-             title="Shows the most recent orders with their current status and details. Helps monitor recent order activity and customer information."></i>
+          <i class="fas fa-info-circle text-muted ms-2" data-bs-toggle="tooltip" data-bs-placement="top"
+            title="Shows the most recent orders with their current status and details. Helps monitor recent order activity and customer information."></i>
         </div>
         <a href="/dashboard/orders" class="btn btn-sm btn-outline-primary">
           View All Orders <i class="fas fa-arrow-right ms-1"></i>
         </a>
       </div>
-      
+
       <div class="table-responsive">
         <table class="table table-hover align-middle">
           <thead class="bg-light">
@@ -386,23 +405,29 @@
             </tr>
           </thead>
           <tbody>
-            <% latestOrders.forEach(order => { %>
+            <% latestOrders.forEach(order=> { %>
               <tr>
-                <td class="fw-medium">#<%= order.trackingNumber %></td>
-                <td><%= order.productInfo?.CustomerName || 'N/A' %></td>
-                <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                <td class="fw-medium">#<%= order.trackingNumber %>
+                </td>
+                <td>
+                  <%= order.productInfo?.CustomerName || 'N/A' %>
+                </td>
+                <td>
+                  <%= new Date(order.createdAt).toLocaleDateString() %>
+                </td>
                 <td>
                   <% if (order.isDelivered) { %>
                     <span class="badge bg-success bg-opacity-10 text-success">Delivered</span>
-                  <% } else if (order.isReturned) { %>
-                    <span class="badge bg-warning bg-opacity-10 text-warning">Returned</span>
-                  <% } else { %>
-                    <span class="badge bg-info bg-opacity-10 text-info">Pending</span>
-                  <% } %>
+                    <% } else if (order.isReturned) { %>
+                      <span class="badge bg-warning bg-opacity-10 text-warning">Returned</span>
+                      <% } else { %>
+                        <span class="badge bg-info bg-opacity-10 text-info">Pending</span>
+                        <% } %>
                 </td>
-                <td class="fw-medium">Rs. <%= order.invoicePayment || '0' %></td>
+                <td class="fw-medium">Rs. <%= order.invoicePayment || '0' %>
+                </td>
               </tr>
-            <% }); %>
+              <% }); %>
           </tbody>
         </table>
       </div>
@@ -415,124 +440,128 @@
 
 <!-- Dashboard Scripts -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize all tooltips
-  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-  const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
-    return new bootstrap.Tooltip(tooltipTriggerEl, {
-      trigger: 'hover',
-      html: true,
-      placement: 'top'
+  document.addEventListener('DOMContentLoaded', function () {
+    // Initialize all tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => {
+      return new bootstrap.Tooltip(tooltipTriggerEl, {
+        trigger: 'hover',
+        html: true,
+        placement: 'top'
+      });
+    });
+
+    // Prepare data for charts
+    const courierData = JSON.parse('<%- JSON.stringify(dashboardData.courierPerformance) %>');
+    const timeData = JSON.parse('<%- JSON.stringify(dashboardData.timeBasedAnalytics) %>');
+
+    console.log('Courier Data:', courierData);
+    console.log('Time Data:', timeData);
+
+    // Common chart options
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      }
+    };
+
+    // Courier Performance Chart
+    const courierCtx = document.getElementById('courierPerformanceChart').getContext('2d');
+    new Chart(courierCtx, {
+      type: 'bar',
+      data: {
+        labels: courierData.map(c => c.courier),
+        datasets: [{
+          label: 'Delivery Rate (%)',
+          data: courierData.map(c => parseFloat(c.deliveryRate)),
+          backgroundColor: 'rgba(75, 192, 192, 0.5)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }, {
+          label: 'Return Rate (%)',
+          data: courierData.map(c => parseFloat(c.returnRate)),
+          backgroundColor: 'rgba(255, 99, 132, 0.5)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        ...commonOptions,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: {
+              display: true,
+              text: 'Percentage (%)'
+            }
+          }
+        }
+      }
+    });
+
+    // Time-based Analytics Chart
+    const timeCtx = document.getElementById('timeBasedChart').getContext('2d');
+    new Chart(timeCtx, {
+      type: 'line',
+      data: {
+        labels: timeData.map(t => t.date),
+        datasets: [{
+          label: 'Orders',
+          data: timeData.map(t => t.orders),
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.1)',
+          fill: true,
+          tension: 0.4
+        }, {
+          label: 'Delivered',
+          data: timeData.map(t => t.delivered),
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        ...commonOptions,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Orders'
+            }
+          }
+        }
+      }
     });
   });
-
-  // Prepare data for charts
-  const courierData = <%- JSON.stringify(dashboardData.courierPerformance) %>;
-  const timeData = <%- JSON.stringify(dashboardData.timeBasedAnalytics) %>;
-
-  // Common chart options
-  const commonOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-      }
-    },
-    interaction: {
-      mode: 'nearest',
-      axis: 'x',
-      intersect: false
-    }
-  };
-
-  // Courier Performance Chart
-  const courierCtx = document.getElementById('courierPerformanceChart').getContext('2d');
-  new Chart(courierCtx, {
-    type: 'bar',
-    data: {
-      labels: courierData.map(c => c.courier),
-      datasets: [{
-        label: 'Delivery Rate (%)',
-        data: courierData.map(c => c.deliveryRate),
-        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1
-      }, {
-        label: 'Return Rate (%)',
-        data: courierData.map(c => c.returnRate),
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      ...commonOptions,
-      scales: {
-        y: {
-          beginAtZero: true,
-          max: 100,
-          title: {
-            display: true,
-            text: 'Percentage (%)'
-          }
-        }
-      }
-    }
-  });
-
-  // Time-based Analytics Chart
-  const timeCtx = document.getElementById('timeBasedChart').getContext('2d');
-  new Chart(timeCtx, {
-    type: 'line',
-    data: {
-      labels: timeData.map(t => t.date),
-      datasets: [{
-        label: 'Orders',
-        data: timeData.map(t => t.orders),
-        borderColor: 'rgba(54, 162, 235, 1)',
-        backgroundColor: 'rgba(54, 162, 235, 0.1)',
-        fill: true,
-        tension: 0.4
-      }, {
-        label: 'Delivered',
-        data: timeData.map(t => t.delivered),
-        borderColor: 'rgba(75, 192, 192, 1)',
-        backgroundColor: 'rgba(75, 192, 192, 0.1)',
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      ...commonOptions,
-      scales: {
-        y: {
-          beginAtZero: true,
-          title: {
-            display: true,
-            text: 'Number of Orders'
-          }
-        }
-      }
-    }
-  });
-});
 </script>
 
 <style>
-.icon-circle {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.icon-circle i {
-  font-size: 1.5rem;
-}
+  .icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-circle i {
+    font-size: 1.5rem;
+  }
 </style>
