@@ -34,7 +34,12 @@ connectDB();
 
 const app = express();
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({
+    server,
+    // Add secure WebSocket configuration
+    perMessageDeflate: false,
+    clientTracking: true
+});
 
 // Middlewares
 app.use(express.json());
@@ -106,6 +111,7 @@ app.use('/logs', logsRoutes);
 app.use('/api/logs', apiLogsRoutes);
 app.use('/', notificationRoutes);
 app.use('/api/orders', apiOrdersRoutes);
+app.use('/api', apiEmployeeRoutes);
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {

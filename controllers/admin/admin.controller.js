@@ -59,9 +59,9 @@ export const getAllEmployees = async (req, res) => {
 
         // Create log for viewing employees
         await createLog({
-            action: 'view',
+            action: 'status_change',
             entity: 'user',
-            entityId: 'all',
+            entityId: req.user._id,
             details: {
                 totalEmployees: employees.length,
                 roles: employees.map(emp => emp.role)
@@ -84,7 +84,7 @@ export const deleteEmployeeController = async (req, res) => {
     try {
         // Get employee details before deletion for logging
         const employeeToDelete = await User.findById(id);
-        
+
         if (!employeeToDelete) {
             return res.status(404).json({ message: 'Employee not found' });
         }

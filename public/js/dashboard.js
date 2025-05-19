@@ -3,7 +3,7 @@ import { showSuccessAnimation } from './modules/successAnimation.js';
 // Sidebar Toggle for Mobile
 const sidebarCollapse = document.getElementById('sidebarCollapse');
 if (sidebarCollapse) {
-    sidebarCollapse.addEventListener('click', function() {
+    sidebarCollapse.addEventListener('click', function () {
         document.querySelector('.sidebar').classList.toggle('active');
         document.querySelector('.main-content').classList.toggle('active');
     });
@@ -12,7 +12,7 @@ if (sidebarCollapse) {
 // Handle refresh stats button
 const refreshStatsBtn = document.getElementById('refreshStats');
 if (refreshStatsBtn) {
-    refreshStatsBtn.addEventListener('click', async function() {
+    refreshStatsBtn.addEventListener('click', async function () {
         try {
             // Get the stats card container
             const statsContainer = document.querySelector('.row.g-4.mb-4');
@@ -20,17 +20,17 @@ if (refreshStatsBtn) {
                 // Fade out the stats
                 statsContainer.style.transition = 'opacity 0.3s ease-out';
                 statsContainer.style.opacity = '0';
-                
+
                 // Show success animation
                 showSuccessAnimation();
-                
+
                 // Simulate API call delay
                 setTimeout(async () => {
                     try {
                         // Here you would typically make an API call to get fresh stats
                         // For now, we'll just fade the stats back in
                         statsContainer.style.opacity = '1';
-                        
+
                         // Show success message
                         const alertDiv = document.createElement('div');
                         alertDiv.className = 'alert alert-success alert-dismissible fade show';
@@ -39,10 +39,10 @@ if (refreshStatsBtn) {
                             Stats refreshed successfully!
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         `;
-                        
+
                         // Add the alert before the stats container
                         statsContainer.parentElement.insertBefore(alertDiv, statsContainer);
-                        
+
                         // Auto-dismiss after 5 seconds
                         setTimeout(() => {
                             alertDiv.remove();
@@ -57,7 +57,7 @@ if (refreshStatsBtn) {
                             Failed to refresh stats. Please try again.
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         `;
-                        
+
                         // Add the error alert before the stats container
                         statsContainer.parentElement.insertBefore(errorDiv, statsContainer);
                     }
@@ -72,7 +72,7 @@ if (refreshStatsBtn) {
 // Handle export data button
 const exportDataBtn = document.getElementById('exportData');
 if (exportDataBtn) {
-    exportDataBtn.addEventListener('click', async function() {
+    exportDataBtn.addEventListener('click', async function () {
         try {
             // Get the button's parent card
             const card = exportDataBtn.closest('.card');
@@ -80,15 +80,15 @@ if (exportDataBtn) {
                 // Fade out the card
                 card.style.transition = 'opacity 0.3s ease-out';
                 card.style.opacity = '0';
-                
+
                 // Show success animation
                 showSuccessAnimation();
-                
+
                 // Simulate export delay
                 setTimeout(() => {
                     // Fade the card back in
                     card.style.opacity = '1';
-                    
+
                     // Show success message
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-success alert-dismissible fade show';
@@ -97,10 +97,10 @@ if (exportDataBtn) {
                         Data exported successfully!
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
-                    
+
                     // Add the alert before the card
                     card.parentElement.insertBefore(alertDiv, card);
-                    
+
                     // Auto-dismiss after 5 seconds
                     setTimeout(() => {
                         alertDiv.remove();
@@ -116,7 +116,7 @@ if (exportDataBtn) {
 // Handle view reports button
 const viewReportsBtn = document.getElementById('viewReports');
 if (viewReportsBtn) {
-    viewReportsBtn.addEventListener('click', function() {
+    viewReportsBtn.addEventListener('click', function () {
         // Redirect to reports page
         window.location.href = '/reports';
     });
@@ -154,7 +154,7 @@ fetchNotifications();
 // Test Sound Button
 const testSoundBtn = document.getElementById('testSound');
 if (testSoundBtn) {
-    testSoundBtn.addEventListener('click', function() {
+    testSoundBtn.addEventListener('click', function () {
         // Initialize audio context if not already done
         if (!window.audioContext) {
             window.audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -190,16 +190,20 @@ function setupWebSocket() {
         return;
     }
 
-    ws = new WebSocket(`ws://${window.location.host}`);
+    // Use secure WebSocket (wss://) for HTTPS and regular WebSocket (ws://) for HTTP
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}`;
 
-    ws.onopen = function() {
+    ws = new WebSocket(wsUrl);
+
+    ws.onopen = function () {
         console.log('WebSocket connection established');
         reconnectAttempts = 0; // Reset reconnect attempts on successful connection
     };
 
-    ws.onclose = function(event) {
+    ws.onclose = function (event) {
         console.log('WebSocket connection closed:', event.code, event.reason);
-        
+
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             console.log(`Attempting to reconnect (${reconnectAttempts + 1}/${MAX_RECONNECT_ATTEMPTS})...`);
             reconnectAttempts++;
@@ -209,15 +213,15 @@ function setupWebSocket() {
         }
     };
 
-    ws.onerror = function(error) {
+    ws.onerror = function (error) {
         console.error('WebSocket error:', error);
     };
 
-    ws.onmessage = function(event) {
+    ws.onmessage = function (event) {
         try {
             const data = JSON.parse(event.data);
             console.log('Received WebSocket message:', data);
-            
+
             if (data.type === 'notification') {
                 console.log('Processing notification:', data);
 
@@ -283,7 +287,7 @@ setupWebSocket();
 // Request notification permission
 if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
     Notification.requestPermission();
-} 
+}
 
 
 
