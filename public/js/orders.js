@@ -8,12 +8,30 @@ const OrderManager = {
 
   init: function (orderType) {
     this.orderType = orderType;
-    this.trackingHistoryModal = new bootstrap.Modal(
-      document.getElementById("trackingHistoryModal")
-    );
-    this.remarksHistoryModal = new bootstrap.Modal(
-      document.getElementById("remarksHistoryModal")
-    );
+
+    // Check if Bootstrap is loaded
+    if (typeof bootstrap === 'undefined') {
+      console.error('Bootstrap is not loaded. Please ensure Bootstrap JS is included before this script.');
+      return;
+    }
+
+    // Get modal elements
+    const trackingHistoryModalEl = document.getElementById("trackingHistoryModal");
+    const remarksHistoryModalEl = document.getElementById("remarksHistoryModal");
+
+    // Check if elements exist
+    if (!trackingHistoryModalEl) {
+      console.error('Tracking history modal element not found');
+    } else {
+      this.trackingHistoryModal = new bootstrap.Modal(trackingHistoryModalEl);
+    }
+
+    if (!remarksHistoryModalEl) {
+      console.error('Remarks history modal element not found');
+    } else {
+      this.remarksHistoryModal = new bootstrap.Modal(remarksHistoryModalEl);
+    }
+
     this.fetchOrders();
   },
 
@@ -132,44 +150,44 @@ const OrderManager = {
                 </thead>
                 <tbody>
                     ${rows.length
-      ? rows
-        .map((row, index) => {
-          return `
+        ? rows
+          .map((row, index) => {
+            return `
                       <tr>
                           <td>${(this.currentPage - 1) * this.limit + index + 1}</td>
                           ${columns
-        .map((colKey) => {
-          const value = row[colKey];
+                .map((colKey) => {
+                  const value = row[colKey];
 
-          if (colKey === "Status") {
-            const trackingHistory = row.tracking_history || [];
-            return `<td>
+                  if (colKey === "Status") {
+                    const trackingHistory = row.tracking_history || [];
+                    return `<td>
                       <span class="status-badge ${this.getStatusClass(value)}" 
                             style="cursor: pointer;" 
                             data-tracking-history='${JSON.stringify(trackingHistory)}'>
                         ${value}
                       </span>
                   </td>`;
-          }
+                  }
 
-          if (colKey === "Remarks") {
-            const remarks = Array.isArray(value) ? value : [];
-            const latestRemark = remarks.length > 0 ? remarks[remarks.length - 1]?.content : 'No remarks';
-            return `<td>
+                  if (colKey === "Remarks") {
+                    const remarks = Array.isArray(value) ? value : [];
+                    const latestRemark = remarks.length > 0 ? remarks[remarks.length - 1]?.content : 'No remarks';
+                    return `<td>
               <span class="remarks-badge" 
                     style="cursor: pointer;" 
                     data-remarks='${JSON.stringify(remarks)}'>
                 ${latestRemark}
               </span>
             </td>`;
-          }
+                  }
 
-          if (colKey === "Address") {
-            return `<td title="${value}">${value}</td>`;
-          }
+                  if (colKey === "Address") {
+                    return `<td title="${value}">${value}</td>`;
+                  }
 
-          if (colKey === "Customer & Product Info") {
-            return `
+                  if (colKey === "Customer & Product Info") {
+                    return `
               <td>
                 <div class="small mt-1">${row["Customer & Product Info"] || "No Name"}</div>
                 <div class="small text-truncate mt-1"><strong>Product Name:</strong> ${row["Product Name"] || "No Product"}</div>
@@ -177,26 +195,26 @@ const OrderManager = {
                 <div class="small mt-1"><strong>Product Quantity:</strong> ${row["Quantity"] || "No Quantity"}</div>
               </td>
             `;
-          }
+                  }
 
-          if (colKey === "Tracking Number") {
-            const courier = (row["Courier Type"] || "").toLowerCase();
-            let trackingUrl = "#";
-            let trackingTitle = value || "No tracking number"; // Default title if value is empty
+                  if (colKey === "Tracking Number") {
+                    const courier = (row["Courier Type"] || "").toLowerCase();
+                    let trackingUrl = "#";
+                    let trackingTitle = value || "No tracking number"; // Default title if value is empty
 
-            // Set tracking URL based on the courier type
-            if (courier === "trax") {
-              trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
-              trackingTitle = `Track with Trax: ${value}`;
-            } else if (courier === "postex") {
-              trackingUrl = `https://postex.pk/tracking?cn=${value}`;
-              trackingTitle = `Track with Postex: ${value}`;
-            } else if (courier === "daewoo") {
-              trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
-              trackingTitle = `Track with Daewoo: ${value}`;
-            }
+                    // Set tracking URL based on the courier type
+                    if (courier === "trax") {
+                      trackingUrl = `https://sonic.pk/tracking?tracking_number=${value}`;
+                      trackingTitle = `Track with Trax: ${value}`;
+                    } else if (courier === "postex") {
+                      trackingUrl = `https://postex.pk/tracking?cn=${value}`;
+                      trackingTitle = `Track with Postex: ${value}`;
+                    } else if (courier === "daewoo") {
+                      trackingUrl = `https://fastex.appsbymoose.com/track/${value}`;
+                      trackingTitle = `Track with Daewoo: ${value}`;
+                    }
 
-            return `
+                    return `
                 <td>
                     <a href="${trackingUrl}" target="_blank" title="${trackingTitle}">${value}</a>
   <div class="small"><strong>Flyer ID:</strong> ${row["Flyer ID"] || "No Flyer ID"}</div>
@@ -204,11 +222,11 @@ const OrderManager = {
 
                 </td>
             `;
-          }
+                  }
 
-          return `<td class="text-truncate" title="${value}">${value}</td>`;
-        })
-        .join("")}
+                  return `<td class="text-truncate" title="${value}">${value}</td>`;
+                })
+                .join("")}
                           <td class="action-buttons">
                               <button 
                                   class="btn btn-sm btn-outline-secondary edit-btn" 
@@ -238,10 +256,10 @@ const OrderManager = {
                           </td>
                       </tr>
                   `;
-        })
-        .join("")
-      : `<tr><td colspan="${columns.length + 2}" class="text-center text-muted">No data found.</td></tr>`
-    }
+          })
+          .join("")
+        : `<tr><td colspan="${columns.length + 2}" class="text-center text-muted">No data found.</td></tr>`
+      }
                 </tbody>
             </table>
         </div>
@@ -380,24 +398,24 @@ const OrderManager = {
         const trackingHistory = order.rawJson?.details?.tracking_history || [];
 
 
-       return {
-    id: order._id,
-    "Tracking Number": order.trackingNumber,
-    Status: order.status,
-    'Remarks': order.remarks,
-    "Flyer ID": order.flyerId,
-    "Courier Type": order.courierType,
-    Address: order.productInfo?.Address || "N/A",
-    "Customer & Product Info": order.productInfo?.CustomerName || "N/A",
-    "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
-    Date: this.formatDate(order.productInfo?.date),
-    Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
-    "Product Price": order.invoicePayment || "N/A",
-    "Last Tracking Update": order.last_tracking_update
-      ? new Date(order.last_tracking_update).toLocaleString()
-      : "N/A",
-    tracking_history: trackingHistory,
-  };
+        return {
+          id: order._id,
+          "Tracking Number": order.trackingNumber,
+          Status: order.status,
+          'Remarks': order.remarks,
+          "Flyer ID": order.flyerId,
+          "Courier Type": order.courierType,
+          Address: order.productInfo?.Address || "N/A",
+          "Customer & Product Info": order.productInfo?.CustomerName || "N/A",
+          "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
+          Date: this.formatDate(order.productInfo?.date),
+          Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
+          "Product Price": order.invoicePayment || "N/A",
+          "Last Tracking Update": order.last_tracking_update
+            ? new Date(order.last_tracking_update).toLocaleString()
+            : "N/A",
+          tracking_history: trackingHistory,
+        };
       });
 
 
@@ -440,7 +458,7 @@ const OrderManager = {
 document.addEventListener('DOMContentLoaded', async function () {
   // Import the success animation
   const { showSuccessAnimation } = await import('./modules/successAnimation.js');
-  
+
   let orderId = null;
 
   // Fill form when edit button is clicked

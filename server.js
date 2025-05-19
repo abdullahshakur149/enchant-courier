@@ -98,7 +98,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/admin', adminRoutes);
 app.use('/courier', courierRoutes);
