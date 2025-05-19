@@ -134,6 +134,7 @@ export const updateOrderStatuses = async (req, res) => {
                             }
                         }
                     };
+                    // changes
 
                     if ((status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) && normalizedDaewooDate) {
                         updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
