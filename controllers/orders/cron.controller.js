@@ -5,32 +5,26 @@ import dayjs from 'dayjs'; // Import dayjs for date manipulation
 import utc from 'dayjs/plugin/utc.js'; // Import the UTC plugin
 import timezone from 'dayjs/plugin/timezone.js'; // Import the timezone plugin
 import twilio from 'twilio';
+import User from '../../models/user.js';
 
-// Initialize Twilio client
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioClient = twilio(accountSid, authToken);
+
 
 // Extend dayjs with UTC and timezone plugins
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// Function to send WhatsApp notification
-const sendWhatsAppNotification = async (order) => {
-    try {
-        await twilioClient.messages.create({
-            from: 'whatsapp:+14155238886',
-            body: `Order Delivered! 🎉\n\nTracking Number: ${order.trackingNumber}\nCourier: ${order.courierType}\nCustomer: ${order.productInfo?.CustomerName || 'N/A'}\nAddress: ${order.productInfo?.Address || 'N/A'}\nDelivered at: ${new Date().toLocaleString()}`,
-            to: 'whatsapp:+923349196224'
-        });
-    } catch (error) {
-        console.error('Error sending WhatsApp notification:', error);
-    }
-};
+
 
 export const updateOrderStatuses = async (req, res) => {
     try {
         console.log('Cronjob triggered at 3:00 AM');
+
+        // Find or create system user
+        let systemUser = await User.findOne({ username: 'system' });
+        if (!systemUser) {
+            systemUser = new User({ username: 'system', role: 'admin' });
+            await User.register(systemUser, 'system123!@#');
+        }
 
         const deliveredAtTimestamp = new Date(); // This timestamp will be used for all orders
 
@@ -64,8 +58,6 @@ export const updateOrderStatuses = async (req, res) => {
                     const timestamp = new Date();
                     // console.log('PostEx Date', data.transactionDate);
 
-                    // Normalize PostEx date (YYYY-MM-DD) to ISO 8601 UTC format
-                    const normalizedPostExDate = dayjs(data.transactionDate).startOf('day').utc().toDate();
 
                     const updateFields = {
                         customer_name: data.customerName || order.customer_name,
@@ -95,11 +87,9 @@ export const updateOrderStatuses = async (req, res) => {
                             type: 'order_delivered',
                             title: 'Order Delivered',
                             message: `Order #${order.trackingNumber} has been delivered`,
-                            orderId: order._id
                         });
 
                         // Send WhatsApp notification
-                        await sendWhatsAppNotification(order);
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -167,11 +157,9 @@ export const updateOrderStatuses = async (req, res) => {
                             type: 'order_delivered',
                             title: 'Order Delivered',
                             message: `Order #${order.trackingNumber} has been delivered`,
-                            orderId: order._id
                         });
 
                         // Send WhatsApp notification
-                        await sendWhatsAppNotification(order);
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -237,11 +225,10 @@ export const updateOrderStatuses = async (req, res) => {
                             type: 'order_delivered',
                             title: 'Order Delivered',
                             message: `Order #${order.trackingNumber} has been delivered`,
-                            orderId: order._id
+                            user: systemUser._id
                         });
 
                         // Send WhatsApp notification
-                        await sendWhatsAppNotification(order);
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);

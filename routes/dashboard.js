@@ -257,23 +257,42 @@ router.get("/", checkAuthenticated, async (req, res) => {
       // 10. Today's Statistics
       Order.aggregate([
         {
-          $match: {
-            createdAt: {
-              $gte: dayjs().tz(tz).startOf('day').toDate(),
-              $lte: dayjs().tz(tz).endOf('day').toDate()
-            }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalOrders: { $sum: 1 },
-            deliveredOrders: {
-              $sum: { $cond: [{ $eq: ['$isDelivered', true] }, 1, 0] }
-            },
-            returnedOrders: {
-              $sum: { $cond: [{ $eq: ['$isReturned', true] }, 1, 0] }
-            }
+          $facet: {
+            todaysOrders: [
+              {
+                $match: {
+                  createdAt: {
+                    $gte: dayjs().tz(tz).startOf('day').toDate(),
+                    $lte: dayjs().tz(tz).endOf('day').toDate()
+                  }
+                }
+              },
+              { $count: "count" }
+            ],
+            deliveredToday: [
+              {
+                $match: {
+                  isDelivered: true,
+                  delivered_at: {
+                    $gte: dayjs().tz(tz).startOf('day').toDate(),
+                    $lte: dayjs().tz(tz).endOf('day').toDate()
+                  }
+                }
+              },
+              { $count: "count" }
+            ],
+            returnsToday: [
+              {
+                $match: {
+                  isReturned: true,
+                  returned_at: {
+                    $gte: dayjs().tz(tz).startOf('day').toDate(),
+                    $lte: dayjs().tz(tz).endOf('day').toDate()
+                  }
+                }
+              },
+              { $count: "count" }
+            ]
           }
         }
       ])
@@ -341,10 +360,10 @@ router.get("/", checkAuthenticated, async (req, res) => {
 
       latestOrders,
 
-      todayStats: todayStats[0] || {
-        totalOrders: 0,
-        deliveredOrders: 0,
-        returnedOrders: 0
+      todayStats: {
+        todaysOrders: todayStats[0]?.todaysOrders[0]?.count || 0,
+        deliveredToday: todayStats[0]?.deliveredToday[0]?.count || 0,
+        returnsToday: todayStats[0]?.returnsToday[0]?.count || 0
       }
     };
 
