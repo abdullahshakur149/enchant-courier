@@ -50,6 +50,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
             },
             count: { $sum: 1 }
           }
+          // changes
         },
         {
           $project: {
