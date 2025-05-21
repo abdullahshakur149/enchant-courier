@@ -15,6 +15,8 @@
 
         <%- include('./components/remarksModel.ejs') %>
 
+          <%- include('./components/remarksHistory.ejs') %>
+
 
 
 
@@ -29,57 +31,29 @@
               });
             </script>
 
-<!-- Remarks History Modal -->
-<div class="modal fade" id="remarksHistoryModal" tabindex="-1" aria-labelledby="remarksHistoryModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="remarksHistoryModalLabel">Remarks History</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Date & Time</th>
-                <th>Created By</th>
-                <th>Remark</th>
-              </tr>
-            </thead>
-            <tbody id="remarksHistoryBody">
-              <!-- Remarks will be populated here -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+            <!-- Remarks History Modal -->
+            <%- include('./components/remarksHistory.ejs') %>
 
-<style>
-.remarks-badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--gray-100);
-  border-radius: 0.25rem;
-  color: var(--gray-700);
-  transition: all 0.2s ease;
-}
+              <style>
+                .remarks-badge {
+                  display: inline-block;
+                  padding: 0.25rem 0.5rem;
+                  background-color: var(--gray-100);
+                  border-radius: 0.25rem;
+                  color: var(--gray-700);
+                  transition: all 0.2s ease;
+                }
 
-.remarks-badge:hover {
-  background-color: var(--gray-200);
-}
+                .remarks-badge:hover {
+                  background-color: var(--gray-200);
+                }
 
-#remarksHistoryModal .table th {
-  background-color: var(--gray-50);
-  font-weight: 600;
-}
+                #remarksHistoryModal .table th {
+                  background-color: var(--gray-50);
+                  font-weight: 600;
+                }
 
-#remarksHistoryModal .table td {
-  vertical-align: middle;
-}
-</style>
+                #remarksHistoryModal .table td {
+                  vertical-align: middle;
+                }
+              </style>

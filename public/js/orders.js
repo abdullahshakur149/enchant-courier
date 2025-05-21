@@ -107,20 +107,27 @@ const OrderManager = {
 
   showRemarksHistory: function (remarks) {
     const remarksArray = Array.isArray(remarks) ? remarks : [];
-    if (remarksArray.length === 0) return;
-
     const tbody = document.getElementById("remarksHistoryBody");
-    tbody.innerHTML = remarksArray
-      .map(
-        (remark) => `
-          <tr>
-            <td>${new Date(remark.createdAt).toLocaleString()}</td>
-            <td>${remark.createdBy?.username || remark.createdBy || 'System'}</td>
-            <td>${remark.content || "No content"}</td>
-          </tr>
-        `
-      )
-      .join("");
+
+    if (remarksArray.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" class="text-center text-muted">No remarks found</td>
+        </tr>
+      `;
+    } else {
+      tbody.innerHTML = remarksArray
+        .map(
+          (remark) => `
+            <tr>
+              <td>${new Date(remark.createdAt).toLocaleString()}</td>
+              <td>${remark.createdBy?.username || remark.createdBy || 'System'}</td>
+              <td>${remark.content || "No content"}</td>
+            </tr>
+          `
+        )
+        .join("");
+    }
 
     this.remarksHistoryModal.show();
   },
