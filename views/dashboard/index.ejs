@@ -61,6 +61,61 @@
       </div>
     </div>
 
+    <!-- Today's Deliveries by Courier -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="card-title mb-0">Today's Deliveries by Courier</h5>
+              <i class="fas fa-info-circle text-muted" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Shows the breakdown of today's deliveries by courier service. Helps track courier performance and distribution of deliveries."></i>
+            </div>
+            <div class="row">
+              <% const allCouriers=['Trax', 'PostEx' , 'Daewoo' ]; const deliveredMap=new
+                Map(dashboardData.todayStats.deliveredByCourier.map(c=> [c.courier, c.count]));
+                const returnedMap = new Map(dashboardData.todayStats.returnedByCourier.map(c => [c.courier, c.count]));
+                allCouriers.forEach(courier => {
+                const deliveredCount = deliveredMap.get(courier) || 0;
+                const returnedCount = returnedMap.get(courier) || 0;
+                %>
+                <div class="col-md-4 col-sm-6 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0 me-3">
+                          <i class="fas fa-truck fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">
+                            <%= courier %>
+                          </h6>
+                        </div>
+                      </div>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-center">
+                          <small class="text-muted d-block">Delivered</small>
+                          <h5 class="mb-0 text-success">
+                            <%= deliveredCount %>
+                          </h5>
+                        </div>
+                        <div class="text-center">
+                          <small class="text-muted d-block">Returned</small>
+                          <h5 class="mb-0 text-warning">
+                            <%= returnedCount %>
+                          </h5>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <% }); %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="actions-grid">
       <a href="/dashboard/orders/new" class="action-card bg-primary bg-opacity-10 hover-shadow">
         <div class="action-icon text-primary">

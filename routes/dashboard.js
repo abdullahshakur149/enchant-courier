@@ -292,6 +292,72 @@ router.get("/", checkAuthenticated, async (req, res) => {
                 }
               },
               { $count: "count" }
+            ],
+            deliveredByCourier: [
+              {
+                $match: {
+                  isDelivered: true,
+                  delivered_at: {
+                    $gte: dayjs().tz(tz).startOf('day').toDate(),
+                    $lte: dayjs().tz(tz).endOf('day').toDate()
+                  }
+                }
+              },
+              {
+                $group: {
+                  _id: {
+                    $switch: {
+                      branches: [
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'trax'] }, then: 'Trax' },
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'postex'] }, then: 'PostEx' },
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'daewoo'] }, then: 'Daewoo' }
+                      ],
+                      default: 'Other'
+                    }
+                  },
+                  count: { $sum: 1 }
+                }
+              },
+              {
+                $project: {
+                  _id: 0,
+                  courier: '$_id',
+                  count: 1
+                }
+              }
+            ],
+            returnedByCourier: [
+              {
+                $match: {
+                  isReturned: true,
+                  returned_at: {
+                    $gte: dayjs().tz(tz).startOf('day').toDate(),
+                    $lte: dayjs().tz(tz).endOf('day').toDate()
+                  }
+                }
+              },
+              {
+                $group: {
+                  _id: {
+                    $switch: {
+                      branches: [
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'trax'] }, then: 'Trax' },
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'postex'] }, then: 'PostEx' },
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'daewoo'] }, then: 'Daewoo' }
+                      ],
+                      default: 'Other'
+                    }
+                  },
+                  count: { $sum: 1 }
+                }
+              },
+              {
+                $project: {
+                  _id: 0,
+                  courier: '$_id',
+                  count: 1
+                }
+              }
             ]
           }
         }
@@ -363,7 +429,9 @@ router.get("/", checkAuthenticated, async (req, res) => {
       todayStats: {
         todaysOrders: todayStats[0]?.todaysOrders[0]?.count || 0,
         deliveredToday: todayStats[0]?.deliveredToday[0]?.count || 0,
-        returnsToday: todayStats[0]?.returnsToday[0]?.count || 0
+        returnsToday: todayStats[0]?.returnsToday[0]?.count || 0,
+        deliveredByCourier: todayStats[0]?.deliveredByCourier || [],
+        returnedByCourier: todayStats[0]?.returnedByCourier || []
       }
     };
 
