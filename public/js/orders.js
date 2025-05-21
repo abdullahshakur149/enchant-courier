@@ -372,13 +372,12 @@ const OrderManager = {
           : "/api/orders/returned";
 
     try {
-      const res = await axios.get(
-        `${endpoint}?page=${this.currentPage}&limit=${this.limit}`
-      );
-      const { trackingData, pagination } = res.data;
+      showLoader();
+      const response = await fetchWithLoader(`${endpoint}?page=${this.currentPage}&limit=${this.limit}`);
+      const { trackingData, pagination } = response;
 
       if (!trackingData || !pagination) {
-        console.error("Invalid response format:", res.data);
+        console.error("Invalid response format:", response);
         return;
       }
 
@@ -387,7 +386,7 @@ const OrderManager = {
       const columns = [
         "Tracking Number",
         "Status",
-        "Remarks",  // Add Remarks here
+        "Remarks",
         "Date",
         "Address",
         "Customer & Product Info",
@@ -396,7 +395,6 @@ const OrderManager = {
 
       const rows = trackingData.map((order) => {
         const trackingHistory = order.rawJson?.details?.tracking_history || [];
-
 
         return {
           id: order._id,
@@ -418,8 +416,6 @@ const OrderManager = {
         };
       });
 
-
-
       this.renderTable({ columns, rows });
       this.renderPagination();
     } catch (error) {
@@ -429,6 +425,54 @@ const OrderManager = {
           Error fetching orders. Please try again later.
         </div>
       `;
+    } finally {
+      hideLoader();
+    }
+  },
+
+  updateOrderStatus: async function (orderId, status, reason) {
+    try {
+      showLoader();
+      const response = await fetchWithLoader(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status, reason }),
+      });
+
+      if (response.success) {
+        this.fetchOrders();
+      } else {
+        console.error('Failed to update order status:', response.message);
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+    } finally {
+      hideLoader();
+    }
+  },
+
+  addRemark: async function (orderId, remark) {
+    try {
+      showLoader();
+      const response = await fetchWithLoader(`/api/orders/${orderId}/remarks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ remark }),
+      });
+
+      if (response.success) {
+        this.fetchOrders();
+      } else {
+        console.error('Failed to add remark:', response.message);
+      }
+    } catch (error) {
+      console.error('Error adding remark:', error);
+    } finally {
+      hideLoader();
     }
   },
 
