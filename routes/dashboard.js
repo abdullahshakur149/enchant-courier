@@ -259,6 +259,14 @@ router.get("/", checkAuthenticated, async (req, res) => {
       Order.aggregate([
         {
           $facet: {
+            totalOrders: [
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 }
+                }
+              }
+            ],
             todaysOrders: [
               {
                 $match: {
@@ -359,6 +367,40 @@ router.get("/", checkAuthenticated, async (req, res) => {
                   count: 1
                 }
               }
+            ],
+            pendingByCourier: [
+              {
+                $match: {
+                  createdAt: {
+                    $gte: dayjs().tz(tz).startOf('day').toDate(),
+                    $lte: dayjs().tz(tz).endOf('day').toDate()
+                  },
+                  isDelivered: false,
+                  isReturned: false
+                }
+              },
+              {
+                $group: {
+                  _id: {
+                    $switch: {
+                      branches: [
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'trax'] }, then: 'Trax' },
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'postex'] }, then: 'PostEx' },
+                        { case: { $eq: [{ $toLower: '$courierType' }, 'daewoo'] }, then: 'Daewoo' }
+                      ],
+                      default: 'Other'
+                    }
+                  },
+                  count: { $sum: 1 }
+                }
+              },
+              {
+                $project: {
+                  _id: 0,
+                  courier: '$_id',
+                  count: 1
+                }
+              }
             ]
           }
         }
@@ -428,11 +470,13 @@ router.get("/", checkAuthenticated, async (req, res) => {
       latestOrders,
 
       todayStats: {
+        totalOrders: todayStats[0]?.totalOrders[0]?.count || 0,
         todaysOrders: todayStats[0]?.todaysOrders[0]?.count || 0,
         deliveredToday: todayStats[0]?.deliveredToday[0]?.count || 0,
         returnsToday: todayStats[0]?.returnsToday[0]?.count || 0,
         deliveredByCourier: todayStats[0]?.deliveredByCourier || [],
-        returnedByCourier: todayStats[0]?.returnedByCourier || []
+        returnedByCourier: todayStats[0]?.returnedByCourier || [],
+        pendingByCourier: todayStats[0]?.pendingByCourier || []
       }
     };
 

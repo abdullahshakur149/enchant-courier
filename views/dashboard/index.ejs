@@ -8,7 +8,24 @@
 
     <!-- Today's Stats -->
     <div class="row mb-4">
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <div class="card bg-info bg-opacity-10">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="card-title mb-1">Total Orders</h6>
+                <h3 class="mb-0">
+                  <%= dashboardData.todayStats.totalOrders %>
+                </h3>
+              </div>
+              <div class="icon-circle bg-info bg-opacity-10">
+                <i class="fas fa-box text-info"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
         <div class="card bg-primary bg-opacity-10">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -25,7 +42,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card bg-success bg-opacity-10">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -42,7 +59,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <div class="card bg-warning bg-opacity-10">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
@@ -75,9 +92,11 @@
               <% const allCouriers=['Trax', 'PostEx' , 'Daewoo' ]; const deliveredMap=new
                 Map(dashboardData.todayStats.deliveredByCourier.map(c=> [c.courier, c.count]));
                 const returnedMap = new Map(dashboardData.todayStats.returnedByCourier.map(c => [c.courier, c.count]));
+                const pendingMap = new Map(dashboardData.todayStats.pendingByCourier.map(c => [c.courier, c.count]));
                 allCouriers.forEach(courier => {
                 const deliveredCount = deliveredMap.get(courier) || 0;
                 const returnedCount = returnedMap.get(courier) || 0;
+                const pendingCount = pendingMap.get(courier) || 0;
                 %>
                 <div class="col-md-4 col-sm-6 mb-3">
                   <div class="card h-100">
@@ -93,6 +112,12 @@
                         </div>
                       </div>
                       <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-center">
+                          <small class="text-muted d-block">Pending</small>
+                          <h5 class="mb-0 text-info">
+                            <%= pendingCount %>
+                          </h5>
+                        </div>
                         <div class="text-center">
                           <small class="text-muted d-block">Delivered</small>
                           <h5 class="mb-0 text-success">
