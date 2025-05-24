@@ -314,15 +314,25 @@ const OrderManager = {
   },
 
   attachDeleteListeners: function () {
-    document
-      .getElementById("orders-table-container")
-      .addEventListener("click", (e) => {
-        const target = e.target.closest(".delete-btn");
-        if (target) {
-          const orderId = target.dataset.id;
-          this.deleteOrder(orderId);
-        }
-      });
+    const container = document.getElementById("orders-table-container");
+    if (!container) return;
+
+    // Remove any existing listeners
+    const newContainer = container.cloneNode(true);
+    container.parentNode.replaceChild(newContainer, container);
+
+    // Add new listener
+    newContainer.addEventListener("click", async (e) => {
+      const target = e.target.closest(".delete-btn");
+      if (!target || target.disabled) return;
+
+      const orderId = target.dataset.id;
+      if (!orderId) return;
+
+      if (confirm("Are you sure you want to delete this order?")) {
+        await this.deleteOrder(orderId);
+      }
+    });
   },
 
   renderPagination: function () {
@@ -484,22 +494,42 @@ const OrderManager = {
   },
 
   deleteOrder: async function (orderId) {
-    if (confirm("Are you sure you want to delete this order?")) {
-      try {
-        const response = await axios.delete(`/api/orders/${orderId}`);
-        if (response.data.success) {
-          // Refresh the orders to show the updated data
-          await this.fetchOrders();
-          // Show success animation
-          const { showSuccessAnimation } = await import('./modules/successAnimation.js');
-          showSuccessAnimation();
-        } else {
-          alert('Failed to delete order: ' + response.data.message);
+    if (!orderId) return;
+
+    // Disable all delete buttons to prevent multiple clicks
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(btn => btn.disabled = true);
+
+    try {
+      const response = await axios.delete(`/api/orders/${orderId}`);
+
+      if (response.data.success) {
+        // Show success animation
+        const { showSuccessAnimation } = await import('./modules/successAnimation.js');
+        showSuccessAnimation();
+
+        // Remove the deleted row directly
+        const row = document.querySelector(`[data-id="${orderId}"]`).closest('tr');
+        if (row) {
+          row.remove();
         }
-      } catch (error) {
+      } else {
+        alert('Failed to delete order: ' + response.data.message);
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        // If order doesn't exist, just remove the row
+        const row = document.querySelector(`[data-id="${orderId}"]`).closest('tr');
+        if (row) {
+          row.remove();
+        }
+      } else {
         console.error("Error deleting order:", error);
         alert("An error occurred while deleting the order.");
       }
+    } finally {
+      // Re-enable all delete buttons
+      deleteButtons.forEach(btn => btn.disabled = false);
     }
   },
 };
@@ -529,20 +559,21 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Submit updated tracking info
   const form = document.getElementById('editOrderForm');
-  form.addEventListener('submit', async function (e) {
+  const editSubmitBtn = document.getElementById('editOrderSubmitBtn');
+
+  editSubmitBtn.addEventListener('click', async function (e) {
     e.preventDefault();
 
     const trackingNumber = document.getElementById('editTrackingNumber').value;
     const flyerId = document.getElementById('editFlyerId').value;
     const courierType = document.getElementById('editCourierType').value;
-    const submitBtn = form.querySelector('button[type="submit"]');
 
     if (!trackingNumber || !flyerId || !courierType) {
       alert('Please fill in all fields.');
       return;
     }
 
-    submitBtn.disabled = true;
+    editSubmitBtn.disabled = true;
 
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
@@ -556,6 +587,9 @@ document.addEventListener('DOMContentLoaded', async function () {
       const result = await response.json();
 
       if (response.ok) {
+        // Show success animation
+        showSuccessAnimation();
+
         // Close the edit modal
         const editModal = bootstrap.Modal.getInstance(document.getElementById('editOrderModal'));
         editModal.hide();
@@ -563,11 +597,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Clear the form
         form.reset();
 
-        // Refresh the orders to show the updated data
-        await OrderManager.fetchOrders();
-
-        // Show success animation
-        showSuccessAnimation();
+        // Update the row directly
+        const row = document.querySelector(`[data-id="${orderId}"]`).closest('tr');
+        if (row) {
+          const trackingCell = row.querySelector('td:nth-child(1)');
+          if (trackingCell) {
+            trackingCell.innerHTML = `
+              <a href="${getTrackingUrl(courierType, trackingNumber)}" target="_blank" title="Track with ${courierType}: ${trackingNumber}">${trackingNumber}</a>
+              <div class="small"><strong>Flyer ID:</strong> ${flyerId}</div>
+              <div class="small mt-1"><strong>Courier Type:</strong> ${courierType}</div>
+            `;
+          }
+        }
       } else {
         alert('Failed to update: ' + result.error);
       }
@@ -575,9 +616,22 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.error('Request failed:', error);
       alert('An error occurred while updating.');
     } finally {
-      submitBtn.disabled = false;
+      editSubmitBtn.disabled = false;
     }
   });
+
+  // Helper function to get tracking URL
+  function getTrackingUrl(courierType, trackingNumber) {
+    const courier = courierType.toLowerCase();
+    if (courier === "trax") {
+      return `https://sonic.pk/tracking?tracking_number=${trackingNumber}`;
+    } else if (courier === "postex") {
+      return `https://postex.pk/tracking?cn=${trackingNumber}`;
+    } else if (courier === "daewoo") {
+      return `https://fastex.appsbymoose.com/track/${trackingNumber}`;
+    }
+    return "#";
+  }
 
   // When "remark" button is clicked
   document.addEventListener('click', function (e) {
@@ -592,14 +646,15 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
 
   const remarksForm = document.getElementById('remarksOrderForm');
-  if (!remarksForm) return;
+  const remarksSubmitBtn = document.getElementById('remarksOrderSubmitBtn');
 
-  remarksForm.addEventListener('submit', async function (e) {
+  if (!remarksForm || !remarksSubmitBtn) return;
+
+  remarksSubmitBtn.addEventListener('click', async function (e) {
     e.preventDefault();
 
     const content = document.getElementById('remarkText').value.trim();
     const orderId = remarksForm.getAttribute('data-order-id');
-    const submitBtn = remarksForm.querySelector('button[type="submit"]');
 
     if (!orderId) {
       alert('No order selected for remark.');
@@ -611,7 +666,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       return;
     }
 
-    submitBtn.disabled = true;
+    remarksSubmitBtn.disabled = true;
 
     try {
       const response = await fetch(`/api/orders/remarks/${orderId}`, {
@@ -625,6 +680,9 @@ document.addEventListener('DOMContentLoaded', async function () {
       const result = await response.json();
 
       if (response.ok) {
+        // Show success animation
+        showSuccessAnimation();
+
         // Close the remarks modal
         const remarksModal = bootstrap.Modal.getInstance(document.getElementById('remarksOrderModal'));
         remarksModal.hide();
@@ -632,11 +690,14 @@ document.addEventListener('DOMContentLoaded', async function () {
         // Clear the form
         document.getElementById('remarkText').value = '';
 
-        // Refresh the orders to show the new remark
-        await OrderManager.fetchOrders();
-
-        // Show success animation
-        showSuccessAnimation();
+        // Update the remarks cell directly
+        const row = document.querySelector(`[data-id="${orderId}"]`).closest('tr');
+        if (row) {
+          const remarksCell = row.querySelector('.remarks-badge');
+          if (remarksCell) {
+            remarksCell.textContent = content;
+          }
+        }
       } else {
         alert('Failed to add remark: ' + result.message);
       }
@@ -644,7 +705,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       console.error('Error while submitting remark:', error);
       alert('An error occurred. Please try again.');
     } finally {
-      submitBtn.disabled = false;
+      remarksSubmitBtn.disabled = false;
     }
   });
 });
