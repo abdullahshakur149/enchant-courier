@@ -4,10 +4,12 @@ const OrderManager = {
   totalPages: 1,
   trackingHistoryModal: null,
   remarksHistoryModal: null,
+  verifyReturnModal: null,
   orderType: null, // 'all', 'delivered', or 'returned'
 
   init: function (orderType) {
     this.orderType = orderType;
+    console.log('Initializing OrderManager with type:', orderType);
 
     // Check if Bootstrap is loaded
     if (typeof bootstrap === 'undefined') {
@@ -15,24 +17,47 @@ const OrderManager = {
       return;
     }
 
-    // Get modal elements
-    const trackingHistoryModalEl = document.getElementById("trackingHistoryModal");
-    const remarksHistoryModalEl = document.getElementById("remarksHistoryModal");
+    // Initialize all modals
+    this.initializeModals();
 
-    // Check if elements exist
-    if (!trackingHistoryModalEl) {
-      console.error('Tracking history modal element not found');
-    } else {
+    // First fetch orders, then initialize the button
+    this.fetchOrders().then(() => {
+      if (this.orderType === 'returned') {
+        console.log('Initializing verify returns button after orders fetch');
+        this.initializeVerifyReturnButton();
+      }
+    });
+  },
+
+  initializeModals: function () {
+    // Initialize tracking history modal
+    const trackingHistoryModalEl = document.getElementById('trackingHistoryModal');
+    if (trackingHistoryModalEl) {
       this.trackingHistoryModal = new bootstrap.Modal(trackingHistoryModalEl);
-    }
-
-    if (!remarksHistoryModalEl) {
-      console.error('Remarks history modal element not found');
+      console.log('Tracking history modal initialized');
     } else {
-      this.remarksHistoryModal = new bootstrap.Modal(remarksHistoryModalEl);
+      console.error('Tracking history modal element not found');
     }
 
-    this.fetchOrders();
+    // Initialize remarks history modal
+    const remarksHistoryModalEl = document.getElementById('remarksHistoryModal');
+    if (remarksHistoryModalEl) {
+      this.remarksHistoryModal = new bootstrap.Modal(remarksHistoryModalEl);
+      console.log('Remarks history modal initialized');
+    } else {
+      console.error('Remarks history modal element not found');
+    }
+
+    // Initialize verify return modal only if we're on the returned orders page
+    if (this.orderType === 'returned') {
+      const verifyReturnModalEl = document.getElementById('verifyReturnModal');
+      if (verifyReturnModalEl) {
+        this.verifyReturnModal = new bootstrap.Modal(verifyReturnModalEl);
+        console.log('Verify return modal initialized');
+      } else {
+        console.error('Verify return modal element not found');
+      }
+    }
   },
 
   formatDate: function (dateStr) {
@@ -84,10 +109,19 @@ const OrderManager = {
   },
 
   showTrackingHistory: function (trackingHistory) {
+    console.log('Showing tracking history:', trackingHistory);
     const historyArray = Array.isArray(trackingHistory) ? trackingHistory : [];
-    if (historyArray.length === 0) return;
+    if (historyArray.length === 0) {
+      console.log('No tracking history to show');
+      return;
+    }
 
     const tbody = document.getElementById("trackingHistoryBody");
+    if (!tbody) {
+      console.error('Tracking history body element not found');
+      return;
+    }
+
     tbody.innerHTML = historyArray
       .map(
         (entry) => `
@@ -100,14 +134,23 @@ const OrderManager = {
       )
       .join("");
 
-    this.trackingHistoryModal
-      ? this.trackingHistoryModal.show()
-      : console.error("Modal not initialized");
+    if (this.trackingHistoryModal) {
+      console.log('Showing tracking history modal');
+      this.trackingHistoryModal.show();
+    } else {
+      console.error("Tracking history modal not initialized");
+    }
   },
 
   showRemarksHistory: function (remarks) {
+    console.log('Showing remarks history:', remarks);
     const remarksArray = Array.isArray(remarks) ? remarks : [];
     const tbody = document.getElementById("remarksHistoryBody");
+
+    if (!tbody) {
+      console.error('Remarks history body element not found');
+      return;
+    }
 
     if (remarksArray.length === 0) {
       tbody.innerHTML = `
@@ -129,7 +172,12 @@ const OrderManager = {
         .join("");
     }
 
-    this.remarksHistoryModal.show();
+    if (this.remarksHistoryModal) {
+      console.log('Showing remarks history modal');
+      this.remarksHistoryModal.show();
+    } else {
+      console.error("Remarks history modal not initialized");
+    }
   },
 
   renderTable: function ({ columns, rows }) {
@@ -137,7 +185,7 @@ const OrderManager = {
       this.orderType === "returned"
         ? `
             <div class="mb-2 text-end">
-                <button class="btn btn-success" id="verifyReturnsBtn">
+                <button type="button" class="btn btn-success" id="verifyReturnsBtn">
                     <i class="fas fa-check-circle"></i> Verify Returns
                 </button>
             </div>
@@ -168,10 +216,14 @@ const OrderManager = {
 
                   if (colKey === "Status") {
                     const trackingHistory = row.tracking_history || [];
+                    const safeTrackingHistory = JSON.stringify(trackingHistory)
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
                     return `<td>
                       <span class="status-badge ${this.getStatusClass(value)}" 
                             style="cursor: pointer;" 
-                            data-tracking-history='${JSON.stringify(trackingHistory)}'>
+                            data-tracking-history='${safeTrackingHistory}'
+                            onclick="OrderManager.showTrackingHistoryFromData(this)">
                         ${value}
                       </span>
                   </td>`;
@@ -179,11 +231,15 @@ const OrderManager = {
 
                   if (colKey === "Remarks") {
                     const remarks = Array.isArray(value) ? value : [];
+                    const safeRemarks = JSON.stringify(remarks)
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
                     const latestRemark = remarks.length > 0 ? remarks[remarks.length - 1]?.content : 'No remarks';
                     return `<td>
               <span class="remarks-badge" 
                     style="cursor: pointer;" 
-                    data-remarks='${JSON.stringify(remarks)}'>
+                    data-remarks='${safeRemarks}'
+                    onclick="OrderManager.showRemarksHistoryFromData(this)">
                 ${latestRemark}
               </span>
             </td>`;
@@ -274,40 +330,15 @@ const OrderManager = {
 
     document.getElementById("orders-table-container").innerHTML = tableHtml;
 
-    // Status badge click handler
-    document.querySelectorAll(".status-badge").forEach((badge) => {
-      badge.addEventListener("click", (e) => {
-        try {
-          const trackingHistory = JSON.parse(e.currentTarget.dataset.trackingHistory);
-          this.showTrackingHistory(trackingHistory);
-        } catch (error) {
-          console.error("Error parsing tracking history:", error);
-        }
-      });
-    });
+    // Initialize event handlers after table is rendered
+    this.initializeEventHandlers();
+  },
 
-    // Verify Returns button event
+  initializeEventHandlers: function () {
+    // Initialize verify returns button if needed
     if (this.orderType === "returned") {
-      const verifyReturnsBtn = document.getElementById("verifyReturnsBtn");
-      if (verifyReturnsBtn) {
-        verifyReturnsBtn.addEventListener("click", () => {
-          const verifyReturnModal = new bootstrap.Modal(document.getElementById("verifyReturnModal"));
-          verifyReturnModal.show();
-        });
-      }
+      this.initializeVerifyReturnButton();
     }
-
-    // After the status badge click handler, add remarks badge click handler
-    document.querySelectorAll(".remarks-badge").forEach((badge) => {
-      badge.addEventListener("click", (e) => {
-        try {
-          const remarks = JSON.parse(e.currentTarget.dataset.remarks);
-          this.showRemarksHistory(remarks);
-        } catch (error) {
-          console.error("Error parsing remarks:", error);
-        }
-      });
-    });
 
     // Attach delete listeners
     this.attachDeleteListeners();
@@ -530,6 +561,64 @@ const OrderManager = {
     } finally {
       // Re-enable all delete buttons
       deleteButtons.forEach(btn => btn.disabled = false);
+    }
+  },
+
+  initializeVerifyReturnButton: function () {
+    console.log('Initializing verify returns button...');
+    const verifyReturnsBtn = document.getElementById('verifyReturnsBtn');
+    if (verifyReturnsBtn) {
+      console.log('Verify returns button found, attaching click handler');
+
+      // Remove any existing click handlers
+      const newBtn = verifyReturnsBtn.cloneNode(true);
+      verifyReturnsBtn.parentNode.replaceChild(newBtn, verifyReturnsBtn);
+
+      newBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Verify returns button clicked');
+
+        if (this.verifyReturnModal) {
+          this.verifyReturnModal.show();
+        } else {
+          console.error("Verify return modal not initialized");
+        }
+      });
+
+      console.log('Click handler attached successfully');
+    } else {
+      console.error('Verify returns button not found');
+    }
+  },
+
+  showTrackingHistoryFromData: function (element) {
+    try {
+      const trackingHistoryStr = element.dataset.trackingHistory;
+      if (!trackingHistoryStr) {
+        console.error('No tracking history data found');
+        return;
+      }
+      const trackingHistory = JSON.parse(trackingHistoryStr);
+      this.showTrackingHistory(trackingHistory);
+    } catch (error) {
+      console.error('Error parsing tracking history:', error);
+      console.log('Raw tracking history data:', element.dataset.trackingHistory);
+    }
+  },
+
+  showRemarksHistoryFromData: function (element) {
+    try {
+      const remarksStr = element.dataset.remarks;
+      if (!remarksStr) {
+        console.error('No remarks data found');
+        return;
+      }
+      const remarks = JSON.parse(remarksStr);
+      this.showRemarksHistory(remarks);
+    } catch (error) {
+      console.error('Error parsing remarks:', error);
+      console.log('Raw remarks data:', element.dataset.remarks);
     }
   },
 };

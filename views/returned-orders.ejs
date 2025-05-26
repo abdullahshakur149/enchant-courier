@@ -52,7 +52,6 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary" id="verifyReturnBtn">Verify Return</button>
                       </div>
-
                     </form>
                   </div>
                 </div>
@@ -68,7 +67,6 @@
               document.addEventListener('DOMContentLoaded', function () {
                 OrderManager.init('returned');
 
-                const verifyReturnModal = new bootstrap.Modal(document.getElementById('verifyReturnModal'));
                 const verifyReturnForm = document.getElementById('verifyReturnForm');
                 const trackingNumberInput = document.getElementById('verifytrackingNumber');
                 const flyerIdInput = document.getElementById('verifyflyerId');
