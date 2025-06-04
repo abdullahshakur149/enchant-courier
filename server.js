@@ -112,6 +112,15 @@ app.use('/api/logs', apiLogsRoutes);
 app.use('/', notificationRoutes);
 app.use('/api/orders', apiOrdersRoutes);
 app.use('/api', apiEmployeeRoutes);
+app.post("/webhooks/fulfillment", express.json(), (req, res) => {
+    const data = req.body;
+
+    console.log("📦 Fulfillment Received:", data);
+
+    // Save or send data to DB, courier API, etc.
+    res.sendStatus(200);
+});
+
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
