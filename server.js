@@ -114,15 +114,26 @@ app.use(passport.session());
 // Initialize Passport configuration
 initializePassport(passport);
 
+// Custom authentication middleware
+const authMiddleware = (req, res, next) => {
+    // Add isAuthenticated method
+    req.isAuthenticated = function () {
+        return !!req.user;
+    };
+
+    // Add isUnauthenticated method
+    req.isUnauthenticated = function () {
+        return !req.user;
+    };
+
+    next();
+};
+
+// Apply custom authentication middleware
+app.use(authMiddleware);
+
 // Global variables middleware
 app.use((req, res, next) => {
-    // Add isAuthenticated method if it doesn't exist
-    if (!req.isAuthenticated) {
-        req.isAuthenticated = function () {
-            return !!req.user;
-        };
-    }
-
     res.locals.user = req.user || null;
     res.locals.error = req.flash('error');
     res.locals.success = req.flash('success');
@@ -148,13 +159,9 @@ app.use('/api/orders', apiOrdersRoutes);
 app.use('/api', apiEmployeeRoutes);
 app.post("/webhooks/fulfillment", express.json(), (req, res) => {
     const data = req.body;
-
     console.log("📦 Fulfillment Received:", data);
-
-    // Save or send data to DB, courier API, etc.
     res.sendStatus(200);
 });
-
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
