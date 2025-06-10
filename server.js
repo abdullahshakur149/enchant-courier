@@ -183,10 +183,20 @@ export function broadcastNotification(notification) {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('Error occurred:', err);
     res.status(500).render('error', {
         title: 'Error',
-        message: 'Something went wrong!'
+        message: err.message || 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
+});
+
+// Handle 404 errors
+app.use((req, res) => {
+    res.status(404).render('error', {
+        title: '404 Not Found',
+        message: 'The page you are looking for does not exist.',
+        error: {}
     });
 });
 

@@ -4,22 +4,24 @@
             <div class="error-page">
                 <i class="fas fa-exclamation-triangle fa-5x text-danger mb-4"></i>
                 <h1 class="display-4 mb-4">Oops! Something went wrong</h1>
-                <p class="lead text-muted mb-4"><%= message %></p>
-                
-                <% if (error && Object.keys(error).length > 0) { %>
+                <p class="lead text-muted mb-4">
+                    <%= message || 'An unexpected error occurred' %>
+                </p>
+
+                <% if (typeof error !=='undefined' && error && Object.keys(error).length> 0) { %>
                     <div class="alert alert-danger text-start">
                         <h5 class="alert-heading">Error Details:</h5>
                         <pre class="mb-0"><%= JSON.stringify(error, null, 2) %></pre>
                     </div>
-                <% } %>
-                
-                <div class="mt-4">
-                    <a href="/" class="btn btn-primary">
-                        <i class="fas fa-home me-2"></i>
-                        Back to Home
-                    </a>
-                </div>
+                    <% } %>
+
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-home me-2"></i>
+                                Back to Home
+                            </a>
+                        </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
