@@ -1,17 +1,17 @@
 export const checkAuthenticated = (req, res, next) => {
     console.log('Checking authentication status:', {
-        isAuthenticated: req.isAuthenticated(),
-        session: req.session,
         user: req.user,
+        session: req.session,
         cookies: req.cookies
     });
 
-    if (req.isAuthenticated()) {
+    // Check if user exists in session
+    if (req.user) {
         return next();
     }
 
     // If not authenticated, send a JSON response instead of redirecting
-    if (req.xhr || req.headers.accept.includes('application/json')) {
+    if (req.xhr || req.headers.accept?.includes('application/json')) {
         return res.status(401).json({
             authenticated: false,
             message: 'Not authenticated'
@@ -23,13 +23,12 @@ export const checkAuthenticated = (req, res, next) => {
 
 export const checkNotAuthenticated = (req, res, next) => {
     console.log('Checking not authenticated status:', {
-        isAuthenticated: req.isAuthenticated(),
-        session: req.session,
         user: req.user,
+        session: req.session,
         cookies: req.cookies
     });
 
-    if (req.isAuthenticated()) {
+    if (req.user) {
         return res.redirect('/dashboard');
     }
     next();
@@ -37,12 +36,11 @@ export const checkNotAuthenticated = (req, res, next) => {
 
 export const checkAdmin = (req, res, next) => {
     console.log('Checking admin status:', {
-        isAuthenticated: req.isAuthenticated(),
         user: req.user,
         role: req.user?.role
     });
 
-    if (!req.isAuthenticated()) {
+    if (!req.user) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 

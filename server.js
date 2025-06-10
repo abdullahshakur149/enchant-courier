@@ -116,6 +116,13 @@ initializePassport(passport);
 
 // Global variables middleware
 app.use((req, res, next) => {
+    // Add isAuthenticated method if it doesn't exist
+    if (!req.isAuthenticated) {
+        req.isAuthenticated = function () {
+            return !!req.user;
+        };
+    }
+
     res.locals.user = req.user || null;
     res.locals.error = req.flash('error');
     res.locals.success = req.flash('success');
