@@ -93,20 +93,6 @@ app.use(session(sessionConfig));
 // Add trust proxy for secure cookies
 app.set('trust proxy', 1);
 
-// Add session debugging middleware
-app.use((req, res, next) => {
-    console.log('Session state:', {
-        id: req.sessionID,
-        cookie: req.session.cookie,
-        user: req.user,
-        isAuthenticated: req.isAuthenticated()
-    });
-    next();
-});
-
-// Flash messages
-app.use(flash());
-
 // Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
 app.use(passport.session());
@@ -114,23 +100,8 @@ app.use(passport.session());
 // Initialize Passport configuration
 initializePassport(passport);
 
-// Custom authentication middleware
-const authMiddleware = (req, res, next) => {
-    // Add isAuthenticated method
-    req.isAuthenticated = function () {
-        return !!req.user;
-    };
-
-    // Add isUnauthenticated method
-    req.isUnauthenticated = function () {
-        return !req.user;
-    };
-
-    next();
-};
-
-// Apply custom authentication middleware
-app.use(authMiddleware);
+// Flash messages
+app.use(flash());
 
 // Global variables middleware
 app.use((req, res, next) => {
