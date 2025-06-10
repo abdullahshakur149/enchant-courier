@@ -61,11 +61,23 @@ app.use(expressLayouts);
 app.set('layout', 'layouts/main');
 
 // Session configuration
-app.use(session({
+const sessionConfig = {
     secret: process.env.SECRET_KEY || 'your-secret-key',
     saveUninitialized: false,
     resave: false,
-    store: MongoStore.create({
+    cookie: {
+        maxAge: 4 * 24 * 60 * 60 * 1000, // 4 days
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/'
+    },
+    name: 'sessionId'
+};
+
+// Use MongoDB store in production, memory store in development
+if (process.env.NODE_ENV === 'production') {
+    sessionConfig.store = MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
         ttl: 4 * 24 * 60 * 60,
         autoRemove: 'native',
@@ -73,20 +85,24 @@ app.use(session({
         crypto: {
             secret: process.env.SESSION_SECRET || 'your-session-secret'
         }
-    }),
-    cookie: {
-        maxAge: 4 * 24 * 60 * 60 * 1000, // 4 days
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
-    },
-    name: 'sessionId' // Explicitly set the session cookie name
-}));
+    });
+}
+
+app.use(session(sessionConfig));
 
 // Add trust proxy for secure cookies
 app.set('trust proxy', 1);
+
+// Add session debugging middleware
+app.use((req, res, next) => {
+    console.log('Session state:', {
+        id: req.sessionID,
+        cookie: req.session.cookie,
+        user: req.user,
+        isAuthenticated: req.isAuthenticated()
+    });
+    next();
+});
 
 // Flash messages
 app.use(flash());
