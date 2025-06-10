@@ -2,17 +2,33 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import User from '../models/user.js';
 
 function initialize(passport) {
+    // Serialize user for the session
+    passport.serializeUser((user, done) => {
+        console.log('Serializing user:', user._id);
+        done(null, user._id);
+    });
+
+    // Deserialize user from the session
+    passport.deserializeUser(async (id, done) => {
+        try {
+            console.log('Deserializing user:', id);
+            const user = await User.findById(id);
+            done(null, user);
+        } catch (err) {
+            console.error('Error deserializing user:', err);
+            done(err);
+        }
+    });
+
     passport.use(new LocalStrategy({
-        usernameField: 'username',  // Using 'username' as the field for the login
-        passwordField: 'password',  // Using 'password' as the password field
+        usernameField: 'username',
+        passwordField: 'password',
     }, async (username, password, done) => {
         console.log('Attempting to authenticate user:', username);
-        console.log('Received password:', password);
 
         try {
-            // Look for the user by username (not email)
             const user = await User.findOne({ username });
-            console.log('User found:', user);
+            console.log('User found:', user ? 'Yes' : 'No');
 
             if (!user) {
                 console.log('No user found with that username');
@@ -35,10 +51,6 @@ function initialize(passport) {
             return done(err);
         }
     }));
-
-    // Serialize and deserialize user from the session
-    passport.serializeUser(User.serializeUser());
-    passport.deserializeUser(User.deserializeUser());
 }
 
 export default initialize;

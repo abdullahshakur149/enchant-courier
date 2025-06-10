@@ -107,11 +107,11 @@ app.use((req, res, next) => {
 // Flash messages
 app.use(flash());
 
-// Passport middleware
+// Initialize Passport and restore authentication state from session
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Initialize Passport
+// Initialize Passport configuration
 initializePassport(passport);
 
 // Global variables middleware
