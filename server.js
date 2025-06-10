@@ -68,14 +68,17 @@ app.use(session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
         ttl: 4 * 24 * 60 * 60,
+        autoRemove: 'native',
+        touchAfter: 24 * 3600 // time period in seconds
     }),
     cookie: {
-        maxAge: 4 * 24 * 60 * 60 * 1000,
+        maxAge: 4 * 24 * 60 * 60 * 1000, // 4 days
         secure: process.env.NODE_ENV === 'production',
-        httpOnly: true
+        httpOnly: true,
+        sameSite: 'lax',
+        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
     }
 }));
-// change
 
 // Flash messages
 app.use(flash());
