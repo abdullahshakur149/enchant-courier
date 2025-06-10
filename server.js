@@ -69,16 +69,24 @@ app.use(session({
         mongoUrl: process.env.MONGO_URL,
         ttl: 4 * 24 * 60 * 60,
         autoRemove: 'native',
-        touchAfter: 24 * 3600 // time period in seconds
+        touchAfter: 24 * 3600,
+        crypto: {
+            secret: process.env.SESSION_SECRET || 'your-session-secret'
+        }
     }),
     cookie: {
         maxAge: 4 * 24 * 60 * 60 * 1000, // 4 days
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         sameSite: 'lax',
+        path: '/',
         domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
-    }
+    },
+    name: 'sessionId' // Explicitly set the session cookie name
 }));
+
+// Add trust proxy for secure cookies
+app.set('trust proxy', 1);
 
 // Flash messages
 app.use(flash());

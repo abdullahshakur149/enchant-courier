@@ -25,7 +25,23 @@ router.post('/', (req, res, next) => {
                 console.error('Login error:', err);
                 return res.status(500).json({ success: false, message: 'An error occurred during login' });
             }
-            return res.json({ success: true, redirectUrl: '/dashboard' });
+
+            // Save session explicitly
+            req.session.save((err) => {
+                if (err) {
+                    console.error('Session save error:', err);
+                    return res.status(500).json({ success: false, message: 'Error saving session' });
+                }
+                return res.json({
+                    success: true,
+                    redirectUrl: '/dashboard',
+                    user: {
+                        id: user._id,
+                        username: user.username,
+                        role: user.role
+                    }
+                });
+            });
         });
     })(req, res, next);
 });
@@ -33,9 +49,12 @@ router.post('/', (req, res, next) => {
 router.post('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) return next(err);
-        res.redirect('/auth');
+        req.session.destroy((err) => {
+            if (err) return next(err);
+            res.clearCookie('sessionId');
+            res.redirect('/auth');
+        });
     });
 });
-
 
 export default router;
