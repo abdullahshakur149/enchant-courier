@@ -10,6 +10,10 @@ router.post("/fulfillment", express.json(), async (req, res) => {
         const fulfillmentData = req.body;
         console.log("📦 Fulfillment Received:", fulfillmentData);
 
+        if (!fulfillmentData.line_items || !Array.isArray(fulfillmentData.line_items)) {
+            throw new Error('No line items found in fulfillment data');
+        }
+
         // Process each line item in the fulfillment
         const createdOrders = await Promise.all(fulfillmentData.line_items.map(async (item) => {
             try {
@@ -50,13 +54,23 @@ router.post("/fulfillment", express.json(), async (req, res) => {
                     }
                 };
 
-                console.log('Creating order with data:', orderData);
+                console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
+
+                // Check if order already exists
+                const existingOrder = await Order.findOne({
+                    trackingNumber: orderData.trackingNumber,
+                    'productInfo.OrderDetails.ProductName': orderData.productInfo.OrderDetails.ProductName
+                });
+
+                if (existingOrder) {
+                    console.log('Order already exists:', existingOrder._id);
+                    return existingOrder;
+                }
 
                 // Create new order
                 const order = new Order(orderData);
-                await order.save();
-
-                console.log('Order created successfully:', order._id);
+                const savedOrder = await order.save();
+                console.log('Order created successfully:', savedOrder._id);
 
                 // Broadcast notification about new order
                 broadcastNotification({
@@ -64,9 +78,13 @@ router.post("/fulfillment", express.json(), async (req, res) => {
                     message: `Order #${orderData.trackingNumber} has been created for ${item.name} (${item.quantity} x ${itemPrice})`
                 });
 
-                return order;
+                return savedOrder;
             } catch (itemError) {
-                console.error('Error processing line item:', itemError);
+                console.error('Error processing line item:', {
+                    error: itemError.message,
+                    stack: itemError.stack,
+                    item: item
+                });
                 throw itemError;
             }
         }));
@@ -80,8 +98,7 @@ router.post("/fulfillment", express.json(), async (req, res) => {
             totalOrders: createdOrders.length
         });
     } catch (error) {
-        console.error('Error processing webhook:', error);
-        console.error('Error details:', {
+        console.error('Error processing webhook:', {
             message: error.message,
             stack: error.stack,
             name: error.name
