@@ -13,12 +13,11 @@ router.get("/test", (req, res) => {
 
 // Shopify fulfillment webhook
 router.post("/fulfillment", express.json(), async (req, res) => {
-    console.log("Webhook endpoint hit!"); // Basic log to verify endpoint is hit
+    console.log("Webhook endpoint hit!");
 
     try {
         const fulfillmentData = req.body;
-        // console.log("📦 Fulfillment Received:", fulfillmentData);
-        // test
+        console.log("📦 Fulfillment Received:", fulfillmentData);
 
         // Check database connection
         if (mongoose.connection.readyState !== 1) {
@@ -26,11 +25,32 @@ router.post("/fulfillment", express.json(), async (req, res) => {
             throw new Error('Database not connected');
         }
 
-        // Create order with just tracking information
+        // Extract order details from the webhook data
         const orderData = {
             trackingNumber: fulfillmentData.tracking_number,
             courierType: fulfillmentData.tracking_company,
-            status: 'Pending'
+            status: 'Pending',
+            productInfo: {
+                OrderNumber: fulfillmentData.order_id?.toString() || '',
+                date: new Date().toISOString(),
+                CustomerName: fulfillmentData.destination?.name || '',
+                Address: [
+                    fulfillmentData.destination?.address1,
+                    fulfillmentData.destination?.address2,
+                    fulfillmentData.destination?.city,
+                    fulfillmentData.destination?.province,
+                    fulfillmentData.destination?.zip,
+                    fulfillmentData.destination?.country
+                ].filter(Boolean).join(', '),
+                OrderDetails: {
+                    ProductName: fulfillmentData.line_items?.[0]?.title || 'Unknown Product',
+                    Quantity: fulfillmentData.line_items?.[0]?.quantity?.toString() || '1',
+                    Price: fulfillmentData.line_items?.[0]?.price || 0,
+                    TotalPrice: fulfillmentData.line_items?.[0]?.price * (fulfillmentData.line_items?.[0]?.quantity || 1)
+                }
+            },
+            totalPrice: fulfillmentData.line_items?.[0]?.price * (fulfillmentData.line_items?.[0]?.quantity || 1),
+            rawJson: fulfillmentData
         };
 
         console.log('Creating order with data:', orderData);
@@ -38,7 +58,8 @@ router.post("/fulfillment", express.json(), async (req, res) => {
         try {
             // Check if order already exists
             const existingOrder = await Order.findOne({
-                trackingNumber: orderData.trackingNumber
+                trackingNumber: orderData.trackingNumber,
+                'productInfo.OrderDetails.ProductName': orderData.productInfo.OrderDetails.ProductName
             });
 
             if (existingOrder) {
