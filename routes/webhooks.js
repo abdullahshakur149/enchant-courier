@@ -17,7 +17,8 @@ router.post("/fulfillment", express.json(), async (req, res) => {
 
     try {
         const fulfillmentData = req.body;
-        console.log("📦 Fulfillment Received:", fulfillmentData);
+        // console.log("📦 Fulfillment Received:", fulfillmentData);
+        // test
 
         // Check database connection
         if (mongoose.connection.readyState !== 1) {
