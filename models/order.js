@@ -2,7 +2,11 @@ import mongoose from 'mongoose';
 
 // Order Schema
 const orderSchema = new mongoose.Schema({
-    trackingNumber: { type: String, required: true, unique: true },
+    trackingNumber: {
+        type: String,
+        required: true,
+        // Remove unique constraint since multiple items can share same tracking number
+    },
     courierType: { type: String, required: true },
     status: {
         type: String,
@@ -61,6 +65,9 @@ const orderSchema = new mongoose.Schema({
         }
     }
 }, { timestamps: true });
+
+// Add compound index for tracking number and product name to ensure uniqueness
+orderSchema.index({ trackingNumber: 1, 'productInfo.OrderDetails.ProductName': 1 }, { unique: true });
 
 const returnedOrderSchema = new mongoose.Schema({
     order: {
