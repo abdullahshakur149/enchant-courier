@@ -22,6 +22,8 @@ import logsRoutes from './routes/logs.js';
 import notificationRoutes from './routes/notifications.js';
 import { WebSocketServer } from 'ws';
 import { createServer } from 'http';
+import { Order } from './models/order.js';
+import webhookRoutes from './routes/webhooks.js';
 
 // Get the directory path
 const __filename = fileURLToPath(import.meta.url);
@@ -128,11 +130,7 @@ app.use('/api/logs', apiLogsRoutes);
 app.use('/', notificationRoutes);
 app.use('/api/orders', apiOrdersRoutes);
 app.use('/api', apiEmployeeRoutes);
-app.post("/webhooks/fulfillment", express.json(), (req, res) => {
-    const data = req.body;
-    console.log("📦 Fulfillment Received:", data);
-    res.sendStatus(200);
-});
+app.use('/webhooks', webhookRoutes);
 
 // WebSocket connection handling
 wss.on('connection', (ws) => {
@@ -147,7 +145,7 @@ wss.on('connection', (ws) => {
     });
 });
 
-// Function to broadcast notifications to all connected clients
+// Export the broadcastNotification function for use in routes
 export function broadcastNotification(notification) {
     console.log('Broadcasting notification:', notification);
     wss.clients.forEach((client) => {

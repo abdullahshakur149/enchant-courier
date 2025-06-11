@@ -17,22 +17,14 @@ dayjs.extend(timezone);
 
 export const updateOrderStatuses = async (req, res) => {
     try {
-        console.log('Cronjob triggered at 3:00 AM');
+        console.log('Cronjob triggered for status updates');
 
-        // Find or create system user
-        let systemUser = await User.findOne({ username: 'system' });
-        if (!systemUser) {
-            systemUser = new User({ username: 'system', role: 'admin' });
-            await User.register(systemUser, 'system123!@#');
-        }
-
-        const deliveredAtTimestamp = new Date(); // This timestamp will be used for all orders
-
+        const deliveredAtTimestamp = new Date();
 
         const orders = await Order.find({
             isDelivered: { $ne: true },
             isReturned: { $ne: true }
-        }, "trackingNumber courierType flyerId isDelivered isReturned");
+        }, "trackingNumber courierType flyerId isDelivered isReturned status");
 
         // ===================== PostEx =====================
         const postexOrders = orders.filter(order => order.courierType.toLowerCase() === "postex");
@@ -56,40 +48,21 @@ export const updateOrderStatuses = async (req, res) => {
                     const data = item.trackingResponse || {};
                     const status = data.transactionStatus;
                     const timestamp = new Date();
-                    // console.log('PostEx Date', data.transactionDate);
-
 
                     const updateFields = {
-                        customer_name: data.customerName || order.customer_name,
-                        address: data.deliveryAddress || order.address,
                         status: status || order.status,
-                        invoicePayment: data.invoicePayment || order.invoicePayment,
-                        last_tracking_update: timestamp,
-                        rawJson: data,
-                        productInfo: {
-                            OrderNumber: data.orderRefNumber || "Not Available",
-                            date: data.transactionDate || "Not Available",
-                            CustomerName: data.customerName || order.productInfo?.CustomerName || "Not Available",
-                            Address: data.deliveryAddress || order.productInfo?.Address || "Not Available",
-                            OrderDetails: {
-                                ProductName: data.orderDetail || "Not Available",
-                                Quantity: data.items?.toString() || "Not Available",
-                            },
-                        },
+                        last_tracking_update: timestamp
                     };
 
                     if (status?.includes('Delivered')) {
-                        updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
+                        updateFields.delivered_at = deliveredAtTimestamp.toISOString();
                         updateFields.isDelivered = true;
 
-                        // Create notification for delivered order
                         await Notification.create({
                             type: 'order_delivered',
                             title: 'Order Delivered',
                             message: `Order #${order.trackingNumber} has been delivered`,
                         });
-
-                        // Send WhatsApp notification
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -114,52 +87,21 @@ export const updateOrderStatuses = async (req, res) => {
 
                     const status = latest?.Status;
                     const timestamp = new Date();
-                    const date = latest?.Date;
-
-                    // Safely parse and validate the Daewoo date
-                    let normalizedDaewooDate = null;
-                    if (date) {
-                        try {
-                            // Try parsing with the expected format
-                            const parsedDate = dayjs(date, "MM/DD/YYYY hh:mm:ss A");
-                            if (parsedDate.isValid()) {
-                                normalizedDaewooDate = parsedDate.utc().toDate();
-                            }
-                        } catch (dateError) {
-                            console.error(`Invalid date format for Daewoo order ${order._id}:`, date);
-                        }
-                    }
 
                     const updateFields = {
                         status: status || order.status,
-                        latest_courier_status: latest?.Status_Reason || order.latest_courier_status,
-                        last_tracking_update: timestamp,
-                        rawJson: latest,
-                        productInfo: {
-                            OrderNumber: order.trackingNumber,
-                            date: date || "Not Available",
-                            CustomerName: order.productInfo?.CustomerName || "Not Available",
-                            Address: order.productInfo?.Address || "Not Available",
-                            OrderDetails: {
-                                ProductName: "Not Available",
-                                Quantity: "Not Available"
-                            }
-                        }
+                        last_tracking_update: timestamp
                     };
-                    // changes
 
-                    if ((status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) && normalizedDaewooDate) {
-                        updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
+                    if (status?.includes("DELIVERED") || status?.includes("OK - DELIVERED - DELIVERED")) {
+                        updateFields.delivered_at = deliveredAtTimestamp.toISOString();
                         updateFields.isDelivered = true;
 
-                        // Create notification for delivered order
                         await Notification.create({
                             type: 'order_delivered',
                             title: 'Order Delivered',
                             message: `Order #${order.trackingNumber} has been delivered`,
                         });
-
-                        // Send WhatsApp notification
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -191,44 +133,23 @@ export const updateOrderStatuses = async (req, res) => {
                     const details = data.details || {};
                     const trackingHistory = details.tracking_history || [];
                     const latest = trackingHistory[0];
-                    const product = details.order_information?.items?.[0] || {};
                     const status = latest?.status;
                     const timestamp = latest?.timestamp ? new Date(latest.timestamp * 1000) : new Date();
-                    // console.log('Trax Date', timestamp);
 
                     const updateFields = {
-                        customer_name: details.consignee?.name || order.customer_name,
-                        address: details.consignee?.address || order.address,
                         status: status || order.status,
-                        latest_courier_status: status || order.latest_courier_status,
-                        last_tracking_update: timestamp,
-                        invoicePayment: details.order_information?.amount || order.invoicePayment,
-                        rawJson: data,
-                        productInfo: {
-                            OrderNumber: details.order_id || order.trackingNumber,
-                            date: details.order_date || "Not Available",
-                            CustomerName: details.consignee?.name || order.productInfo?.CustomerName || "Not Available",
-                            Address: details.consignee?.address || order.productInfo?.Address || "Not Available",
-                            OrderDetails: {
-                                ProductName: product.description || "Not Available",
-                                Quantity: product.quantity?.toString() || "Not Available"
-                            }
-                        }
+                        last_tracking_update: timestamp
                     };
 
-                    if (status?.includes("Shipment - Delivered")) {
-                        updateFields.delivered_at = deliveredAtTimestamp.toISOString(); // Use shared timestamp
+                    if (status?.includes('Delivered')) {
+                        updateFields.delivered_at = deliveredAtTimestamp.toISOString();
                         updateFields.isDelivered = true;
 
-                        // Create notification for delivered order
                         await Notification.create({
                             type: 'order_delivered',
                             title: 'Order Delivered',
                             message: `Order #${order.trackingNumber} has been delivered`,
-                            user: systemUser._id
                         });
-
-                        // Send WhatsApp notification
                     }
 
                     await Order.findByIdAndUpdate(order._id, updateFields);
@@ -239,17 +160,9 @@ export const updateOrderStatuses = async (req, res) => {
             }));
         }
 
-        res.json({
-            success: true,
-            message: "Order statuses updated successfully",
-        });
-
+        res.status(200).json({ success: true, message: 'Order statuses updated successfully' });
     } catch (error) {
-        console.error('Error updating order statuses:', error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to update order statuses",
-            error: error.message
-        });
+        console.error('Error in updateOrderStatuses:', error);
+        res.status(500).json({ success: false, message: 'Error updating order statuses', error: error.message });
     }
 };

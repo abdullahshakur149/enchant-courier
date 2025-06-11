@@ -3,13 +3,16 @@ import mongoose from 'mongoose';
 // Order Schema
 const orderSchema = new mongoose.Schema({
     trackingNumber: { type: String, required: true, unique: true },
-    flyerId: { type: String, required: true, unique: true },
     courierType: { type: String, required: true },
     status: {
         type: String,
         default: 'Pending'
     },
     invoicePayment: {
+        type: Number,
+        default: 0
+    },
+    totalPrice: {
         type: Number,
         default: 0
     },
@@ -52,7 +55,9 @@ const orderSchema = new mongoose.Schema({
         Address: { type: String, },
         OrderDetails: {
             ProductName: String,
-            Quantity: String
+            Quantity: String,
+            Price: Number,
+            TotalPrice: Number
         }
     }
 }, { timestamps: true });
