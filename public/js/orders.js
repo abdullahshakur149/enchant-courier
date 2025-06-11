@@ -456,7 +456,7 @@ const OrderManager = {
           "Product Name": order.productInfo?.OrderDetails?.ProductName || "N/A",
           Date: this.formatDate(order.productInfo?.date),
           Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
-          "Product Price": order.invoicePayment || "N/A",
+          "Product Price": order.productInfo?.OrderDetails?.Price || "N/A",
           "Last Tracking Update": order.last_tracking_update
             ? new Date(order.last_tracking_update).toLocaleString()
             : "N/A",

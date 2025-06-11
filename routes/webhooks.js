@@ -25,86 +25,93 @@ router.post("/fulfillment", express.json(), async (req, res) => {
             throw new Error('Database not connected');
         }
 
-        // Extract order details from the webhook data
-        const orderData = {
-            trackingNumber: fulfillmentData.tracking_number,
-            courierType: fulfillmentData.tracking_company,
-            status: 'Pending',
-            productInfo: {
-                OrderNumber: fulfillmentData.order_id?.toString() || '',
-                date: new Date().toISOString(),
-                CustomerName: fulfillmentData.destination?.name || '',
-                Address: [
-                    fulfillmentData.destination?.address1,
-                    fulfillmentData.destination?.address2,
-                    fulfillmentData.destination?.city,
-                    fulfillmentData.destination?.province,
-                    fulfillmentData.destination?.zip,
-                    fulfillmentData.destination?.country
-                ].filter(Boolean).join(', '),
-                OrderDetails: {
-                    ProductName: fulfillmentData.line_items?.[0]?.title || 'Unknown Product',
-                    Quantity: fulfillmentData.line_items?.[0]?.quantity?.toString() || '1',
-                    Price: fulfillmentData.line_items?.[0]?.price || 0,
-                    TotalPrice: fulfillmentData.line_items?.[0]?.price * (fulfillmentData.line_items?.[0]?.quantity || 1)
-                }
-            },
-            totalPrice: fulfillmentData.line_items?.[0]?.price * (fulfillmentData.line_items?.[0]?.quantity || 1),
-            rawJson: fulfillmentData
-        };
+        // Process all line items in the fulfillment
+        const lineItems = fulfillmentData.line_items || [];
+        const savedOrders = [];
 
-        console.log('Creating order with data:', orderData);
+        for (const item of lineItems) {
+            // Extract order details from the webhook data
+            const orderData = {
+                trackingNumber: fulfillmentData.tracking_number,
+                courierType: fulfillmentData.tracking_company,
+                status: 'Pending',
+                productInfo: {
+                    OrderNumber: fulfillmentData.order_id?.toString() || '',
+                    date: new Date().toISOString(),
+                    CustomerName: fulfillmentData.destination?.name || '',
+                    Address: [
+                        fulfillmentData.destination?.address1,
+                        fulfillmentData.destination?.address2,
+                        fulfillmentData.destination?.city,
+                        fulfillmentData.destination?.province,
+                        fulfillmentData.destination?.zip,
+                        fulfillmentData.destination?.country
+                    ].filter(Boolean).join(', '),
+                    OrderDetails: {
+                        ProductName: item.title || 'Unknown Product',
+                        Quantity: item.quantity?.toString() || '1',
+                        Price: item.price || 0,
+                        TotalPrice: item.price * (item.quantity || 1)
+                    }
+                },
+                totalPrice: item.price * (item.quantity || 1),
+                rawJson: fulfillmentData
+            };
 
-        try {
-            // Check if order already exists
-            const existingOrder = await Order.findOne({
-                trackingNumber: orderData.trackingNumber,
-                'productInfo.OrderDetails.ProductName': orderData.productInfo.OrderDetails.ProductName
-            });
+            console.log('Creating order with data:', orderData);
 
-            if (existingOrder) {
-                console.log('Order already exists:', existingOrder._id);
-                return res.status(200).json({
-                    success: true,
-                    message: 'Order already exists',
-                    order: existingOrder
+            try {
+                // Check if order already exists
+                const existingOrder = await Order.findOne({
+                    trackingNumber: orderData.trackingNumber,
+                    'productInfo.OrderDetails.ProductName': orderData.productInfo.OrderDetails.ProductName
                 });
+
+                if (existingOrder) {
+                    console.log('Order already exists:', existingOrder._id);
+                    savedOrders.push(existingOrder);
+                    continue;
+                }
+
+                // Create new order
+                const order = new Order(orderData);
+                console.log('Order instance created, attempting to save...');
+
+                const savedOrder = await order.save();
+                console.log('Order saved successfully:', savedOrder._id);
+
+                // Verify the order was actually saved
+                const verifiedOrder = await Order.findById(savedOrder._id);
+                if (!verifiedOrder) {
+                    throw new Error('Order was not saved properly');
+                }
+                console.log('Order verified in database:', verifiedOrder._id);
+
+                savedOrders.push(savedOrder);
+
+                // Broadcast notification about new order
+                broadcastNotification({
+                    title: 'New Order Created',
+                    message: `New order created with tracking number ${orderData.trackingNumber} for product ${orderData.productInfo.OrderDetails.ProductName}`
+                });
+
+            } catch (dbError) {
+                console.error('Database operation error:', {
+                    message: dbError.message,
+                    code: dbError.code,
+                    name: dbError.name,
+                    stack: dbError.stack
+                });
+                throw dbError;
             }
-
-            // Create new order
-            const order = new Order(orderData);
-            console.log('Order instance created, attempting to save...');
-
-            const savedOrder = await order.save();
-            console.log('Order saved successfully:', savedOrder._id);
-
-            // Verify the order was actually saved
-            const verifiedOrder = await Order.findById(savedOrder._id);
-            if (!verifiedOrder) {
-                throw new Error('Order was not saved properly');
-            }
-            console.log('Order verified in database:', verifiedOrder._id);
-
-            // Broadcast notification about new order
-            broadcastNotification({
-                title: 'New Order Created',
-                message: `New order created with tracking number ${orderData.trackingNumber}`
-            });
-
-            res.status(200).json({
-                success: true,
-                message: 'Order created successfully',
-                order: savedOrder
-            });
-        } catch (dbError) {
-            console.error('Database operation error:', {
-                message: dbError.message,
-                code: dbError.code,
-                name: dbError.name,
-                stack: dbError.stack
-            });
-            throw dbError;
         }
+
+        res.status(200).json({
+            success: true,
+            message: 'Orders created successfully',
+            orders: savedOrders
+        });
+
     } catch (error) {
         console.error('Error processing webhook:', {
             message: error.message,
