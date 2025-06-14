@@ -74,21 +74,17 @@ const sessionConfig = {
         sameSite: 'lax',
         path: '/'
     },
-    name: 'sessionId'
-};
-
-// Use MongoDB store in production, memory store in development
-if (process.env.NODE_ENV === 'production') {
-    sessionConfig.store = MongoStore.create({
+    name: 'sessionId',
+    store: MongoStore.create({
         mongoUrl: process.env.MONGO_URL,
-        ttl: 4 * 24 * 60 * 60,
+        ttl: 4 * 24 * 60 * 60, // 4 days
         autoRemove: 'native',
         touchAfter: 24 * 3600,
         crypto: {
             secret: process.env.SESSION_SECRET || 'your-session-secret'
         }
-    });
-}
+    })
+};
 
 app.use(session(sessionConfig));
 

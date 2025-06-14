@@ -302,6 +302,15 @@ router.get("/", checkAuthenticated, async (req, res) => {
               },
               { $count: "count" }
             ],
+            pendingOrders: [
+              {
+                $match: {
+                  isDelivered: false,
+                  isReturned: false
+                }
+              },
+              { $count: "count" }
+            ],
             deliveredByCourier: [
               {
                 $match: {
@@ -474,6 +483,7 @@ router.get("/", checkAuthenticated, async (req, res) => {
         todaysOrders: todayStats[0]?.todaysOrders[0]?.count || 0,
         deliveredToday: todayStats[0]?.deliveredToday[0]?.count || 0,
         returnsToday: todayStats[0]?.returnsToday[0]?.count || 0,
+        pendingOrders: todayStats[0]?.pendingOrders[0]?.count || 0,
         deliveredByCourier: todayStats[0]?.deliveredByCourier || [],
         returnedByCourier: todayStats[0]?.returnedByCourier || [],
         pendingByCourier: todayStats[0]?.pendingByCourier || []

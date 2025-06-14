@@ -80,6 +80,14 @@ const OrderManager = {
     const monthShort = date.toLocaleString("en-US", { month: "short" });
     const year = date.getFullYear();
 
+    // Format time in 12-hour format with AM/PM
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12-hour format
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    const formattedTime = `${formattedHours}:${formattedMinutes}${ampm}`;
+
     const getOrdinal = (n) => {
       if (n > 3 && n < 21) return "th";
       switch (n % 10) {
@@ -94,7 +102,7 @@ const OrderManager = {
       }
     };
 
-    return `${day}${getOrdinal(day)} ${monthShort} ${year}`;
+    return `${day}${getOrdinal(day)} ${monthShort} ${year} ${formattedTime}`;
   },
 
   getStatusClass: function (status) {
@@ -250,12 +258,14 @@ const OrderManager = {
                   }
 
                   if (colKey === "Customer & Product Info") {
+                    const productName = row["Product Name"] || "No Product";
+                    const formattedProductName = productName.split(/(?<=[A-Za-z])\s+(?=[A-Za-z])/).join('\n');
                     return `
-              <td>
-                <div class="small mt-1">${row["Customer & Product Info"] || "No Name"}</div>
-                <div class="small text-truncate mt-1"><strong>Product Name:</strong> ${row["Product Name"] || "No Product"}</div>
-                <div class="small mt-1"><strong>Product Price:</strong> ${row["Product Price"] || "No Price"}</div>
-                <div class="small mt-1"><strong>Product Quantity:</strong> ${row["Quantity"] || "No Quantity"}</div>
+              <td class="customer-info-column">
+                <div class="small text-truncate" title="${row["Customer & Product Info"] || "No Name"}">${row["Customer & Product Info"] || "No Name"}</div>
+                <div class="small" style="white-space: pre-line;" title="${productName}"><strong>Product:</strong> ${formattedProductName}</div>
+                <div class="small text-truncate" title="${row["Product Price"] || "No Price"}"><strong>Price:</strong> ${row["Product Price"] || "No Price"}</div>
+                <div class="small text-truncate" title="${row["Quantity"] || "No Quantity"}"><strong>Qty:</strong> ${row["Quantity"] || "No Quantity"}</div>
               </td>
             `;
                   }
@@ -458,7 +468,7 @@ const OrderManager = {
           Quantity: order.productInfo?.OrderDetails?.Quantity || "N/A",
           "Product Price": order.productInfo?.OrderDetails?.Price || "N/A",
           "Last Tracking Update": order.last_tracking_update
-            ? new Date(order.last_tracking_update).toLocaleString()
+            ? this.formatDate(order.last_tracking_update)
             : "N/A",
           tracking_history: trackingHistory,
         };
