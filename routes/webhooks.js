@@ -40,9 +40,6 @@ const processWebhook = async (fulfillment) => {
             const orderData = {
                 trackingNumber: fulfillment.tracking_number,
                 courierType: fulfillment.tracking_company,
-                status: 'Delivered',
-                isDelivered: true,
-                delivered_at: new Date(fulfillment.created_at),
                 productInfo: {
                     OrderNumber: fulfillment.order_id?.toString() || '',
                     date: new Date().toISOString(),
@@ -69,14 +66,7 @@ const processWebhook = async (fulfillment) => {
             order = new Order(orderData);
             await order.save();
             console.log(`Created new order with tracking number: ${order.trackingNumber}`);
-        } else {
-            // Update existing order
-            order.isDelivered = true;
-            order.delivered_at = new Date(fulfillment.created_at);
-            order.status = 'Delivered';
-            await order.save();
-            console.log(`Updated existing order with tracking number: ${order.trackingNumber}`);
-        }
+        } 
 
         // Create notification
         await Notification.create({
