@@ -7,11 +7,6 @@ const orderSchema = new mongoose.Schema({
         required: true,
         // Remove unique constraint since multiple items can share same tracking number
     },
-    flyerId: {
-        type: String,
-        required: false, // Make flyerId optional
-        index: false // Remove index
-    },
     courierType: { type: String, required: true },
     status: {
         type: String,
