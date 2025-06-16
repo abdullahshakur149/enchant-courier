@@ -5,18 +5,26 @@ dotenv.config();
 
 const MONGO_URL = process.env.MONGO_URL;
 
+// Remove deprecated options
 const connectDB = async () => {
     try {
-        const con = await mongoose.connect(MONGO_URL, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
+        const con = await mongoose.connect(MONGO_URL);
+        console.log(`MongoDB connected: ${con.connection.host}`);
+        
+        // Handle connection events
+        mongoose.connection.on('disconnected', () => {
+            console.log('MongoDB disconnected');
         });
 
-        // // Drop the 'email_1' index from the 'users' collection
-        // await mongoose.connection.db.collection('users').dropIndex('email_1');
-        // // console.log('Email index dropped successfully!');
+        mongoose.connection.on('error', (err) => {
+            console.error('MongoDB connection error:', err);
+        });
 
-        console.log(`MongoDB connected: ${con.connection.host}`);
+        mongoose.connection.on('reconnected', () => {
+            console.log('MongoDB reconnected');
+        });
+
+        return con;
     } catch (err) {
         console.error('MongoDB connection error:', err);
         process.exit(1);
