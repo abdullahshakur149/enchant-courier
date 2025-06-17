@@ -109,7 +109,7 @@
                     }
                   } catch (error) {
                     console.error('Error verifying return:', error);
-                    alert('Error verifying return. Please try again later.');
+                    alert(error.response?.data?.message || 'Error verifying return. Please try again later.');
                   }
                 });
               });

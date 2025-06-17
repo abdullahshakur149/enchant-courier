@@ -556,16 +556,28 @@ export const verifyReturn = async (req, res) => {
 
         // Validate input
         if (!trackingNumber) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
-                message: 'Tracking number are required'
+                message: 'Tracking number is required'
             });
         }
 
+        // Trim and validate tracking number format
+        const trimmedTrackingNumber = trackingNumber.trim();
+        if (!trimmedTrackingNumber) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid tracking number format'
+            });
+        }
+
+        console.log('Verifying return for tracking number:', trimmedTrackingNumber);
+
         // Check if order exists
-        const order = await Order.findOne({ trackingNumber });
+        const order = await Order.findOne({ trackingNumber: trimmedTrackingNumber });
         if (!order) {
-            return res.json({
+            console.log('Order not found for tracking number:', trimmedTrackingNumber);
+            return res.status(404).json({
                 success: false,
                 message: 'Order not found'
             });
@@ -573,7 +585,8 @@ export const verifyReturn = async (req, res) => {
 
         // Check if order is already returned
         if (order.isReturned) {
-            return res.json({
+            console.log('Order already returned:', trimmedTrackingNumber);
+            return res.status(400).json({
                 success: false,
                 message: 'This order has already been marked as returned'
             });
@@ -588,6 +601,14 @@ export const verifyReturn = async (req, res) => {
             },
             { new: true }
         );
+
+        if (!updatedOrder) {
+            console.error('Failed to update order:', order._id);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to update order status'
+            });
+        }
 
         // Create notification for returned order
         await Notification.create({
@@ -613,6 +634,8 @@ export const verifyReturn = async (req, res) => {
             req
         });
 
+        console.log('Successfully verified return for order:', trimmedTrackingNumber);
+
         return res.json({
             success: true,
             message: 'Return verified successfully',
@@ -621,9 +644,12 @@ export const verifyReturn = async (req, res) => {
 
     } catch (error) {
         console.error('Error verifying return:', error);
+        // Log the full error stack for debugging
+        console.error('Error stack:', error.stack);
+
         return res.status(500).json({
             success: false,
-            message: 'Error verifying return. Please try again later.'
+            message: `Error verifying return: ${error.message || 'Please try again later.'}`
         });
     }
 };
