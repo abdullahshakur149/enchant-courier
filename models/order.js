@@ -5,12 +5,13 @@ const orderSchema = new mongoose.Schema({
     trackingNumber: {
         type: String,
         required: true,
-        // Remove unique constraint since multiple items can share same tracking number
+        index: true // Simple index for better query performance
     },
     courierType: { type: String, required: true },
     status: {
         type: String,
-        default: 'Pending'
+        default: 'Pending',
+        index: true // Index for status queries
     },
     invoicePayment: {
         type: Number,
@@ -64,10 +65,16 @@ const orderSchema = new mongoose.Schema({
             TotalPrice: Number
         }
     }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    // Add compound index for common queries
+    indexes: [
+        { trackingNumber: 1, status: 1 }, // For tracking number and status queries
+        { createdAt: -1 } // For sorting by creation date
+    ]
+});
 
-// Add compound index for tracking number and product name to ensure uniqueness
-orderSchema.index({ trackingNumber: 1, 'productInfo.OrderDetails.ProductName': 1 }, { unique: true });
+// No additional indexes needed - we're using the index defined in the schema
 
 const returnedOrderSchema = new mongoose.Schema({
     order: {

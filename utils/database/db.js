@@ -11,6 +11,30 @@ const connectDB = async () => {
         const con = await mongoose.connect(MONGO_URL);
         console.log(`MongoDB connected: ${con.connection.host}`);
 
+        // List all indexes first
+        try {
+            const indexes = await mongoose.connection.db.collection('orders').indexes();
+            console.log('Current indexes:', indexes);
+
+            // Drop all indexes except _id
+            for (const index of indexes) {
+                if (index.name !== '_id_') {
+                    try {
+                        await mongoose.connection.db.collection('orders').dropIndex(index.name);
+                        console.log(`Successfully dropped index: ${index.name}`);
+                    } catch (err) {
+                        if (err.code === 26) { // IndexNotFound error
+                            console.log(`Index ${index.name} does not exist, no need to drop`);
+                        } else {
+                            console.error(`Error dropping index ${index.name}:`, err);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error managing indexes:', err);
+        }
+
         // Handle connection events
         mongoose.connection.on('disconnected', () => {
             console.log('MongoDB disconnected');

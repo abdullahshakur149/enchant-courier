@@ -18,47 +18,75 @@ export const submitOrder = async (req, res) => {
             });
         }
 
-        // Check if order already exists
-        const existingOrder = await Order.findOne({
-            trackingNumber: trackingNumber.trim()
-        });
-
-        if (existingOrder) {
+        // Validate tracking number format
+        const trimmedTrackingNumber = trackingNumber.trim();
+        if (!/^[A-Za-z0-9-]+$/.test(trimmedTrackingNumber)) {
             return res.status(400).json({
                 success: false,
-                message: `An order with tracking number ${trackingNumber} already exists`
+                message: 'Invalid tracking number format. Only letters, numbers, and hyphens are allowed.'
             });
         }
 
-        // Create new order
-        const newOrder = new Order({
-            trackingNumber: trackingNumber.trim(),
+        // Validate courier type
+        const validCourierTypes = ['Trax', 'PostEx', 'Daewoo'];
+        if (!validCourierTypes.includes(courierType)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid courier type. Must be one of: ${validCourierTypes.join(', ')}`
+            });
+        }
+
+        // Try to find and update or create the order atomically
+        const newOrder = await Order.findOneAndUpdate(
+            { trackingNumber: trimmedTrackingNumber },
+            {
+                $setOnInsert: {
+                    trackingNumber: trimmedTrackingNumber,
+                    courierType: courierType,
+                    status: 'Pending',
+                    createdAt: new Date()
+                }
+            },
+            {
+                new: true,
+                upsert: false // Don't create if not found
+            }
+        );
+
+        if (newOrder) {
+            return res.status(400).json({
+                success: false,
+                message: `An order with tracking number ${trimmedTrackingNumber} already exists`
+            });
+        }
+
+        // Create new order since it doesn't exist
+        const order = new Order({
+            trackingNumber: trimmedTrackingNumber,
             courierType: courierType,
-            status: 'Pending',
-            createdAt: new Date()
         });
 
-        await newOrder.save();
+        await order.save();
 
         // Create notification for new order
         await Notification.create({
             type: 'status_change',
             title: 'New Order Created',
-            message: `Order #${newOrder.trackingNumber} has been created via ${courierType}`,
-            orderId: newOrder._id,
+            message: `Order #${order.trackingNumber} has been created via ${courierType}`,
+            orderId: order._id,
             user: req.user._id,
-            courierType: newOrder.courierType,
-            trackingNumber: newOrder.trackingNumber
+            courierType: order.courierType,
+            trackingNumber: order.trackingNumber
         });
 
         // Create log for the new order
         await createLog({
             action: 'create',
             entity: 'order',
-            entityId: newOrder._id,
+            entityId: order._id,
             details: {
-                trackingNumber: newOrder.trackingNumber,
-                courierType: newOrder.courierType
+                trackingNumber: order.trackingNumber,
+                courierType: order.courierType
             },
             performedBy: req.user._id,
             req
@@ -67,11 +95,28 @@ export const submitOrder = async (req, res) => {
         return res.json({
             success: true,
             message: 'Order submitted successfully',
-            order: newOrder
+            order: order
         });
 
     } catch (error) {
         console.error('Error submitting order:', error);
+
+        // Handle specific MongoDB errors
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'An order with this tracking number already exists'
+            });
+        }
+
+        // Handle validation errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({
+                success: false,
+                message: Object.values(error.errors).map(err => err.message).join(', ')
+            });
+        }
+
         return res.status(500).json({
             success: false,
             message: 'Error submitting order. Please try again.'

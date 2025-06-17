@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('Form found:', form);
 
     const trackingInput = document.getElementById('trackingNumber');
+    const submitButton = form?.querySelector('button[type="submit"]');
 
     if (form && trackingInput) {
         // Move focus to flyerId when Enter is pressed in trackingNumber
@@ -36,6 +37,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            // Disable submit button to prevent double submission
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            }
+
             try {
                 const trackingNumber = trackingInput.value.trim();
                 const courierType = document.getElementById('courierType').value.trim();
@@ -44,6 +51,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!trackingNumber || !courierType) {
                     showAlert('danger', 'Please fill in all required fields');
+                    return;
+                }
+
+                // Validate tracking number format
+                if (!/^[A-Za-z0-9-]+$/.test(trackingNumber)) {
+                    showAlert('danger', 'Invalid tracking number format. Only letters, numbers, and hyphens are allowed.');
                     return;
                 }
 
@@ -76,11 +89,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         showAlert('success', 'Order submitted successfully! Ready for next scan.');
                     }, 1000);
                 } else {
-                    showAlert('danger', result.message);
+                    showAlert('danger', result.message || 'Failed to submit order. Please try again.');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showAlert('danger', 'An error occurred. Please try again.');
+                console.error('Error submitting order:', error);
+                showAlert('danger', 'An unexpected error occurred. Please try again later.');
+            } finally {
+                // Re-enable submit button
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Submit Tracking';
+                }
             }
         });
     } else {
