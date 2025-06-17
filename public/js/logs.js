@@ -3,7 +3,7 @@ const LogManager = {
     limit: 50,
     totalPages: 1,
 
-    init: function() {
+    init: function () {
         // Only initialize if we're on the logs page
         if (!document.querySelector('.logs-table')) {
             return;
@@ -13,7 +13,7 @@ const LogManager = {
         this.attachEventListeners();
     },
 
-    fetchLogs: async function() {
+    fetchLogs: async function () {
         try {
             // Get filter values with null checks
             const startDate = document.getElementById('startDate')?.value || '';
@@ -32,7 +32,7 @@ const LogManager = {
 
             const response = await fetch(`/api/logs?${queryParams}`);
             const data = await response.json();
-            
+
             if (data.logs) {
                 this.updateLogsTable(data.logs);
                 if (data.pagination) {
@@ -49,7 +49,7 @@ const LogManager = {
         }
     },
 
-    updateLogsTable: function(logs) {
+    updateLogsTable: function (logs) {
         const tbody = document.querySelector('.logs-table tbody');
         if (!tbody) return;
 
@@ -80,10 +80,10 @@ const LogManager = {
         `).join('');
     },
 
-    formatDetails: function(log) {
+    formatDetails: function (log) {
         if (typeof log.details === 'object' && log.details !== null) {
             if (log.entity === 'order') {
-                return log.details.trackingNumber || log.details.flyerId || 'N/A';
+                return getOrderIdentifier(log);
             } else if (log.entity === 'user') {
                 return log.details.username || 'N/A';
             } else {
@@ -93,7 +93,7 @@ const LogManager = {
         return log.details || 'N/A';
     },
 
-    getActionBadgeClass: function(action) {
+    getActionBadgeClass: function (action) {
         const classes = {
             'create': 'success',
             'update': 'primary',
@@ -104,7 +104,7 @@ const LogManager = {
         return classes[action] || 'secondary';
     },
 
-    renderPagination: function(pagination) {
+    renderPagination: function (pagination) {
         const paginationContainer = document.getElementById('pagination');
         if (!paginationContainer) return;
 
@@ -149,14 +149,14 @@ const LogManager = {
         });
     },
 
-    showLogDetails: function(log) {
+    showLogDetails: function (log) {
         const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
         const detailsElement = document.getElementById('logDetails');
         detailsElement.textContent = JSON.stringify(log, null, 2);
         modal.show();
     },
 
-    attachEventListeners: function() {
+    attachEventListeners: function () {
         // Get all filter elements
         const filterElements = {
             startDate: document.getElementById('startDate'),
@@ -190,3 +190,10 @@ const LogManager = {
 document.addEventListener('DOMContentLoaded', () => {
     LogManager.init();
 });
+
+function getOrderIdentifier(log) {
+    if (log.details && log.details.trackingNumber) {
+        return log.details.trackingNumber;
+    }
+    return 'N/A';
+}

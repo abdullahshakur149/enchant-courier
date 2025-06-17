@@ -4,23 +4,21 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('DOM Content Loaded');
 
     // Handle form submission
-    const form = document.querySelector('form#courierForm');
+    const form = document.getElementById('courierForm');
     console.log('Form found:', form);
 
     const trackingInput = document.getElementById('trackingNumber');
-    const flyerInput = document.getElementById('flyerId');
 
-    if (form && trackingInput && flyerInput) {
+    if (form && trackingInput) {
         // Move focus to flyerId when Enter is pressed in trackingNumber
         trackingInput.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                flyerInput.focus();
             }
         });
 
         // Submit form when Enter is pressed in flyerId
-        flyerInput.addEventListener('keydown', function (e) {
+        trackingInput.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
@@ -40,30 +38,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
             try {
                 const trackingNumber = trackingInput.value.trim();
-                const flyerId = flyerInput.value.trim();
-                const courierType = form.querySelector('input[name="courierType"]').value;
+                const courierType = document.getElementById('courierType').value.trim();
 
-                console.log('Form values:', { trackingNumber, flyerId, courierType });
+                console.log('Form values:', { trackingNumber, courierType });
 
-                if (!trackingNumber || !flyerId || !courierType) {
+                if (!trackingNumber || !courierType) {
                     showAlert('danger', 'Please fill in all required fields');
                     return;
                 }
-
-                const requestData = {
-                    trackingNumber,
-                    flyerId,
-                    courierType
-                };
-
-                console.log('Sending data:', requestData);
 
                 const response = await fetch('/courier/submit-order', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(requestData)
+                    body: JSON.stringify({
+                        trackingNumber,
+                        courierType
+                    })
                 });
 
                 const result = await response.json();

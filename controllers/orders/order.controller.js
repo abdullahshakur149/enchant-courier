@@ -7,11 +7,11 @@ import { Notification } from '../../models/notification.js';
 export const submitOrder = async (req, res) => {
     try {
         console.log('Received order data:', req.body);
-        const { trackingNumber, flyerId, courierType } = req.body;
+        const { trackingNumber, courierType } = req.body;
 
         // Validate required fields
-        if (!trackingNumber || !flyerId || !courierType) {
-            console.log('Missing required fields:', { trackingNumber, flyerId, courierType });
+        if (!trackingNumber || !courierType) {
+            console.log('Missing required fields:', { trackingNumber, courierType });
             return res.status(400).json({
                 success: false,
                 message: 'Please fill all required fields'
@@ -20,25 +20,21 @@ export const submitOrder = async (req, res) => {
 
         // Check if order already exists
         const existingOrder = await Order.findOne({
-            $or: [
-                { trackingNumber: trackingNumber },
-                { flyerId: flyerId }
-            ]
+            trackingNumber: trackingNumber.trim()
         });
 
         if (existingOrder) {
             return res.status(400).json({
                 success: false,
-                message: 'An order with this tracking number or flyer number already exists'
+                message: `An order with tracking number ${trackingNumber} already exists`
             });
         }
 
         // Create new order
         const newOrder = new Order({
             trackingNumber: trackingNumber.trim(),
-            flyerId: flyerId.trim(),
             courierType: courierType,
-            status: 'pending',
+            status: 'Pending',
             createdAt: new Date()
         });
 
@@ -46,13 +42,12 @@ export const submitOrder = async (req, res) => {
 
         // Create notification for new order
         await Notification.create({
-            type: 'order_created',
+            type: 'status_change',
             title: 'New Order Created',
             message: `Order #${newOrder.trackingNumber} has been created via ${courierType}`,
             orderId: newOrder._id,
             user: req.user._id,
             courierType: newOrder.courierType,
-            flyerId: newOrder.flyerId,
             trackingNumber: newOrder.trackingNumber
         });
 
@@ -63,15 +58,13 @@ export const submitOrder = async (req, res) => {
             entityId: newOrder._id,
             details: {
                 trackingNumber: newOrder.trackingNumber,
-                flyerId: newOrder.flyerId,
-                courierType: newOrder.courierType,
-                status: newOrder.status
+                courierType: newOrder.courierType
             },
             performedBy: req.user._id,
             req
         });
 
-        return res.status(201).json({
+        return res.json({
             success: true,
             message: 'Order submitted successfully',
             order: newOrder
@@ -81,7 +74,7 @@ export const submitOrder = async (req, res) => {
         console.error('Error submitting order:', error);
         return res.status(500).json({
             success: false,
-            message: 'Server error while submitting order'
+            message: 'Error submitting order. Please try again.'
         });
     }
 };
@@ -104,7 +97,7 @@ export const getOrders = async (page = 1, limit = 50) => {
                 { $or: [{ isReturned: { $exists: false } }, { isReturned: false }] }
             ]
         })
-            .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at remarks returned_at rawJson productInfo')
+            .select('trackingNumber courierType  status invoicePayment last_tracking_update isDelivered isReturned delivered_at remarks returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -159,7 +152,6 @@ export const getOrders = async (page = 1, limit = 50) => {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
-                flyerId: order.flyerId,
                 status: order.status,
                 invoicePayment: order.invoicePayment,
                 last_tracking_update: order.last_tracking_update,
@@ -216,7 +208,7 @@ export const getOrders = async (page = 1, limit = 50) => {
 
 // ===================================== update order ===============================================
 export const updateOrder = async (req, res) => {
-    const { trackingNumber, flyerId, courierType } = req.body;
+    const { trackingNumber, courierType } = req.body;
     const { orderId } = req.params;
 
     try {
@@ -231,7 +223,6 @@ export const updateOrder = async (req, res) => {
         // Store old values for logging
         const oldValues = {
             trackingNumber: order.trackingNumber,
-            flyerId: order.flyerId,
             courierType: order.courierType
         };
 
@@ -239,9 +230,7 @@ export const updateOrder = async (req, res) => {
         if (trackingNumber) {
             order.trackingNumber = trackingNumber;
         }
-        if (flyerId) {
-            order.flyerId = flyerId;
-        }
+
         if (courierType) {
             order.courierType = courierType;
         }
@@ -268,7 +257,6 @@ export const updateOrder = async (req, res) => {
                 oldValues,
                 newValues: {
                     trackingNumber: order.trackingNumber,
-                    flyerId: order.flyerId,
                     courierType: order.courierType
                 }
             },
@@ -324,7 +312,6 @@ export const deleteOrder = async (req, res) => {
             entityId: orderId,
             details: {
                 trackingNumber: orderExists.trackingNumber,
-                flyerId: orderExists.flyerId,
                 courierType: orderExists.courierType,
                 status: orderExists.status,
                 lastUpdated: orderExists.last_tracking_update
@@ -360,7 +347,7 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
 
         // Find orders that are delivered
         const orders = await Order.find({ isDelivered: true })
-            .select('trackingNumber courierType flyerId status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
+            .select('trackingNumber courierType  status invoicePayment last_tracking_update isDelivered isReturned delivered_at returned_at rawJson productInfo')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -409,7 +396,6 @@ export const deliveredOrder = async (page = 1, limit = 50) => {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
-                flyerId: order.flyerId,
                 status: order.status,
                 invoicePayment: order.invoicePayment,
                 last_tracking_update: order.last_tracking_update,
@@ -504,7 +490,6 @@ export const returnedOrder = async (page = 1, limit = 50) => {
                 _id: order._id,
                 trackingNumber: order.trackingNumber,
                 courierType: order.courierType,
-                flyerId: order.flyerId,
                 status: order.status,
                 invoicePayment: order.invoicePayment,
                 last_tracking_update: order.last_tracking_update,
@@ -567,18 +552,18 @@ export const returnedOrder = async (page = 1, limit = 50) => {
 // ===================================== verify return ===============================================
 export const verifyReturn = async (req, res) => {
     try {
-        const { trackingNumber, flyerId } = req.body;
+        const { trackingNumber } = req.body;
 
         // Validate input
-        if (!trackingNumber || !flyerId) {
+        if (!trackingNumber) {
             return res.json({
                 success: false,
-                message: 'Tracking number and flyer ID are required'
+                message: 'Tracking number are required'
             });
         }
 
         // Check if order exists
-        const order = await Order.findOne({ trackingNumber, flyerId });
+        const order = await Order.findOne({ trackingNumber });
         if (!order) {
             return res.json({
                 success: false,

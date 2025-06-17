@@ -43,10 +43,7 @@
                         <input type="text" class="form-control" id="verifytrackingNumber" name="verifytrackingNumber"
                           required autofocus>
                       </div>
-                      <div class="mb-3">
-                        <label for="verifyflyerId" class="form-label">Flyer ID</label>
-                        <input type="text" class="form-control" id="verifyflyerId" name="verifyflyerId" required>
-                      </div>
+
 
                       <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -69,7 +66,6 @@
 
                 const verifyReturnForm = document.getElementById('verifyReturnForm');
                 const trackingNumberInput = document.getElementById('verifytrackingNumber');
-                const flyerIdInput = document.getElementById('verifyflyerId');
                 const successMsg = document.getElementById('verifySuccessMsg');
 
                 // Focus on tracking number when modal is shown
@@ -77,35 +73,18 @@
                   trackingNumberInput.focus();
                 });
 
-                // Move focus to flyerId on Enter in trackingNumber
-                trackingNumberInput.addEventListener('keydown', function (e) {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    flyerIdInput.focus();
-                  }
-                });
-
-                // Submit form on Enter in flyerId
-                flyerIdInput.addEventListener('keydown', function (e) {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    verifyReturnForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                  }
-                });
-
                 // Handle form submission
                 verifyReturnForm.addEventListener('submit', async function (e) {
                   e.preventDefault();
 
                   const trackingNumber = trackingNumberInput.value.trim();
-                  const flyerId = flyerIdInput.value.trim();
 
-                  if (!trackingNumber || !flyerId) {
-                    alert('Both Tracking Number and Flyer ID are required');
+                  if (!trackingNumber) {
+                    alert('Tracking Number is required');
                     return;
                   }
 
-                  const data = { trackingNumber, flyerId };
+                  const data = { trackingNumber };
 
                   try {
                     const response = await axios.post('/api/orders/verify-return', data, {

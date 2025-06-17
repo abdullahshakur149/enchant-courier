@@ -306,7 +306,6 @@ const OrderManager = {
                                   title="Edit" 
                                   data-id="${row.id}"
                                   data-tracking-number="${row['Tracking Number'] || ''}"
-                                  data-flyer-id="${row['Flyer ID'] || ''}"
                                   data-courier-type="${row['Courier Type'] || ''}"
                                   data-bs-toggle="modal" 
                                   data-bs-target="#editOrderModal">
@@ -647,11 +646,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (editBtn) {
       orderId = editBtn.getAttribute('data-id');
       const trackingNumber = editBtn.getAttribute('data-tracking-number') || '';
-      const flyerId = editBtn.getAttribute('data-flyer-id') || '';
       const courierType = editBtn.getAttribute('data-courier-type') || '';
 
       document.getElementById('editTrackingNumber').value = trackingNumber;
-      document.getElementById('editFlyerId').value = flyerId;
       document.getElementById('editCourierType').value = courierType;
     }
   });
@@ -664,10 +661,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     e.preventDefault();
 
     const trackingNumber = document.getElementById('editTrackingNumber').value;
-    const flyerId = document.getElementById('editFlyerId').value;
     const courierType = document.getElementById('editCourierType').value;
 
-    if (!trackingNumber || !flyerId || !courierType) {
+    if (!trackingNumber || !courierType) {
       alert('Please fill in all fields.');
       return;
     }
@@ -680,7 +676,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ trackingNumber, flyerId, courierType })
+        body: JSON.stringify({ trackingNumber, courierType })
       });
 
       const result = await response.json();
@@ -703,8 +699,7 @@ document.addEventListener('DOMContentLoaded', async function () {
           if (trackingCell) {
             trackingCell.innerHTML = `
               <a href="${getTrackingUrl(courierType, trackingNumber)}" target="_blank" title="Track with ${courierType}: ${trackingNumber}">${trackingNumber}</a>
-              <div class="small"><strong>Flyer ID:</strong> ${flyerId}</div>
-              <div class="small mt-1"><strong>Courier Type:</strong> ${courierType}</div>
+              <div class="small"><strong>Courier Type:</strong> ${courierType}</div>
             `;
           }
         }

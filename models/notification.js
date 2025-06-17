@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['order_created', 'order_delivered', 'order_returned', 'status_change']
+        enum: ['status_change', 'system', 'error']
     },
     title: {
         type: String,
@@ -14,33 +14,19 @@ const notificationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: false
-    },
     orderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order'
     },
-    courierType: {
-        type: String
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     },
-    flyerId: {
-        type: String
-    },
-    trackingNumber: {
-        type: String
-    },
-    isRead: {
+    read: {
         type: Boolean,
         default: false
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
-});
+}, { timestamps: true });
 
 const Notification = mongoose.model('Notification', notificationSchema);
 

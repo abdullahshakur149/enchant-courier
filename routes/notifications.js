@@ -16,17 +16,16 @@ router.get('/api/notifications', isAuthenticated, async (req, res) => {
         // Get additional order information for each notification
         const notificationsWithDetails = await Promise.all(notifications.map(async (notification) => {
             const notificationObj = notification.toObject();
-            
+
             // If notification has an orderId and is not a deletion notification, fetch additional order details
             if (notification.orderId && notification.type !== 'order_deleted') {
                 const order = await Order.findById(notification.orderId);
                 if (order) {
                     notificationObj.courierType = order.courierType;
-                    notificationObj.flyerId = order.flyerId;
                     notificationObj.trackingNumber = order.trackingNumber;
                 }
             }
-            
+
             return notificationObj;
         }));
 
@@ -107,17 +106,16 @@ router.get('/notifications', isAuthenticated, async (req, res) => {
         // Get additional order information for each notification
         const notificationsWithDetails = await Promise.all(notifications.map(async (notification) => {
             const notificationObj = notification.toObject();
-            
+
             // If notification has an orderId and is not a deletion notification, fetch additional order details
             if (notification.orderId && notification.type !== 'order_deleted') {
                 const order = await Order.findById(notification.orderId);
                 if (order) {
                     notificationObj.courierType = order.courierType;
-                    notificationObj.flyerId = order.flyerId;
                     notificationObj.trackingNumber = order.trackingNumber;
                 }
             }
-            
+
             return notificationObj;
         }));
 
