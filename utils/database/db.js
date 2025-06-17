@@ -10,7 +10,7 @@ const connectDB = async () => {
     try {
         const con = await mongoose.connect(MONGO_URL);
         console.log(`MongoDB connected: ${con.connection.host}`);
-        
+
         // Handle connection events
         mongoose.connection.on('disconnected', () => {
             console.log('MongoDB disconnected');

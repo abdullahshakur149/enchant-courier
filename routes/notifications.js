@@ -9,9 +9,16 @@ const router = express.Router();
 // Get all notifications for the current user (API endpoint)
 router.get('/api/notifications', isAuthenticated, async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
         const notifications = await Notification.find({ user: req.user._id })
             .sort({ createdAt: -1 })
-            .limit(10);
+            .skip(skip)
+            .limit(limit);
+
+        const totalNotifications = await Notification.countDocuments({ user: req.user._id });
 
         // Get additional order information for each notification
         const notificationsWithDetails = await Promise.all(notifications.map(async (notification) => {
@@ -36,7 +43,13 @@ router.get('/api/notifications', isAuthenticated, async (req, res) => {
 
         res.json({
             notifications: notificationsWithDetails,
-            unreadCount
+            unreadCount,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalNotifications / limit),
+                totalNotifications,
+                limit
+            }
         });
     } catch (error) {
         console.error('Error fetching notifications:', error);

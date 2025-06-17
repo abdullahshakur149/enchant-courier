@@ -1,92 +1,437 @@
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Notifications</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <button class="btn btn-sm btn-outline-secondary mark-all-read">
-            <i class="fas fa-check-double me-1"></i>
-            Mark all as read
-        </button>
-    </div>
-</div>
+<%- include('partials/sidebar') %>
 
-<div class="card">
-    <div class="card-body">
-        <% if (notifications.length===0) { %>
-            <div class="text-center py-5">
-                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No notifications yet</h5>
-            </div>
-            <% } else { %>
-                <div class="list-group list-group-flush">
-                    <% notifications.forEach(notification=> { %>
-                        <div class="list-group-item notification-item <%= !notification.isRead ? 'unread' : '' %>"
-                            data-id="<%= notification._id %>">
-                            <div class="d-flex w-100 justify-content-between">
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h6 class="mb-0">
-                                            <% if (notification.type==='order_created' ) { %>
-                                                <i class="fas fa-plus-circle text-success me-2"></i>
-                                                <% } else if (notification.type==='order_deleted' ) { %>
-                                                    <i class="fas fa-trash-alt text-danger me-2"></i>
-                                                    <% } else if (notification.type==='order_delivered' ) { %>
-                                                        <i class="fas fa-check-circle text-primary me-2"></i>
-                                                        <% } else if (notification.type==='order_returned' ) { %>
-                                                            <i class="fas fa-undo text-warning me-2"></i>
-                                                            <% } else { %>
-                                                                <i class="fas fa-info-circle text-info me-2"></i>
-                                                                <% } %>
-                                                                    <%= notification.title %>
-                                        </h6>
-                                        <% if (!notification.isRead) { %>
-                                            <span class="badge bg-primary rounded-pill">New</span>
-                                            <% } %>
-                                    </div>
-                                    <p class="mb-1 text-muted">
-                                        <%= notification.message %>
-                                    </p>
-                                    <div class="notification-details mt-2">
-                                        <% if (notification.type==='order_created' ||
-                                            notification.type==='order_deleted' ) { %>
-                                            <div class="d-flex flex-wrap gap-3">
-                                                <% if (notification.type==='order_created' ) { %>
-                                                    <span class="text-muted">
-                                                        <i class="fas fa-truck me-1"></i>
-                                                        <%= notification.courierType || 'N/A' %>
-                                                    </span>
-                                                    <span class="text-muted">
-                                                        <i class="fas fa-id-card me-1"></i>
-                                                        Flyer ID: <%= notification.flyerId || 'N/A' %>
-                                                    </span>
-                                                    <span class="text-muted">
-                                                        <i class="fas fa-barcode me-1"></i>
-                                                        Tracking: <%= notification.trackingNumber || 'N/A' %>
-                                                    </span>
-                                                    <% } else { %>
-                                                        <span class="text-muted">
-                                                            <i class="fas fa-info-circle me-1"></i>
-                                                            Order has been permanently deleted
-                                                        </span>
-                                                        <% } %>
-                                            </div>
-                                            <% } %>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">
-                                        <i class="far fa-clock me-1"></i>
-                                        <%= new Date(notification.createdAt).toLocaleString() %>
-                                    </small>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-bell me-2"></i>
+                            Notifications
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button id="markAllReadBtn" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-check-double me-1"></i>
+                                Mark All as Read
+                            </button>
+                            <button id="refreshBtn" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="notifications-container">
+                            <!-- Loading spinner -->
+                            <div class="text-center py-4" id="loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
+                                <p class="text-muted mt-2">Loading notifications...</p>
                             </div>
                         </div>
-                        <% }); %>
+                        <div id="pagination-container" class="d-flex justify-content-center mt-4">
+                            <!-- Pagination will be loaded here -->
+                        </div>
+                    </div>
                 </div>
-                <% } %>
+            </div>
+        </div>
     </div>
-</div>
 
+    <!-- Notification Details Modal -->
+    <div class="modal fade" id="notificationDetailsModal" tabindex="-1" aria-labelledby="notificationDetailsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationDetailsModalLabel">Notification Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="notification-details-content">
+                        <!-- Content will be dynamically populated -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <style>
+        .notification-item {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
 
-<script>
+        .notification-item:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
 
-</script>
+        .notification-item.unread {
+            background-color: rgba(13, 110, 253, 0.05);
+            border-left-color: #0d6efd;
+        }
 
-<%- include('partials/footer') %>
+        .notification-item .badge {
+            font-size: 0.75rem;
+        }
+
+        .notification-details {
+            font-size: 0.875rem;
+        }
+
+        .notification-details i {
+            width: 16px;
+            text-align: center;
+        }
+
+        #loading-spinner {
+            display: none;
+        }
+
+        .notification-item.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+    </style>
+
+    <script>
+        const NotificationManager = {
+            currentPage: 1,
+            limit: 10,
+            totalPages: 1,
+            isLoading: false,
+
+            init: function () {
+                this.fetchNotifications();
+                this.initializeEventListeners();
+            },
+
+            initializeEventListeners: function () {
+                const markAllReadBtn = document.getElementById('markAllReadBtn');
+                const refreshBtn = document.getElementById('refreshBtn');
+
+                if (markAllReadBtn) {
+                    markAllReadBtn.addEventListener('click', () => this.markAllAsRead());
+                }
+
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', () => {
+                        this.currentPage = 1;
+                        this.fetchNotifications();
+                    });
+                }
+            },
+
+            showLoading: function () {
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) spinner.style.display = 'block';
+                this.isLoading = true;
+            },
+
+            hideLoading: function () {
+                const spinner = document.getElementById('loading-spinner');
+                if (spinner) spinner.style.display = 'none';
+                this.isLoading = false;
+            },
+
+            fetchNotifications: async function () {
+                if (this.isLoading) return;
+
+                this.showLoading();
+                try {
+                    const response = await fetch(`/api/notifications?page=${this.currentPage}&limit=${this.limit}`);
+                    const data = await response.json();
+
+                    if (data.success === false) {
+                        throw new Error(data.message);
+                    }
+
+                    this.renderNotifications(data.notifications);
+                    this.renderPagination(data.pagination);
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                    this.showError('Error fetching notifications. Please try again later.');
+                } finally {
+                    this.hideLoading();
+                }
+            },
+
+            renderNotifications: function (notifications) {
+                const container = document.getElementById('notifications-container');
+
+                if (notifications.length === 0) {
+                    container.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-bell-slash text-muted mb-3" style="font-size: 2rem;"></i>
+                    <p class="text-muted mb-0">No notifications found</p>
+                </div>
+            `;
+                    return;
+                }
+
+                container.innerHTML = notifications.map(notification => `
+            <div class="list-group-item notification-item ${!notification.isRead ? 'unread' : ''}"
+                data-id="${notification._id}">
+                <div class="d-flex w-100 justify-content-between">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">
+                                ${this.getNotificationIcon(notification.type)}
+                                ${notification.title}
+                            </h6>
+                            ${!notification.isRead ? '<span class="badge bg-primary rounded-pill">New</span>' : ''}
+                        </div>
+                        <p class="mb-1 text-muted">${notification.message}</p>
+                        <div class="notification-details mt-2">
+                            ${this.getNotificationDetails(notification)}
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="far fa-clock me-1"></i>
+                            ${this.formatDate(notification.createdAt)}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+                // Add click handlers for notifications
+                document.querySelectorAll('.notification-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const notificationId = item.dataset.id;
+                        this.showNotificationDetails(notificationId);
+                        if (!item.classList.contains('unread')) {
+                            this.markAsRead(notificationId);
+                        }
+                    });
+                });
+            },
+
+            renderPagination: function (pagination) {
+                const container = document.getElementById('pagination-container');
+                this.totalPages = pagination.totalPages;
+
+                if (pagination.totalPages <= 1) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                let paginationHtml = `
+            <nav aria-label="Notifications pagination">
+                <ul class="pagination">
+                    <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${this.currentPage - 1}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+        `;
+
+                // Show first page, current page, and last page
+                const pages = new Set([1, this.currentPage, pagination.totalPages]);
+
+                // Add pages around current page
+                for (let i = Math.max(1, this.currentPage - 1); i <= Math.min(pagination.totalPages, this.currentPage + 1); i++) {
+                    pages.add(i);
+                }
+
+                // Convert to array and sort
+                const sortedPages = Array.from(pages).sort((a, b) => a - b);
+
+                // Add ellipsis and page numbers
+                sortedPages.forEach((page, index) => {
+                    if (index > 0 && page - sortedPages[index - 1] > 1) {
+                        paginationHtml += `
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                `;
+                    }
+                    paginationHtml += `
+                <li class="page-item ${this.currentPage === page ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${page}">${page}</a>
+                </li>
+            `;
+                });
+
+                paginationHtml += `
+                    <li class="page-item ${this.currentPage === pagination.totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${this.currentPage + 1}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        `;
+
+                container.innerHTML = paginationHtml;
+
+                // Add click handlers for pagination
+                container.querySelectorAll('.page-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const page = parseInt(e.target.dataset.page);
+                        if (page >= 1 && page <= pagination.totalPages) {
+                            this.currentPage = page;
+                            this.fetchNotifications();
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    });
+                });
+            },
+
+            getNotificationIcon: function (type) {
+                const icons = {
+                    'order_created': '<i class="fas fa-plus-circle text-success me-2"></i>',
+                    'order_deleted': '<i class="fas fa-trash-alt text-danger me-2"></i>',
+                    'order_delivered': '<i class="fas fa-check-circle text-primary me-2"></i>',
+                    'order_returned': '<i class="fas fa-undo text-warning me-2"></i>',
+                    'status_change': '<i class="fas fa-exchange-alt text-info me-2"></i>',
+                    'system': '<i class="fas fa-cog text-secondary me-2"></i>',
+                    'default': '<i class="fas fa-info-circle text-info me-2"></i>'
+                };
+                return icons[type] || icons.default;
+            },
+
+            getNotificationDetails: function (notification) {
+                if (notification.type === 'order_created' || notification.type === 'order_deleted') {
+                    return `
+                <div class="d-flex flex-wrap gap-3">
+                    ${notification.type === 'order_created' ? `
+                        <span class="text-muted">
+                            <i class="fas fa-truck me-1"></i>
+                            ${notification.courierType || 'N/A'}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-barcode me-1"></i>
+                            Tracking: ${notification.trackingNumber || 'N/A'}
+                        </span>
+                    ` : `
+                        <span class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Order has been permanently deleted
+                        </span>
+                    `}
+                </div>
+            `;
+                }
+                return '';
+            },
+
+            formatDate: function (dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diff = now - date;
+
+                // Less than 24 hours
+                if (diff < 24 * 60 * 60 * 1000) {
+                    if (diff < 60 * 1000) return 'Just now';
+                    if (diff < 60 * 60 * 1000) return `${Math.floor(diff / (60 * 1000))} minutes ago`;
+                    return `${Math.floor(diff / (60 * 60 * 1000))} hours ago`;
+                }
+
+                // Less than 7 days
+                if (diff < 7 * 24 * 60 * 60 * 1000) {
+                    return `${Math.floor(diff / (24 * 60 * 60 * 1000))} days ago`;
+                }
+
+                // Otherwise show full date
+                return date.toLocaleString();
+            },
+
+            markAsRead: async function (notificationId) {
+                const notification = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                if (!notification || notification.classList.contains('loading')) return;
+
+                notification.classList.add('loading');
+                try {
+                    const response = await fetch(`/api/notifications/${notificationId}/read`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        notification.classList.remove('unread');
+                        const badge = notification.querySelector('.badge');
+                        if (badge) badge.remove();
+                    }
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                } finally {
+                    notification.classList.remove('loading');
+                }
+            },
+
+            markAllAsRead: async function () {
+                if (this.isLoading) return;
+
+                this.showLoading();
+                try {
+                    const response = await fetch('/api/notifications/mark-all-read', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        this.fetchNotifications();
+                    }
+                } catch (error) {
+                    console.error('Error marking all notifications as read:', error);
+                    this.showError('Error marking all notifications as read. Please try again later.');
+                } finally {
+                    this.hideLoading();
+                }
+            },
+
+            showNotificationDetails: function (notificationId) {
+                const notification = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+                if (!notification) return;
+
+                const modal = new bootstrap.Modal(document.getElementById('notificationDetailsModal'));
+                const content = document.querySelector('.notification-details-content');
+
+                // Get notification data from the DOM
+                const title = notification.querySelector('h6').textContent.trim();
+                const message = notification.querySelector('p').textContent.trim();
+                const details = notification.querySelector('.notification-details').innerHTML;
+                const timestamp = notification.querySelector('small').textContent.trim();
+
+                content.innerHTML = `
+            <div class="notification-details-header mb-3">
+                <h5 class="mb-2">${title}</h5>
+                <p class="text-muted mb-0">${message}</p>
+            </div>
+            <div class="notification-details-body">
+                ${details}
+            </div>
+            <div class="notification-details-footer mt-3">
+                <small class="text-muted">${timestamp}</small>
+            </div>
+        `;
+
+                modal.show();
+            },
+
+            showError: function (message) {
+                const container = document.getElementById('notifications-container');
+                container.innerHTML = `
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                ${message}
+            </div>
+        `;
+            }
+        };
+
+        // Initialize the notification manager when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            NotificationManager.init();
+        });
+    </script>

@@ -2,50 +2,77 @@ const LogManager = {
     currentPage: 1,
     limit: 50,
     totalPages: 1,
+    filters: {
+        action: '',
+        entity: '',
+        startDate: '',
+        endDate: ''
+    },
 
     init: function () {
-        // Only initialize if we're on the logs page
-        if (!document.querySelector('.logs-table')) {
-            return;
+        this.initializeFilters();
+        this.fetchLogs();
+    },
+
+    initializeFilters: function () {
+        const actionFilter = document.getElementById('actionFilter');
+        const entityFilter = document.getElementById('entityFilter');
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+        const filterBtn = document.getElementById('filterBtn');
+
+        if (actionFilter) {
+            actionFilter.addEventListener('change', () => {
+                this.filters.action = actionFilter.value;
+            });
         }
 
-        this.fetchLogs();
-        this.attachEventListeners();
+        if (entityFilter) {
+            entityFilter.addEventListener('change', () => {
+                this.filters.entity = entityFilter.value;
+            });
+        }
+
+        if (startDate) {
+            startDate.addEventListener('change', () => {
+                this.filters.startDate = startDate.value;
+            });
+        }
+
+        if (endDate) {
+            endDate.addEventListener('change', () => {
+                this.filters.endDate = endDate.value;
+            });
+        }
+
+        if (filterBtn) {
+            filterBtn.addEventListener('click', () => {
+                this.currentPage = 1;
+                this.fetchLogs();
+            });
+        }
     },
 
     fetchLogs: async function () {
         try {
-            // Get filter values with null checks
-            const startDate = document.getElementById('startDate')?.value || '';
-            const endDate = document.getElementById('endDate')?.value || '';
-            const actionType = document.getElementById('actionFilter')?.value || '';
-            const entityType = document.getElementById('entityFilter')?.value || '';
-
             const queryParams = new URLSearchParams({
                 page: this.currentPage,
                 limit: this.limit,
-                ...(startDate && { startDate }),
-                ...(endDate && { endDate }),
-                ...(actionType && { actionType }),
-                ...(entityType && { entityType })
+                ...this.filters
             });
 
-            const response = await fetch(`/api/logs?${queryParams}`);
+            const response = await fetch(`/api/logs/paginated?${queryParams}`);
             const data = await response.json();
 
-            if (data.logs) {
-                this.updateLogsTable(data.logs);
-                if (data.pagination) {
-                    this.renderPagination(data.pagination);
-                }
+            if (data.success === false) {
+                throw new Error(data.message);
             }
+
+            this.updateLogsTable(data.logs);
+            this.renderPagination(data.pagination);
         } catch (error) {
             console.error('Error fetching logs:', error);
-            // Show error message to user
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'alert alert-danger';
-            errorDiv.textContent = 'Failed to fetch logs. Please try again.';
-            document.querySelector('.card-body')?.prepend(errorDiv);
+            alert('Error fetching logs. Please try again later.');
         }
     },
 
@@ -78,41 +105,25 @@ const LogManager = {
                 <td>${log.ipAddress || 'N/A'}</td>
             </tr>
         `).join('');
-    },
 
-    formatDetails: function (log) {
-        if (typeof log.details === 'object' && log.details !== null) {
-            if (log.entity === 'order') {
-                return getOrderIdentifier(log);
-            } else if (log.entity === 'user') {
-                return log.details.username || 'N/A';
-            } else {
-                return JSON.stringify(log.details);
-            }
-        }
-        return log.details || 'N/A';
-    },
-
-    getActionBadgeClass: function (action) {
-        const classes = {
-            'create': 'success',
-            'update': 'primary',
-            'delete': 'danger',
-            'status_change': 'warning',
-            'remark_add': 'info'
-        };
-        return classes[action] || 'secondary';
+        // Add click handlers for log details
+        document.querySelectorAll('.log-row').forEach(row => {
+            row.addEventListener('click', () => {
+                const logData = JSON.parse(row.dataset.log);
+                this.showLogDetails(logData);
+            });
+        });
     },
 
     renderPagination: function (pagination) {
-        const paginationContainer = document.getElementById('pagination');
-        if (!paginationContainer) return;
+        const container = document.getElementById('pagination-container');
+        if (!container) return;
 
         this.totalPages = pagination.totalPages;
 
         let paginationHtml = `
             <nav aria-label="Logs pagination">
-                <ul class="pagination justify-content-center">
+                <ul class="pagination">
                     <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
                         <a class="page-link" href="#" data-page="${this.currentPage - 1}">Previous</a>
                     </li>
@@ -134,14 +145,14 @@ const LogManager = {
             </nav>
         `;
 
-        paginationContainer.innerHTML = paginationHtml;
+        container.innerHTML = paginationHtml;
 
-        // Attach click handlers for pagination
-        paginationContainer.querySelectorAll('.page-link').forEach(link => {
+        // Add click handlers for pagination
+        container.querySelectorAll('.page-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const page = parseInt(e.target.dataset.page);
-                if (page && page !== this.currentPage) {
+                if (page >= 1 && page <= pagination.totalPages) {
                     this.currentPage = page;
                     this.fetchLogs();
                 }
@@ -149,51 +160,71 @@ const LogManager = {
         });
     },
 
-    showLogDetails: function (log) {
-        const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
-        const detailsElement = document.getElementById('logDetails');
-        detailsElement.textContent = JSON.stringify(log, null, 2);
-        modal.show();
+    formatDetails: function (log) {
+        if (typeof log.details === 'object' && log.details !== null) {
+            if (log.entity === 'order') {
+                return this.getOrderIdentifier(log);
+            } else if (log.entity === 'user') {
+                return log.details.username || 'N/A';
+            } else {
+                return JSON.stringify(log.details);
+            }
+        }
+        return log.details || 'N/A';
     },
 
-    attachEventListeners: function () {
-        // Get all filter elements
-        const filterElements = {
-            startDate: document.getElementById('startDate'),
-            endDate: document.getElementById('endDate'),
-            actionFilter: document.getElementById('actionFilter'),
-            entityFilter: document.getElementById('entityFilter'),
-            filterBtn: document.getElementById('filterBtn')
+    getActionBadgeClass: function (action) {
+        const classes = {
+            'create': 'success',
+            'update': 'primary',
+            'delete': 'danger',
+            'status_change': 'warning',
+            'remark_add': 'info'
         };
+        return classes[action] || 'secondary';
+    },
 
-        // Add event listeners only if elements exist
-        if (filterElements.filterBtn) {
-            filterElements.filterBtn.addEventListener('click', () => {
-                this.currentPage = 1; // Reset to first page when filtering
-                this.fetchLogs();
-            });
+    getOrderIdentifier: function (log) {
+        if (log.details.trackingNumber) {
+            return `Order #${log.details.trackingNumber}`;
+        }
+        return 'Order details not available';
+    },
+
+    showLogDetails: function (log) {
+        // Format the timestamp
+        document.getElementById('modalTimestamp').textContent = new Date(log.timestamp).toLocaleString();
+
+        // Set user
+        document.getElementById('modalUser').textContent = log.performedBy?.username || 'System';
+
+        // Set action with badge
+        const actionBadge = document.createElement('span');
+        actionBadge.className = `badge bg-${this.getActionBadgeClass(log.action)}`;
+        actionBadge.textContent = log.action;
+        document.getElementById('modalAction').innerHTML = '';
+        document.getElementById('modalAction').appendChild(actionBadge);
+
+        // Set other fields
+        document.getElementById('modalIp').textContent = log.ipAddress || 'N/A';
+        document.getElementById('modalEntity').textContent = log.entity;
+        document.getElementById('modalEntityId').textContent = log.entityId;
+
+        // Set details with proper formatting
+        const detailsElement = document.getElementById('modalDetails');
+        if (typeof log.details === 'object' && log.details !== null) {
+            detailsElement.textContent = JSON.stringify(log.details, null, 2);
+        } else {
+            detailsElement.textContent = log.details || 'N/A';
         }
 
-        // Add change listeners to filter inputs
-        Object.entries(filterElements).forEach(([key, element]) => {
-            if (element && (element.tagName === 'INPUT' || element.tagName === 'SELECT')) {
-                element.addEventListener('change', () => {
-                    this.currentPage = 1; // Reset to first page when filter changes
-                    this.fetchLogs();
-                });
-            }
-        });
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+        modal.show();
     }
 };
 
-// Initialize only when DOM is loaded
+// Initialize the log manager when the page loads
 document.addEventListener('DOMContentLoaded', () => {
     LogManager.init();
 });
-
-function getOrderIdentifier(log) {
-    if (log.details && log.details.trackingNumber) {
-        return log.details.trackingNumber;
-    }
-    return 'N/A';
-}
