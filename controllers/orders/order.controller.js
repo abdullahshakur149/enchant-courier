@@ -612,7 +612,7 @@ export const verifyReturn = async (req, res) => {
 
         // Create notification for returned order
         await Notification.create({
-            type: 'order_returned',
+            type: 'system',
             title: 'Order Returned',
             message: `Order #${order.trackingNumber} has been marked as returned`,
             orderId: order._id,
