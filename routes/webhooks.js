@@ -1,7 +1,7 @@
 import express from 'express';
 import { Order } from '../models/order.js';
-import { broadcastNotification } from '../server.js';
 import mongoose from 'mongoose';
+import { Notification } from '../models/notification.js';
 
 const router = express.Router();
 
@@ -11,117 +11,102 @@ router.get("/test", (req, res) => {
     res.json({ message: "Webhook route is working!" });
 });
 
-// Shopify fulfillment webhook
-router.post("/fulfillment", express.json(), async (req, res) => {
-    console.log("Webhook endpoint hit!");
+// Helper function to check database connection
+const isDatabaseConnected = () => {
+    return mongoose.connection.readyState === 1;
+};
 
-    try {
-        const fulfillmentData = req.body;
-        console.log("📦 Fulfillment Received:", fulfillmentData);
-
-        // Check database connection
-        if (mongoose.connection.readyState !== 1) {
-            console.log("Database not connected!");
-            throw new Error('Database not connected');
+// Helper function to wait for database connection
+const waitForDatabase = async (maxRetries = 5, delay = 1000) => {
+    for (let i = 0; i < maxRetries; i++) {
+        if (isDatabaseConnected()) {
+            return true;
         }
+        await new Promise(resolve => setTimeout(resolve, delay));
+    }
+    return false;
+};
 
-        // Process all line items in the fulfillment
-        const lineItems = fulfillmentData.line_items || [];
-        const savedOrders = [];
-
-        for (const item of lineItems) {
-            // Extract order details from the webhook data
+// Process webhook data
+const processWebhook = async (fulfillment) => {
+    try {
+        // Find the order by tracking number
+        let order = await Order.findOne({ trackingNumber: fulfillment.tracking_number });
+        
+        if (!order) {
+            console.log(`Order not found for tracking number: ${fulfillment.tracking_number}, creating new order...`);
+            
+            // Create new order from fulfillment data
             const orderData = {
-                trackingNumber: fulfillmentData.tracking_number,
-                courierType: fulfillmentData.tracking_company,
-                status: 'Pending',
+                trackingNumber: fulfillment.tracking_number,
+                courierType: fulfillment.tracking_company,
                 productInfo: {
-                    OrderNumber: fulfillmentData.order_id?.toString() || '',
+                    OrderNumber: fulfillment.order_id?.toString() || '',
                     date: new Date().toISOString(),
-                    CustomerName: fulfillmentData.destination?.name || '',
+                    CustomerName: fulfillment.destination?.name || '',
                     Address: [
-                        fulfillmentData.destination?.address1,
-                        fulfillmentData.destination?.address2,
-                        fulfillmentData.destination?.city,
-                        fulfillmentData.destination?.province,
-                        fulfillmentData.destination?.zip,
-                        fulfillmentData.destination?.country
+                        fulfillment.destination?.address1,
+                        fulfillment.destination?.address2,
+                        fulfillment.destination?.city,
+                        fulfillment.destination?.province,
+                        fulfillment.destination?.zip,
+                        fulfillment.destination?.country
                     ].filter(Boolean).join(', '),
                     OrderDetails: {
-                        ProductName: item.title || 'Unknown Product',
-                        Quantity: item.quantity?.toString() || '1',
-                        Price: item.price || 0,
-                        TotalPrice: item.price * (item.quantity || 1)
+                        ProductName: fulfillment.line_items?.[0]?.title || 'Unknown Product',
+                        Quantity: fulfillment.line_items?.[0]?.quantity?.toString() || '1',
+                        Price: fulfillment.line_items?.[0]?.price || 0,
+                        TotalPrice: (fulfillment.line_items?.[0]?.price || 0) * (fulfillment.line_items?.[0]?.quantity || 1)
                     }
                 },
-                totalPrice: item.price * (item.quantity || 1),
-                rawJson: fulfillmentData
+                totalPrice: (fulfillment.line_items?.[0]?.price || 0) * (fulfillment.line_items?.[0]?.quantity || 1),
+                rawJson: fulfillment
             };
 
-            console.log('Creating order with data:', orderData);
+            order = new Order(orderData);
+            await order.save();
+            console.log(`Created new order with tracking number: ${order.trackingNumber}`);
+        } 
 
-            try {
-                // Check if order already exists
-                const existingOrder = await Order.findOne({
-                    trackingNumber: orderData.trackingNumber,
-                    'productInfo.OrderDetails.ProductName': orderData.productInfo.OrderDetails.ProductName
-                });
+        // Create notification
+        await Notification.create({
+            type: 'order_delivered',
+            title: 'Order Delivered',
+            message: `Order #${order.trackingNumber} has been delivered`,
+            orderId: order._id
+        });
 
-                if (existingOrder) {
-                    console.log('Order already exists:', existingOrder._id);
-                    savedOrders.push(existingOrder);
-                    continue;
-                }
+        console.log(`Successfully processed webhook for order: ${order.trackingNumber}`);
+    } catch (error) {
+        console.error('Error processing webhook data:', error);
+        throw error;
+    }
+};
 
-                // Create new order
-                const order = new Order(orderData);
-                console.log('Order instance created, attempting to save...');
+// Webhook endpoint
+router.post('/fulfillment', async (req, res) => {
+    console.log('Webhook endpoint hit!');
+    console.log('📦 Fulfillment Received:', req.body);
 
-                const savedOrder = await order.save();
-                console.log('Order saved successfully:', savedOrder._id);
-
-                // Verify the order was actually saved
-                const verifiedOrder = await Order.findById(savedOrder._id);
-                if (!verifiedOrder) {
-                    throw new Error('Order was not saved properly');
-                }
-                console.log('Order verified in database:', verifiedOrder._id);
-
-                savedOrders.push(savedOrder);
-
-                // Broadcast notification about new order
-                broadcastNotification({
-                    title: 'New Order Created',
-                    message: `New order created with tracking number ${orderData.trackingNumber} for product ${orderData.productInfo.OrderDetails.ProductName}`
-                });
-
-            } catch (dbError) {
-                console.error('Database operation error:', {
-                    message: dbError.message,
-                    code: dbError.code,
-                    name: dbError.name,
-                    stack: dbError.stack
-                });
-                throw dbError;
+    try {
+        // Check database connection
+        if (!isDatabaseConnected()) {
+            console.log('Database not connected, waiting for connection...');
+            const connected = await waitForDatabase();
+            
+            if (!connected) {
+                throw new Error('Database not connected');
             }
         }
 
-        res.status(200).json({
-            success: true,
-            message: 'Orders created successfully',
-            orders: savedOrders
-        });
-
+        await processWebhook(req.body);
+        
+        res.status(200).json({ success: true });
     } catch (error) {
-        console.error('Error processing webhook:', {
-            message: error.message,
-            stack: error.stack,
-            name: error.name
-        });
-        res.status(500).json({
-            success: false,
-            message: 'Error processing webhook',
-            error: error.message
+        console.error('Error processing webhook:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
         });
     }
 });
