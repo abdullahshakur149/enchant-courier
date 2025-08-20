@@ -4,7 +4,15 @@ const notificationSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ['status_change', 'system', 'error']
+        enum: [
+            'status_change',
+            'system',
+            'error',
+            'order_created',
+            'order_deleted',
+            'order_delivered',
+            'order_returned'
+        ]
     },
     title: {
         type: String,
