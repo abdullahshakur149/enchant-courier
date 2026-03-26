@@ -29,19 +29,3 @@ jobs:
             pm2 restart nodejsapp || pm2 start server.js --name nodejsapp
             pm2 save
 
-      # 3️⃣ Notify Lambda about workflow status
-      - name: Notify Lambda about workflow status
-        if: always() # ensures it runs even if previous steps fail
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: https://mfulvipgt4.execute-api.ap-southeast-2.amazonaws.com/prod/notify
-          method: POST
-          contentType: "application/json"
-          data: |
-            {
-            "workflow_name": "${{ github.workflow }}",
-            "status": "${{ job.status }}",
-            "repository": "${{ github.repository }}",
-            "actor": "${{ github.actor }}"
-            }
-
