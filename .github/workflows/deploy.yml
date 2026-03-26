@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            cd ~/your-app-folder
+            cd /home/ubuntu/enchant-courier
             git pull origin main
             npm install
             pm2 restart nodejsapp || pm2 start server.js --name nodejsapp
