@@ -3,7 +3,7 @@ name: Deploy Node.js to EC2
 on:
   push:
     branches:
-      - main  # deploy on push to main branch
+      - main # deploy on push to main branch
 
 jobs:
   deploy:
@@ -31,16 +31,16 @@ jobs:
 
       # 3️⃣ Notify Lambda about workflow status
       - name: Notify Lambda about workflow status
-        if: always()  # ensures it runs even if previous steps fail
+        if: always() # ensures it runs even if previous steps fail
         uses: fjogeleit/http-request-action@v1
         with:
-          url: https://abc123.execute-api.us-east-1.amazonaws.com/notify
+          url: https://mfulvipgt4.execute-api.ap-southeast-2.amazonaws.com/lambafunctionemailapi
           method: POST
-          contentType: 'application/json'
-          body: |
+          contentType: "application/json"
+          data: |
             {
-              "workflow_name": "${{ github.workflow }}",
-              "status": "${{ job.status }}",
-              "repository": "${{ github.repository }}",
-              "actor": "${{ github.actor }}"
+            "workflow_name": "${{ github.workflow }}",
+            "status": "${{ job.status }}",
+            "repository": "${{ github.repository }}",
+            "actor": "${{ github.actor }}"
             }
