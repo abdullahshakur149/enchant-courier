@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2️⃣ Copy code and deploy to EC2
       - name: Copy code to EC2
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -26,3 +28,19 @@ jobs:
             npm install
             pm2 restart nodejsapp || pm2 start server.js --name nodejsapp
             pm2 save
+
+      # 3️⃣ Notify Lambda about workflow status
+      - name: Notify Lambda about workflow status
+        if: always()  # ensures it runs even if previous steps fail
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: https://abc123.execute-api.us-east-1.amazonaws.com/notify
+          method: POST
+          contentType: 'application/json'
+          body: |
+            {
+              "workflow_name": "${{ github.workflow }}",
+              "status": "${{ job.status }}",
+              "repository": "${{ github.repository }}",
+              "actor": "${{ github.actor }}"
+            }
